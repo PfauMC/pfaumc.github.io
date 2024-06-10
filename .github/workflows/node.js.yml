@@ -6,6 +6,8 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      CI: "" # ITS BAD!
     strategy:
       matrix:
         node-version: [ 22.x ]

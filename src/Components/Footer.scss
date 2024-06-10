@@ -1,0 +1,28 @@
+footer {
+  background: linear-gradient(to right, rgba(28, 172, 117, 0.65), rgba(34, 99, 170, 0.59));
+  color: white;
+  padding: 20px 0;
+  position: relative;
+  bottom: 0;
+  width: 100%;
+  font-family: ArchivoBlack, sans-serif !important;
+}
+
+.footer-info p {
+  margin: 5px;
+
+}
+
+.footer-info a {
+  color: white;
+  text-decoration: none;
+  margin: 0 15px;
+}
+
+.footer-info a:hover {
+  text-decoration: underline;
+}
+
+.p_2 {
+  font-size: 20px;
+}

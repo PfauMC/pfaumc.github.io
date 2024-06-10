@@ -1,0 +1,51 @@
+/* src/components/Navbar.css */
+@font-face {
+  font-family: 'MinecraftRus';
+  src: url('../Font/minecraft.ttf') format('truetype');
+}
+
+body, .navbar, .nav-link, .btn {
+  font-family: 'MinecraftRus', sans-serif;
+}
+
+.custom-navbar {
+  width: 70%;
+  margin: 0 auto;
+  background-color: rgba(0, 0, 0, 0.24);
+  border-radius: 40px;
+  padding-left: 30px;
+  padding-right: 30px;
+  font-family: 'MinecraftRus', sans-serif; /* Используем шрифт MinecraftRus */
+}
+
+.navbar-brand img {
+  width: 50px;
+  height: 50px;
+
+}
+
+.nav-link {
+  color: #ffffff !important;
+  margin-right: 20px;
+}
+
+.navbar-toggler {
+  border: none;
+}
+
+.btn-outline-success {
+  background: linear-gradient(90deg, #01B3F7 0%, #00E2B2 100%);
+  color: white;
+  border-radius: 65px;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 16px;
+  font-family: "Minecraft Rus", sans-serif;
+
+}
+
+.btn-outline-success:hover {
+  background-color: #28a745;
+  color: #fff;
+}

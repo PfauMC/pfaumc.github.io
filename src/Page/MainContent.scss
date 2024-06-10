@@ -1,0 +1,129 @@
+@font-face {
+  font-family: 'Minecraft Rus';
+  src: url("../Font/minecraft.ttf") format('truetype');
+}
+
+@font-face {
+  font-family: 'ArchivoBlack';
+  src: url("../Font/ArchivoBlack-Regular.ttf") format('truetype');
+}
+
+
+.main-content {
+  text-align: center;
+  padding: 2rem;
+  justify-content: left;
+
+  .content-block {
+    height: 100vh;
+    justify-content: left;
+    align-items: center;
+    text-align: left;
+    padding-left: 150px;
+
+    h1 {
+      font-size: 140px;
+      padding-top: 200px;
+      font-family: ArchivoBlack, sans-serif;
+      background: linear-gradient(7deg, #10c0ff, #08ff00);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+
+    }
+
+    p {
+      font-size: 1.5rem;
+      margin-bottom: 1.5rem;
+      font-family: "Minecraft Rus", sans-serif;
+      padding-bottom: -5px;
+    }
+
+    .start-button {
+
+      background: linear-gradient(90deg, #01B3F7 0%, #00E2B2 100%);
+      color: white;
+      border-radius: 65px;
+      border: none;
+      padding: 15px 30px;
+      cursor: pointer;
+      font-size: 25px;
+      font-family: ArchivoBlack, sans-serif;
+      font-weight: bold;
+
+      &:hover {
+        background-color: #00cc99;
+      }
+    }
+
+
+  }
+
+  .features {
+    width: 100%;
+    margin-top: 3rem;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    height: 100vh;
+    font-weight: 700;
+
+    h2 {
+      margin-bottom: 2rem;
+      font-size: 40px;
+      font-weight: 700;
+      font-family: "Minecraft Rus", sans-serif;
+    }
+
+    .feature-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      font-family: ArchivoBlack, sans-serif;
+    }
+
+  }
+
+  .announcement {
+    margin-top: 3rem;
+    text-align: left;
+    height: 100vh;
+
+    img {
+      width: 100%;
+      height: auto;
+      margin-top: 1rem;
+    }
+  }
+}
+
+
+.social-icons {
+  margin: 20px 0;
+  display: flex;
+  justify-content: center;
+}
+
+.social-icons a {
+  margin: 0 10px;
+  color: white;
+  font-size: 24px;
+}
+
+.social-icons a:hover {
+  color: #00aaff; /* Optional hover color */
+}
+
+.news-section {
+  height: 100vh;
+}
+
+
+
+
+
+
+
+
+
+
+

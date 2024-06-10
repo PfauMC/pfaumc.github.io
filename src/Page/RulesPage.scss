@@ -1,0 +1,69 @@
+// src/components/RulesPage.scss
+@font-face {
+  font-family: 'ArchivoBlack';
+  src: url('../Font/ArchivoBlack-Regular.ttf') format('truetype');
+}
+
+.rules-page {
+  padding: 20px;
+  text-align: center;
+  color: white;
+  background: rgba(0, 0, 0, 0.56); // Полупрозрачный черный фон
+  border-radius: 10px;
+  margin-left: 150px;
+  margin-right: 150px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  font-family: ArchivoBlack, sans-serif;
+
+  h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    margin-top: 20px;
+    background: linear-gradient(7deg, #10c0ff, #08ff00);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 700;
+  }
+
+
+  h2 {
+    font-size: 1rem;
+    margin-bottom: 2rem;
+    color: #cccccc;
+  }
+
+  h3 {
+    background-color: #019f7e;
+    color: white;
+    font-size: 1rem;
+    width: 111px;
+  }
+
+  h4 {
+    background-color: #01409f;
+    color: white;
+    font-size: 1rem;
+    width: 100px;
+    margin-top: 5px;
+
+  }
+
+  .p_1 {
+    font-size: 1.2rem;
+    color: #00f5ff;
+  }
+
+  .rules-content {
+    text-align: left;
+
+    .rule {
+      font-size: 1rem;
+      margin-bottom: 1rem;
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.1); // Полупрозрачный белый фон для блока правила
+      border-radius: 5px;
+      word-spacing: 3px;
+    }
+  }
+}

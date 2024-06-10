@@ -1,0 +1,96 @@
+@import '../components/Navbar';
+
+body {
+  background-image: url('../img/Body.png');
+  background-size: cover;
+  background-position: center;
+  color: #ffffff;
+}
+
+.main-content {
+  text-align: center;
+  padding: 2rem;
+
+  .intro {
+    h1 {
+      font-size: 4rem;
+      color: #00ffcc;
+    }
+
+    p {
+      font-size: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .start-button {
+      background-color: #00ffcc;
+      border: none;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+
+      &:hover {
+        background-color: #00cc99;
+      }
+    }
+  }
+
+  .features {
+    margin-top: 3rem;
+
+    h2 {
+      margin-bottom: 1.5rem;
+    }
+
+    .feature-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+
+      .feature-item {
+        margin: 1rem;
+        padding: 1rem;
+        background-color: rgba(0, 0, 0, 0.5);
+        border-radius: 8px;
+        width: 200px;
+        text-align: left;
+      }
+    }
+  }
+
+  .announcement {
+    margin-top: 3rem;
+    text-align: left;
+
+    img {
+      width: 100%;
+      height: auto;
+      margin-top: 1rem;
+    }
+  }
+}
+
+footer {
+  background-color: rgba(0, 0, 0, 0.8);
+  padding: 1rem;
+  text-align: center;
+
+  .social-links {
+    button {
+      margin: 0.5rem;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+
+      &:hover {
+        background-color: #333;
+      }
+    }
+  }
+
+  .footer-info {
+    margin-top: 1rem;
+
+    p {
+      margin: 0.5rem 0;
+    }
+  }
+}

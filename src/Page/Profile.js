@@ -1,12 +1,12 @@
 import React from 'react'
 import "./Profile.scss"
-import Auth from "../Components/Auth";
 
 export default function Profile() {
     return (
         <div>
             <div className="profile">
-                <Auth/>
+
+                <h1>БЛЯ БУДУ ЗАВТРА ТУТ ЧЕТ ПОЯВИТСЯ ЗУБ ДАЮ МУДРОСТИ ХОТЬ ОБА ЗАБИРАЙccccc</h1>
 
 
             </div>

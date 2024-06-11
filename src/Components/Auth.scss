@@ -1,0 +1,13 @@
+.telegram-auth {
+  height: 90vh;
+
+  .btn-primary {
+    background-color: #0088cc;
+    border-color: #0088cc;
+
+    &:hover {
+      background-color: #007bb5;
+      border-color: #007bb5;
+    }
+  }
+}

@@ -6,6 +6,7 @@ import RulesPage from './Page/RulesPage';
 import GuildPage from './Page/GuildPage';
 import LogIn from './Page/LogIn';
 import Footer from "./Components/Footer";
+import Profile from './Page/Profile';
 
 const App = () => {
     return (
@@ -13,9 +14,11 @@ const App = () => {
             <NavigationBar/>
             <Routes>
                 <Route exact path="/" element={<MainContent/>}/>
-                <Route path="/Page/RulesPage" element={<RulesPage/>}/>
-                <Route path="/Page/GuildPage" element={<GuildPage/>}/>
-                <Route path="/Page/LogIn" element={<LogIn/>}/>
+                <Route path="/rules" element={<RulesPage/>}/>
+                <Route path="/guild" element={<GuildPage/>}/>
+                <Route path="/login" element={<LogIn/>}/>
+                <Route path="/profile" element={<Profile/>}/>
+
             </Routes>
 
             <Footer/>

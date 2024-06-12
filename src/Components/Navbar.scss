@@ -6,6 +6,7 @@
 
 body, .navbar, .nav-link, .btn {
   font-family: 'MinecraftRus', sans-serif;
+
 }
 
 .custom-navbar {
@@ -16,6 +17,11 @@ body, .navbar, .nav-link, .btn {
   padding-left: 30px;
   padding-right: 30px;
   font-family: 'MinecraftRus', sans-serif; /* Используем шрифт MinecraftRus */
+  @media (min-width: 2000px) {
+    margin: 0 auto;
+    width: 1200px;
+  }
+
 }
 
 .navbar-brand img {

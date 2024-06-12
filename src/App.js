@@ -7,6 +7,7 @@ import GuildPage from './Page/GuildPage';
 import LogIn from './Page/LogIn';
 import Footer from "./Components/Footer";
 import Profile from './Page/Profile';
+import NotFoundPage from "./Page/404";
 
 const App = () => {
     return (
@@ -18,6 +19,8 @@ const App = () => {
                 <Route path="/guild" element={<GuildPage/>}/>
                 <Route path="/login" element={<LogIn/>}/>
                 <Route path="/profile" element={<Profile/>}/>
+
+                <Route path="*" element={<NotFoundPage/>}/>
 
             </Routes>
 

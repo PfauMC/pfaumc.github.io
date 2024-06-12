@@ -31,7 +31,7 @@ const NavigationBar = () => {
                     <Nav.Link as={Link} to="/">Главная</Nav.Link>
                     <Nav.Link as={Link} to="/rules">Правила</Nav.Link>
                     <Nav.Link as={Link} to="/guild">Гильдии</Nav.Link>
-                    <Nav.Link href="https://map.pfaumc.io/">Карта мира</Nav.Link>
+                    <Nav.Link href="/map">Карта мира</Nav.Link>
                     <Nav.Link href="https://discord.gg/fXgT8jN2">Discord</Nav.Link>
 
                 </Nav>

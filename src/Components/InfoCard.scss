@@ -4,21 +4,57 @@
   padding: 20px;
   text-align: center;
   color: #ffffff;
-  width: 400px;
-  margin: 30px;
+  width: 380px;
+  margin: 30px auto;
+
+  /* Адаптация под мобильные устройства */
+
+  @media (max-width: 1200px) {
+    width: 300px;
+    margin: 10px auto;
+    padding: 10px;
+  }
+  @media (max-width: 768px) {
+    width: 250px;
+    margin: 10px auto;
+    padding: 10px;
+
+  }
+
+  @media (max-width: 480px) {
+    width: 95%;
+    margin: 10px auto;
+    padding: 5px;
+  }
 }
 
 .info-card-icon {
   width: 100px;
   height: 100px;
   margin-bottom: 10px;
+
+  /* Адаптация под мобильные устройства */
+  @media (max-width: 480px) {
+    width: 80px;
+    height: 80px;
+  }
 }
 
 .info-card h3 {
   margin: 10px 0;
   color: #00ffcc;
+
+  /* Адаптация под мобильные устройства */
+  @media (max-width: 480px) {
+    font-size: 18px;
+  }
 }
 
 .info-card p {
   font-size: 16px;
+
+  /* Адаптация под мобильные устройства */
+  @media (max-width: 480px) {
+    font-size: 14px;
+  }
 }

@@ -5,11 +5,13 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './Navbar.scss'; // Подключаем стили
 import Logo from '../img/Logo.png'; // Импортируем логотип
 
+
 const NavigationBar = () => {
     let authButton = (
         <Button variant="outline-success" as={Link} to="/Page/LogIn" className="ml-auto">
             Войти++
         </Button>
+
     )
 
     return (
@@ -33,12 +35,13 @@ const NavigationBar = () => {
                     <Nav.Link href="https://discord.gg/fXgT8jN2">Discord</Nav.Link>
 
                 </Nav>
-                <Button variant="outline-success" as={Link} to="/profile" className="ml-auto">
-                    Войти
-                </Button>
+                {/*<Button variant="outline-success" as={Link} to="/profile" className="ml-auto">*/}
+                {/*    Профиль*/}
+                {/*</Button>*/}
+
 
                 <Button variant="outline-success" as={Link} to="/login" className="ml-auto">
-                    Войти++
+                    Войти
                 </Button>
             </Navbar.Collapse>
         </Navbar>

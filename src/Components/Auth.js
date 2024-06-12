@@ -14,6 +14,7 @@ const TelegramAuth = () => {
             <button className="btn btn-primary btn-lg" onClick={handleTelegramLogin}>
                 Telegram
             </button>
+
         </div>
     );
 };

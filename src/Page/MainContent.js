@@ -8,6 +8,7 @@ import icon4 from '../img/Icon4.png';
 import icon5 from '../img/Icon5.png';
 import icon6 from '../img/Icon6.png';
 import InfoCard from "../Components/InfoCard";
+import YouTubeVideo from "../Components/Video";
 
 
 const MainContent = () => {
@@ -43,7 +44,7 @@ const MainContent = () => {
                 </div>
             </div>
             <div className="news-section">
-                <p>Тут будут новости, но пока их нет</p>
+                <YouTubeVideo videoId="syIkjsbiS50"/>
 
 
             </div>

@@ -15,7 +15,7 @@
   justify-content: left;
 
   .content-block {
-    height: 100vh;
+    height: 90vh;
     justify-content: left;
     align-items: center;
     text-align: left;
@@ -117,7 +117,7 @@
     justify-content: center;
     align-items: center;
     text-align: center;
-    height: 100vh;
+    height: 110vh;
     font-weight: 700;
     @media (min-width: 2000px) {
       margin: 0 auto;
@@ -191,13 +191,8 @@
 }
 
 .news-section {
-  height: 1000px;
-  @media (max-width: 768px) {
-    p {
-      color: rgba(26, 26, 28, 0);
-    }
+  height: 800px;
 
-  }
 
 
 }

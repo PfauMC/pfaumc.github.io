@@ -264,7 +264,7 @@ const RulesPage = () => {
 
             <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
             <div className="social-icons">
-                <a href="https://discord.com/invite/cQMVwEth" target="_blank"><i className="fab fa-discord"></i></a>
+                <a href="https://discord.pfaumc.io" target="_blank"><i className="fab fa-discord"></i></a>
                 <a href="https://t.me/pfaumc" target="_blank"><i className="fab fa-telegram-plane"></i></a>
                 <a href="https://www.tiktok.com/@pfaumc.io?_t=8maTAytrFMu&_r=1" target="_blank"><i
                     className="fab fa-tiktok"></i></a>

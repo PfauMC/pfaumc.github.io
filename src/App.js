@@ -9,11 +9,13 @@ import Footer from "./Components/Footer";
 import Profile from './Page/Profile';
 import NotFoundPage from "./Page/404";
 import MapPage from "./Page/MapPage";
+import Fireflies from './Components/Fireflies';
 
 const App = () => {
     return (
         <>
             <NavigationBar/>
+            <Fireflies/>
             <Routes>
                 <Route exact path="/" element={<MainContent/>}/>
                 <Route path="/rules" element={<RulesPage/>}/>

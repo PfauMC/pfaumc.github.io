@@ -3,14 +3,16 @@ import './Profile.scss';
 import {Badge, Button, Card, Col, Container, Row} from 'react-bootstrap';
 import avatar from '../img/AAAA.png';
 import Activ from "./Activ";
-
+import BanHistory from './BanHistory';
+import BlackBar from '../Components/BlackBar';
 
 const Profile = () => {
     const user = {
         nickname: 'DeadlySunset',
         uuid: '123e4567-e89b-12d3-a456-426614174000',
         badges: ['Мэр', 'Staff', 'DiscordKittenUWU'],
-        skinUrl: 'https://via.placeholder.com/150'
+        skinUrl: 'https://via.placeholder.com/150',
+        guilds: ['Таверна Союза Бардов']
     };
     const activityData = [
         [1, 2, 0, 4, 0],
@@ -23,10 +25,17 @@ const Profile = () => {
     ];
 
 
+    const banHistoryData = [
+        { type: 'Бан', reason: 'Использование читов', date: '01.01.2024' },
+        { type: 'Мут', reason: 'Оскорбления игроков', date: '15.01.2024' },
+        { type: 'Бан', reason: 'Гриферство', date: '20.02.2024 ' }
+    ];
+
 
 
     return (
         <div className="profile">
+            <BlackBar />
             <Container className="mt-4">
                 <Row>
                     <Col md={3}>
@@ -52,6 +61,9 @@ const Profile = () => {
                         <Card>
                             <Card.Body>
                                 <Card.Title>DeadlySunset</Card.Title>
+                                <Card.Subtitle className="mb-2 custom-gray-text">
+                                    Был на сервере 2 часа назад
+                                </Card.Subtitle>
                                 <div className="badges">
                                     {user.badges.map((badge, index) => (
                                         <Badge key={index} pill variant="primary" className="badge-item">
@@ -59,12 +71,20 @@ const Profile = () => {
                                         </Badge>
                                     ))}
                                 </div>
+                                <div className="guilds mt-4">
+                                    <h5>Гильдии:</h5>
+                                    <ul>
+                                        {user.guilds.map((guild, index) => (
+                                            <li key={index}>{guild}</li>
+                                        ))}
+                                    </ul>
+                                </div>
                                 <div className="mt-4">
-                                    <h5>Статистика</h5>
-                                    <p>Сегодня: 0.0 ч.</p>
+                                    <h5>Статистика: </h5>
                                     <p>Наиграл: 0.0 ч. Месяц: 0.0 ч. Неделя: 0.0 ч. </p>
                                 </div>
                                 <Activ data={activityData}/>
+                                <BanHistory history={banHistoryData}/>
 
                             </Card.Body>
                         </Card>

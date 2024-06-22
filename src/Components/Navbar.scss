@@ -1,33 +1,31 @@
-/* src/components/Navbar.css */
 @font-face {
-  font-family: 'MinecraftRus';
-  src: url('../Font/minecraft.ttf') format('truetype');
-}
-
-body, .navbar, .nav-link, .btn {
-  font-family: 'MinecraftRus', sans-serif;
-
+  font-family: 'Minecraft Rus';
+  src: url("../Font/minecraft.ttf") format('truetype');
 }
 
 .custom-navbar {
   width: 70%;
   margin: 0 auto;
-  background-color: rgba(0, 0, 0, 0.31);
+  background-color: rgba(0, 0, 0, 0.33);
   border-radius: 40px;
   padding-left: 30px;
   padding-right: 30px;
-  font-family: 'MinecraftRus', sans-serif; /* Используем шрифт MinecraftRus */
-  @media (min-width: 2000px) {
-    margin: 0 auto;
-    width: 1200px;
-  }
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  transition: top 0.3s; /* Плавный переход для появления/исчезания */
+  z-index: 1000;
+  font-family: 'Minecraft Rus', sans-serif;
+}
 
+.custom-navbar.is-hidden {
+  top: -80px; /* Измените это значение в зависимости от высоты вашей навигационной панели */
 }
 
 .navbar-brand img {
   width: 50px;
   height: 50px;
-
 }
 
 .nav-link {
@@ -48,10 +46,29 @@ body, .navbar, .nav-link, .btn {
   cursor: pointer;
   font-size: 16px;
   font-family: "Minecraft Rus", sans-serif;
-
 }
 
 .btn-outline-success:hover {
   background-color: #28a745;
   color: #fff;
+}
+
+
+.custom-navbar {
+  /* Your existing styles */
+}
+
+.custom-navbar.is-hidden {
+  /* Your existing styles */
+}
+
+.nav-link {
+  color: #ffffff !important;
+  margin-right: 20px;
+  transition: color 0.3s; /* Smooth transition for color change */
+}
+
+.nav-link:hover {
+  color: #00ffc4 !important; /* Blue color on hover */
+  text-decoration: none; /* Remove underline on hover */
 }

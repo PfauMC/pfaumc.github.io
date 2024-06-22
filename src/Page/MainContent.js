@@ -9,6 +9,11 @@ import icon5 from '../img/Icon5.png';
 import icon6 from '../img/Icon6.png';
 import InfoCard from "../Components/InfoCard";
 import YouTubeVideo from "../Components/Video";
+import SocialIcons from "../Components/SocialIcons";
+import { Container, Row, Col, Button } from 'react-bootstrap'; // Import Bootstrap components
+import BlackBar from '../Components/BlackBar';
+import ArrowDownButton from '../Components/ArrowDownButton';
+
 
 
 const MainContent = () => {
@@ -19,16 +24,21 @@ const MainContent = () => {
 
     return (
         <div className="main-content">
-            <div className="content-block">
-                <h1>PfauMC</h1>
-                <p>Стань частью нашего дружного сообщества и наслаждайся</p>
-                <p>игрой вместе с нами.</p>
+            <Container>
+                <div className="content-block">
+                    <h1 className="gradient-text">PfauMC</h1>
+                    <p>Стань частью нашего дружного сообщества и наслаждайся игрой вместе с нами.</p>
 
-                <button onClick={copyToClipboard} className="start-button">Начать играть</button>
-            </div>
-            <div className="features">
+
+                    <button onClick={copyToClipboard} className="start-button">Начать играть</button>
+                </div>
+            </Container>
+            <ArrowDownButton />
+            <BlackBar />
+
+            <Container className="features">
                 <h2>Почему именно мы?</h2>
-                <div className="feature-grid">
+                <Row className="feature-grid">
                     <InfoCard icon={icon1} title="ОБНОВЛЕНИЯ"
                               text="Наш сервер всегда обновляется до новейших версий игры, что позволяет игрокам наслаждаться всеми последними функциями и улучшениями."/>
                     <InfoCard icon={icon2} title="НЕТ ПРИВИЛЕГИЙ"
@@ -41,26 +51,22 @@ const MainContent = () => {
                               text="Наша администрация всегда готова решить любые проблемы или вопросы игроков, обеспечивая комфортное и приятное времяпрепровождение на сервере."/>
                     <InfoCard icon={icon6} title="ИВЕНТЫ"
                               text="На сервере есть миниигры и ивенты, которые добавляют разнообразие и интерес к игровому процессу."/>
-                </div>
-            </div>
-            <div className="news-section">
-                <YouTubeVideo videoId="syIkjsbiS50"/>
+                </Row>
+            </Container>
+
+            <BlackBar />
 
 
-            </div>
-            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
-            <div className="social-icons">
-                <a href="https://discord.pfaumc.io" target="_blank"><i className="fab fa-discord"></i></a>
-                <a href="https://t.me/pfaumc" target="_blank"><i className="fab fa-telegram-plane"></i></a>
-                <a href="https://www.tiktok.com/@pfaumc.io?_t=8maTAytrFMu&_r=1" target="_blank"><i
-                    className="fab fa-tiktok"></i></a>
-                <a href="https://youtube.com/@pfaumc?si=wNfsT74Iu_mwaDbQ" target="_blank"><i
-                    className="fab fa-youtube"></i></a>
-                <a href="https://vk.com/pfaumc" target="_blank"><i className="fab fa-vk"></i></a>
-            </div>
+            <Container className="news-section">
+                <Row>
+                    <Col>
+                        <YouTubeVideo videoId="syIkjsbiS50"/>
+                    </Col>
+                </Row>
+            </Container>
+
+            <SocialIcons/>
         </div>
-
-
     );
 };
 

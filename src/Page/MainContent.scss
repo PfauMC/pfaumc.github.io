@@ -7,33 +7,51 @@
   font-family: 'ArchivoBlack';
   src: url("../Font/ArchivoBlack-Regular.ttf") format('truetype');
 }
+.body{
 
+}
 
 .main-content {
   text-align: center;
+  width: 100%;
   padding: 2rem;
   justify-content: left;
+  background-image: url('../img/Body.jpg');
+  background-size: cover;
+  background-position: center;
+
+  h1{
+    padding-top: 100px;
+  }
+
 
   .content-block {
     height: 90vh;
     justify-content: left;
     align-items: center;
     text-align: left;
-    padding-left: 150px;
+
+
+
     @media (min-width: 2000px) {
       margin: 0 auto;
       width: 1920px;
     }
 
-    h1 {
+    .gradient-text {
       font-size: 140px;
       padding-top: 200px;
       font-family: ArchivoBlack, sans-serif;
-      background: linear-gradient(7deg, #10c0ff, #08ff00);
+      background: linear-gradient(50deg, #10c0ff, #08ff00); /* Увеличим угол наклона градиента */
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-
+      animation: gradientAnimation 8s ease infinite; /* Добавим анимацию */
     }
+
+
+
+
+
 
     p {
       font-size: 1.5rem;
@@ -61,9 +79,9 @@
 
 
     @media (max-width: 1200px) {
-      padding-left: 100px;
+
       height: 700px;
-      h1 {
+      .gradient-text {
         font-size: 100px;
         padding-top: 150px;
       }
@@ -77,9 +95,9 @@
     }
 
     @media (max-width: 768px) {
-      padding-left: 50px;
+
       height: 500px;
-      h1 {
+      .gradient-text {
         font-size: 80px;
         padding-top: 100px;
       }
@@ -93,9 +111,9 @@
     }
 
     @media (max-width: 480px) {
-      padding-left: 20px;
+
       height: 400px;
-      h1 {
+      .gradient-text {
         font-size: 60px;
         padding-top: 50px;
       }
@@ -117,8 +135,13 @@
     justify-content: center;
     align-items: center;
     text-align: center;
-    height: 110vh;
     font-weight: 700;
+    /* Remove height and use min-height */
+    min-height: 90vh; /* Adjust this as needed */
+
+    /* Ensure spacing */
+    margin-bottom: 3rem; /* Example margin for space below */
+
     @media (min-width: 2000px) {
       margin: 0 auto;
       width: 1920px;
@@ -126,6 +149,7 @@
 
     h2 {
       margin-bottom: 2rem;
+      margin-top: 6rem; /* Adjust top margin for spacing */
       font-size: 40px;
       font-weight: 700;
       font-family: "Minecraft Rus", sans-serif;
@@ -139,26 +163,27 @@
     }
 
     @media (max-width: 1200px) {
-      height: 1200px;
+      min-height: 1200px;
       h2 {
         font-size: 30px;
       }
     }
 
     @media (max-width: 768px) {
-      height: 1300px;
-      h2 {
-        font-size: 20px;
-      }
-    }
-    @media (max-width: 480px) {
-      height: 1600px;
+      min-height: 1300px;
       h2 {
         font-size: 20px;
       }
     }
 
+    @media (max-width: 480px) {
+      min-height: 1600px;
+      h2 {
+        font-size: 20px;
+      }
+    }
   }
+
 
   .announcement {
     margin-top: 3rem;
@@ -192,6 +217,7 @@
 
 .news-section {
   height: 800px;
+  margin-top: 5rem;
 
 
 

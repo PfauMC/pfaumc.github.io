@@ -1,6 +1,7 @@
 .map {
   height: 900px;
-  margin: 10px 0 100px 0;
+
+
 
 
   @media (max-width: 1600px) {
@@ -16,4 +17,10 @@
   @media (max-width: 500px) {
     height: 560px;
   }
+}
+
+.back_img{
+  background-image: url('../img/Frame.jpg');
+  background-size: cover;
+  background-position: center;
 }

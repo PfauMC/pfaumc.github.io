@@ -1,0 +1,19 @@
+.arrowButton {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.arrowIcon {
+  transition: opacity 0.3s ease;
+  filter: invert(100%);
+  opacity: 0.5;
+}
+
+.arrowIcon:hover {
+  opacity: 0.8;
+}

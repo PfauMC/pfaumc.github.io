@@ -1,11 +1,13 @@
 import React from 'react'
 import './GuildPage.scss'
+import SocialIcons from "../Components/SocialIcons"
 
 export default function GuildPage() {
     return (
-        <div className="Guildpage">
+        <div className="back_img">
             <div className="GuildContent">
-                <h1>Скоро..</h1>
+
+                <SocialIcons/>
             </div>
         </div>
     )

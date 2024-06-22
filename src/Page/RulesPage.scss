@@ -3,17 +3,19 @@
   font-family: 'ArchivoBlack';
   src: url('../Font/ArchivoBlack-Regular.ttf') format('truetype');
 }
-
+.back_img{
+  background-image: url('../img/Frame.jpg');
+  background-size: cover;
+  background-position: center;
+}
 .rules-page {
+
   padding: 20px;
   text-align: center;
   color: white;
   background: rgba(0, 0, 0, 0.56); // Полупрозрачный черный фон
   border-radius: 10px;
-  margin-left: 150px;
-  margin-right: 150px;
-  margin-top: 20px;
-  margin-bottom: 20px;
+  margin-top: 80px;
   font-family: ArchivoBlack, sans-serif;
   @media (min-width: 2000px) {
     margin: 0 auto;

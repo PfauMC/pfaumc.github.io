@@ -1,0 +1,18 @@
+.social-icons-container {
+  position: fixed;
+  bottom: 20px; /* отступ от нижнего края экрана */
+  right: 20px; /* отступ от правого края экрана */
+  z-index: 1000; /* уровень z-index для установки поверх других элементов */
+}
+
+.social-icons-container a {
+  display: inline-block;
+  margin-left: 10px; /* расстояние между иконками */
+  font-size: 24px; /* размер иконок */
+  color: #333; /* цвет иконок */
+  transition: color 0.3s ease; /* плавное изменение цвета при наведении */
+}
+
+.social-icons-container a:hover {
+  color: #00eaff; /* цвет при наведении */
+}

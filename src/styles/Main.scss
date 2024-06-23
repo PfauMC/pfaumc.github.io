@@ -5,6 +5,18 @@ body {
   background-size: cover;
   background-position: center;
   color: #ffffff;
+  user-select: none; /* Стандартное свойство для запрета выделения текста */
+  -moz-user-select: none; /* Для Firefox */
+  -webkit-user-select: none; /* Для Safari и Chrome */
+  -ms-user-select: none; /* Для IE/Edge */
+
+}
+img {
+  -webkit-user-drag: none; /* Для Safari и Chrome */
+  -khtml-user-drag: none; /* Для Konqueror */
+  -moz-user-drag: none; /* Для Firefox */
+  -o-user-drag: none; /* Для Opera */
+  user-drag: none; /* Стандартное свойство */
 }
 
 .main-content {

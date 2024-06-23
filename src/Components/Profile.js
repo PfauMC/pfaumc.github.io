@@ -5,6 +5,7 @@ import avatar from '../img/AAAA.png';
 import Activ from "./Activ";
 import BanHistory from './BanHistory';
 import BlackBar from '../Components/BlackBar';
+import Heatmap from './Heatmap';
 
 const Profile = () => {
     const user = {
@@ -14,15 +15,15 @@ const Profile = () => {
         skinUrl: 'https://via.placeholder.com/150',
         guilds: ['Таверна Союза Бардов']
     };
-    const activityData = [
-        [1, 2, 0, 4, 0],
-        [0, 5, 3, 2, 1],
-        [2, 4, 0, 3, 0],
-        [1, 3, 2, 4, 0],
-        [3, 0, 2, 1, 4],
-        [0, 2, 4, 3, 1],
-        [4, 0, 1, 2, 3]
-    ];
+    // const activityData = [
+    //     [1, 2, 0, 4, 0],
+    //     [0, 5, 3, 2, 1],
+    //     [2, 4, 0, 3, 0],
+    //     [1, 3, 2, 4, 0],
+    //     [3, 0, 2, 1, 4],
+    //     [0, 2, 4, 3, 1],
+    //     [4, 0, 1, 2, 3]
+    // ];
 
 
     const banHistoryData = [
@@ -58,7 +59,7 @@ const Profile = () => {
                         </div>
                     </Col>
                     <Col md={6}>
-                        <Card>
+                        <Card className="castom_profile">
                             <Card.Body>
                                 <Card.Title>DeadlySunset</Card.Title>
                                 <Card.Subtitle className="mb-2 custom-gray-text">
@@ -83,7 +84,7 @@ const Profile = () => {
                                     <h5>Статистика: </h5>
                                     <p>Наиграл: 0.0 ч. Месяц: 0.0 ч. Неделя: 0.0 ч. </p>
                                 </div>
-                                <Activ data={activityData}/>
+                                <Heatmap/>
                                 <BanHistory history={banHistoryData}/>
 
                             </Card.Body>

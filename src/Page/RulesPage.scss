@@ -15,7 +15,7 @@
   color: white;
   background: rgba(0, 0, 0, 0.56); // Полупрозрачный черный фон
   border-radius: 10px;
-  margin-top: 80px;
+
   font-family: ArchivoBlack, sans-serif;
   @media (min-width: 2000px) {
     margin: 0 auto;
@@ -37,6 +37,7 @@
     font-size: 1rem;
     margin-bottom: 2rem;
     color: #cccccc;
+    padding-top: 60px;
   }
 
   h3 {

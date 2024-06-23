@@ -24,7 +24,7 @@ const Fireflies = () => {
 
     // Обработчик для добавления светлячков через интервал времени
     useEffect(() => {
-        const interval = setInterval(addFirefly, 1000); // добавляем светлячков каждую секунду
+        const interval = setInterval(addFirefly, 1300); // добавляем светлячков каждую секунду
 
         return () => {
             clearInterval(interval);

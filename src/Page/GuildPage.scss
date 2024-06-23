@@ -1,9 +1,26 @@
 .GuildContent {
   height: 1080px;
-  h1 {
-
-  }
 }
-.back_img{
+.back_img {
   background-image: url('../img/Frame.jpg');
+  background-size: cover;
+  background-position: center;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.GuildContent {
+  position: relative;
+  z-index: 1;
+  padding: 20px;
+  .guild-card-row {
+    margin-left: -30px; /* Учет отрицательного маргинала Bootstrap для компенсации */
+    margin-right: -30px; /* Учет отрицательного маргинала Bootstrap для компенсации */
+
+    .col {
+      padding: 0 30px; /* Увеличение отступа между карточками */
+    }
+  }
 }

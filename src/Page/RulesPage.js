@@ -3,11 +3,14 @@ import './RulesPage.scss';
 import SocialIcons from "../Components/SocialIcons"
 import BlackBar from '../Components/BlackBar';
 import ArrowDownButton from '../Components/ArrowDownButton';
+import Fireflies from '../Components/Fireflies';
 
 const RulesPage = () => {
     return (
         <div className="back_img">
-            <BlackBar />
+
+
+            <Fireflies/>
             <ArrowDownButton />
             <div className="rules-page ">
                 <h2>Дата последнего редактирования: 17 ноября 2023</h2>
@@ -297,8 +300,10 @@ const RulesPage = () => {
                 </div>
 
 
+
                 <SocialIcons/>
             </div>
+
         </div>
 
 

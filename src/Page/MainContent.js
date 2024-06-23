@@ -13,6 +13,7 @@ import SocialIcons from "../Components/SocialIcons";
 import { Container, Row, Col, Button } from 'react-bootstrap'; // Import Bootstrap components
 import BlackBar from '../Components/BlackBar';
 import ArrowDownButton from '../Components/ArrowDownButton';
+import Fireflies from '../Components/Fireflies';
 
 
 
@@ -24,6 +25,7 @@ const MainContent = () => {
 
     return (
         <div className="main-content">
+            <Fireflies/>
             <Container>
                 <div className="content-block">
                     <h1 className="gradient-text">PfauMC</h1>
@@ -34,7 +36,7 @@ const MainContent = () => {
                 </div>
             </Container>
             <ArrowDownButton />
-            <BlackBar />
+            <BlackBar/>
 
             <Container className="features">
                 <h2>Почему именно мы?</h2>

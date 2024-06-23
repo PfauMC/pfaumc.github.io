@@ -1,0 +1,68 @@
+@font-face {
+  font-family: 'Minecraft Rus';
+  src: url("../Font/minecraft.ttf") format('truetype');
+}
+
+@font-face {
+  font-family: 'ArchivoBlack';
+  src: url("../Font/ArchivoBlack-Regular.ttf") format('truetype');
+}
+.guild-card {
+  width: 295px; /* Размер карточки */
+  height: 345px; /* Размер карточки */
+  background-image: url('../img/GuildCard.png');
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  margin-right: 60px; /* Отступ между карточками */
+  margin-bottom: 60px; /* Отступ между карточками */
+
+  .guild-flag {
+    width: 80px;
+    height: 150px;
+    position: absolute;
+    top: 30px;
+    right: 40px;
+  }
+
+  .card-body {
+    display: flex;
+    align-items: flex-start;
+    padding: 20px;
+    box-sizing: border-box;
+    height: 100%;
+  }
+
+  .text-content {
+    flex-grow: 1;
+    padding-right: 100px; /* Отступ для учета флага */
+    color: black;
+    padding-left: 15px;
+    font-family: Minecraft Rus, sans-serif;
+    h5{
+      padding-bottom: 20px;
+      padding-top: 20px;
+    }
+
+  }
+
+  .card-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+  }
+
+  .card-text {
+    font-size: 0.9rem;
+  }
+
+  @media (max-width: 768px) {
+    .guild-card {
+      width: 100%; /* При малых экранах, карточка занимает всю ширину */
+      margin-right: 0;
+      margin-bottom: 40px;
+    }
+  }
+}
+
+
+

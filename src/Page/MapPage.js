@@ -5,15 +5,17 @@ import BlackBar from '../Components/BlackBar';
 
 export default function MapPage() {
     return (
-        <div className="back_img">
-            <BlackBar />
+        <div className="MapPage">
             <div className="map">
+                <BlackBar/>
                 <iframe src="https://map.pfaumc.io/" width="100%" height="100%">
                 </iframe>
+
                 <SocialIcons/>
             </div>
-            <BlackBar />
+            <BlackBar/>
         </div>
+
 
 
 

@@ -15,7 +15,7 @@ const App = () => {
     return (
         <>
             <NavigationBar/>
-            <Fireflies/>
+
             <Routes>
                 <Route exact path="/" element={<MainContent/>}/>
                 <Route path="/rules" element={<RulesPage/>}/>

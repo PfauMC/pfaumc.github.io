@@ -1,8 +1,5 @@
 .map {
-  height: 900px;
-
-
-
+  height: 980px;
 
   @media (max-width: 1600px) {
     height: 850px;
@@ -19,7 +16,8 @@
   }
 }
 
-.back_img{
+
+.MapPage{
   background-image: url('../img/Frame.jpg');
   background-size: cover;
   background-position: center;

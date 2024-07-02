@@ -1,5 +1,9 @@
 .GuildContent {
   height: 1080px;
+  @media (max-width: 580px) {
+    height: 100%;
+
+  }
 }
 .back_img {
   background-image: url('../img/Frame.jpg');

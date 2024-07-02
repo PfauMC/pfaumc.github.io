@@ -71,3 +71,26 @@
 .castom_profile{
   width: 720px;
 }
+
+@media (max-width: 1080px) {
+  .castom_profile{
+    width: 520px;
+  }
+}
+
+@media (max-width: 770px) {
+  .profile{
+    height: 1700px;
+  }
+  .castom_profile{
+    width: 520px;
+  }
+}
+@media (max-width: 540px) {
+  .profile{
+    height: 1700px;
+  }
+  .castom_profile{
+    width: 100%;
+  }
+}

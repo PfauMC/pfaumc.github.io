@@ -1,0 +1,23 @@
+.login{
+
+
+  background-image: url('../img/Frame.jpg');
+  background-size: cover;
+  background-position: center;
+
+  height: 1080px;
+
+  @media (max-width: 1000px) {
+
+      height: 700px;
+
+
+  }
+  @media (max-width: 800px) {
+
+      height: 800px;
+
+
+  }
+
+}

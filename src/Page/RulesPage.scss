@@ -8,6 +8,8 @@
   background-size: cover;
   background-position: center;
 }
+
+
 .rules-page {
 
   padding: 20px;
@@ -20,6 +22,16 @@
   @media (min-width: 2000px) {
     margin: 0 auto;
     width: 1920px;
+  }
+  .image-container {
+    text-align: center;
+    margin: 20px 0;
+  }
+  .image-container img {
+    border-radius: 15px;
+    border: 2px solid white;
+    max-width: 100%;
+    height: auto;
   }
 
   h1 {

@@ -49,9 +49,9 @@ const NavigationBar = () => {
                     <Nav.Link href="/map">Карта мира</Nav.Link>
                     <Nav.Link href="https://discord.pfaumc.io">Discord</Nav.Link>
                 </Nav>
-                {/*<Button variant="outline-success" as={Link} to="/profile" className="ml-auto">*/}
-                {/*    Профиль*/}
-                {/*</Button>*/}
+                <Button variant="outline-success" as={Link} to="/profile" className="ml-auto">
+                    Профиль
+                </Button>
                 <Button variant="outline-success" as={Link} to="/login">
                     Войти
                 </Button>

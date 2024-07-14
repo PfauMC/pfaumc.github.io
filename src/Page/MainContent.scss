@@ -69,8 +69,9 @@
       padding: 15px 30px;
       cursor: pointer;
       font-size: 25px;
-      font-family: ArchivoBlack, sans-serif;
+
       font-weight: bold;
+      font-family: "Minecraft Rus", sans-serif;
 
       &:hover {
         background-color: #00cc99;
@@ -136,11 +137,10 @@
     align-items: center;
     text-align: center;
     font-weight: 700;
-    /* Remove height and use min-height */
-    min-height: 90vh; /* Adjust this as needed */
+    min-height: 90vh;
 
-    /* Ensure spacing */
-    margin-bottom: 3rem; /* Example margin for space below */
+
+    margin-bottom: 3rem;
 
     @media (min-width: 2000px) {
       margin: 0 auto;
@@ -149,7 +149,7 @@
 
     h2 {
       margin-bottom: 2rem;
-      margin-top: 6rem; /* Adjust top margin for spacing */
+      margin-top: 6rem;
       font-size: 40px;
       font-weight: 700;
       font-family: "Minecraft Rus", sans-serif;

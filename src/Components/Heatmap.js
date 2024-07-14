@@ -6,15 +6,45 @@ const days = ['Пн', "", 'Чт ', ' ', 'Вс ', ' ', ' '];
 const months = ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'];
 const contributions = [
     // Пример данных о вкладе (один квадрат - одна дата)
-    { day: 0, week: 0, count: 1 },
+
     { day: 1, week: 0, count: 2 },
     { day: 2, week: 0, count: 3 },
     { day: 3, week: 0, count: 4 },
-    { day: 4, week: 0, count: 5 },
+    { day: 4, week: 0, count: 3 },
     { day: 5, week: 0, count: 3 },
     { day: 6, week: 0, count: 2 },
-    // добавьте остальные данные для всех 52 недель
-    // В вашем примере их 37
+
+    { day: 0, week: 1, count: 2 },
+    { day: 1, week: 1, count: 5 },
+    { day: 2, week: 1, count: 4 },
+    { day: 3, week: 1, count: 4 },
+    { day: 4, week: 1, count: 5 },
+    { day: 6, week: 1, count: 3 },
+
+    { day: 0, week: 2, count: 3 },
+    { day: 1, week: 2, count: 4 },
+    { day: 2, week: 2, count: 4 },
+    { day: 3, week: 2, count: 4 },
+    { day: 4, week: 2, count: 4 },
+    { day: 5, week: 2, count: 4 },
+    { day: 6, week: 2, count: 3 },
+
+    { day: 0, week: 3, count: 2 },
+    { day: 1, week: 3, count: 2 },
+    { day: 2, week: 3, count: 3 },
+    { day: 3, week: 3, count: 1 },
+    { day: 4, week: 3, count: 1 },
+    { day: 5, week: 3, count: 2 },
+    { day: 6, week: 3, count: 0 },
+
+
+    { day: 0, week: 4, count: 1 },
+    { day: 1, week: 4, count: 2 },
+    { day: 2, week: 4, count: 1 },
+    { day: 3, week: 4, count: 1 },
+
+
+
 ];
 
 const getColor = (count) => {

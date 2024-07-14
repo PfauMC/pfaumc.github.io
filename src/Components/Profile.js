@@ -15,15 +15,7 @@ const Profile = () => {
         skinUrl: 'https://via.placeholder.com/150',
         guilds: ['Таверна Союза Бардов']
     };
-    // const activityData = [
-    //     [1, 2, 0, 4, 0],
-    //     [0, 5, 3, 2, 1],
-    //     [2, 4, 0, 3, 0],
-    //     [1, 3, 2, 4, 0],
-    //     [3, 0, 2, 1, 4],
-    //     [0, 2, 4, 3, 1],
-    //     [4, 0, 1, 2, 3]
-    // ];
+
 
 
     const banHistoryData = [

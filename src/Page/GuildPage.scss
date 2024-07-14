@@ -2,6 +2,9 @@
   height: 1080px;
   @media (max-width: 580px) {
     height: 100%;
+    .col{
+      padding: 0 20px;
+    }
 
   }
 }
@@ -18,7 +21,7 @@
 .GuildContent {
   position: relative;
   z-index: 1;
-  padding: 20px;
+  padding: 40px;
   .guild-card-row {
     margin-left: -30px; /* Учет отрицательного маргинала Bootstrap для компенсации */
     margin-right: -30px; /* Учет отрицательного маргинала Bootstrap для компенсации */

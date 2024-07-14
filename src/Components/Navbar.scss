@@ -24,7 +24,7 @@
 }
 
 .custom-navbar.is-hidden {
-  top: -80px; /* Измените это значение в зависимости от высоты вашей навигационной панели */
+  top: -80px; /* значение в зависимости от высоты панели */
 
 }
 
@@ -60,21 +60,15 @@
 }
 
 
-.custom-navbar {
-  /* Your existing styles */
-}
 
-.custom-navbar.is-hidden {
-  /* Your existing styles */
-}
 
 .nav-link {
   color: #ffffff !important;
   margin-right: 20px;
-  transition: color 0.3s; /* Smooth transition for color change */
+  transition: color 0.3s;
 }
 
 .nav-link:hover {
-  color: #00ffc4 !important; /* Blue color on hover */
-  text-decoration: none; /* Remove underline on hover */
+  color: #00ffc4 !important;
+  text-decoration: none;
 }

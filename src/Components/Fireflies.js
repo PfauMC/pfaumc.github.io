@@ -1,6 +1,5 @@
-import "./Fireflies.scss"
+import "./Fireflies.scss";
 import React, { useState, useEffect } from 'react';
-
 
 const Fireflies = () => {
     const [fireflies, setFireflies] = useState([]);
@@ -14,7 +13,14 @@ const Fireflies = () => {
             speedX: Math.random() * 2 - 1, // скорость по X
             speedY: Math.random() * 2 - 1, // скорость по Y
         };
+
+        // Добавляем светлячка в массив
         setFireflies(prevFireflies => [...prevFireflies, newFirefly]);
+
+        // Удаляем светлячка через 15 секунд
+        setTimeout(() => {
+            removeFirefly(newFirefly.id);
+        }, 15000);
     };
 
     // Удаление светлячка

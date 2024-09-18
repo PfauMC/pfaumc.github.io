@@ -13,7 +13,7 @@ const RulesPage = () => {
             <Fireflies/>
             <ArrowDownButton />
             <div className="rules-page ">
-                <h2>Дата последнего редактирования: 17 ноября 2023</h2>
+                <h2>Дата последнего редактирования: 18 сентября 2024</h2>
                 <h1>ОСНОВНЫЕ ТЕРМИНЫ</h1>
                 <div className="rules-content">
                     <div className="rule">

@@ -557,7 +557,7 @@ const RulesPage = () => {
 <div className="rules-content">
     <div className="rule">
         <strong>1.1</strong> Чтобы подать апелляцию, необходимо отправить заявку в специальном канале Discord: 
-        <a href="https://discord.com/channels/1111732119618723890/1286959569561456642">Заявки на разбан</a>.
+        <a href="https://discord.com/channels/1111732119618723890/1286961793830355024">Заявки на разбан</a>.
     </div>
     <div className="rule">
         <strong>1.2</strong> В заявке должны быть указаны следующие данные:

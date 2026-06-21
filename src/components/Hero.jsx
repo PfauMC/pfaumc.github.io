@@ -117,7 +117,7 @@ export default function Hero() {
 
           {/* Right — mascot */}
           <div
-            className={`relative flex items-center justify-center py-4 lg:py-0 overflow-hidden transition-all duration-1000 delay-300 ${
+            className={`relative flex items-center justify-center py-4 lg:py-0 transition-all duration-1000 delay-300 ${
               visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
             }`}
           >

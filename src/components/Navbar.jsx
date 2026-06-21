@@ -41,13 +41,11 @@ export default function Navbar() {
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-in-out ${
         scrolled
-          ? 'py-3 backdrop-blur-xl border-b border-white/8 shadow-[0_4px_30px_rgba(0,0,0,0.2)]'
+          ? 'py-3 backdrop-blur-xl shadow-[0_4px_30px_rgba(0,0,0,0.15)]'
           : 'py-5 backdrop-blur-none'
       }`}
       style={{
-        background: scrolled
-          ? 'rgba(var(--c-bg-main), 0.78)'
-          : 'transparent',
+        background: scrolled ? 'rgba(var(--c-bg-main), 0.78)' : 'transparent',
       }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
@@ -171,6 +169,15 @@ export default function Navbar() {
           </div>
         </div>
       </div>
+
+      {/* Gradient border bottom */}
+      <div
+        className="absolute bottom-0 left-0 right-0 h-px pointer-events-none transition-opacity duration-500"
+        style={{
+          opacity: scrolled ? 1 : 0,
+          background: 'linear-gradient(90deg, transparent 0%, rgba(29,165,232,0.15) 25%, rgba(29,165,232,0.35) 50%, rgba(29,165,232,0.15) 75%, transparent 100%)',
+        }}
+      />
     </header>
   )
 }

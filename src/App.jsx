@@ -8,6 +8,7 @@ import Modes from './components/Modes'
 import Rules from './components/Rules'
 import Footer from './components/Footer'
 import ModePage from './pages/ModePage'
+import DonatePage from './pages/DonatePage'
 
 function HomePage() {
   return (
@@ -77,6 +78,7 @@ export default function App() {
         <Navbar />
         <Routes>
           <Route path="/" element={<HomePage />} />
+          <Route path="/donate" element={<DonatePage />} />
           <Route path="/:modeId" element={<ModePage />} />
         </Routes>
         <Footer />

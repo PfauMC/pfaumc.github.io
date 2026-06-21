@@ -59,24 +59,17 @@ export default function Navbar() {
         </nav>
 
         {/* Social + CTA */}
-        <div className="hidden md:flex items-center gap-3">
-          <a
-            href="https://t.me/pfaumc"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-8 h-8 flex items-center justify-center text-text-light/60 hover:text-accent transition-colors"
-            aria-label="Telegram"
-          >
+        <div className="hidden md:flex items-center gap-2">
+          <Link to="/donate" className="btn-ghost text-sm py-2 px-4">
+            💎 Донат
+          </Link>
+          <a href="https://t.me/pfaumc" target="_blank" rel="noopener noreferrer" aria-label="Telegram"
+            className="w-9 h-9 flex items-center justify-center rounded-lg text-text-light/60 hover:text-[#29B6F6] hover:bg-white/5 transition-colors">
             <TelegramIcon className="w-5 h-5" />
           </a>
-          <a
-            href="https://discord.gg/BPmxWwdChY"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-primary text-sm py-2 px-4"
-          >
-            <DiscordIcon className="w-4 h-4" />
-            Discord
+          <a href="https://discord.gg/BPmxWwdChY" target="_blank" rel="noopener noreferrer" aria-label="Discord"
+            className="w-9 h-9 flex items-center justify-center rounded-lg text-text-light/60 hover:text-[#5865F2] hover:bg-white/5 transition-colors">
+            <DiscordIcon className="w-5 h-5" />
           </a>
         </div>
 
@@ -105,23 +98,17 @@ export default function Navbar() {
             </button>
           ))}
           <div className="flex gap-2 mt-2">
-            <a
-              href="https://t.me/pfaumc"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1 inline-flex items-center justify-center gap-2 btn-ghost text-sm py-2"
-            >
-              <TelegramIcon className="w-4 h-4" />
-              Telegram
+            <Link to="/donate" onClick={() => setMenuOpen(false)}
+              className="flex-1 inline-flex items-center justify-center gap-2 btn-ghost text-sm py-2">
+              💎 Донат
+            </Link>
+            <a href="https://t.me/pfaumc" target="_blank" rel="noopener noreferrer"
+              className="flex-1 inline-flex items-center justify-center gap-2 btn-ghost text-sm py-2">
+              <TelegramIcon className="w-4 h-4" /> TG
             </a>
-            <a
-              href="https://discord.gg/BPmxWwdChY"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1 btn-primary text-sm justify-center"
-            >
-              <DiscordIcon className="w-4 h-4" />
-              Discord
+            <a href="https://discord.gg/BPmxWwdChY" target="_blank" rel="noopener noreferrer"
+              className="flex-1 inline-flex items-center justify-center gap-2 btn-ghost text-sm py-2">
+              <DiscordIcon className="w-4 h-4" /> DS
             </a>
           </div>
         </div>

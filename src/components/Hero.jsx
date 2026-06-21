@@ -105,7 +105,7 @@ export default function Hero() {
               {[
                 { value: '2', label: 'Режима' },
                 { value: '24/7', label: 'Онлайн' },
-                { value: '1.21', label: 'Версия' },
+                { value: '26.2', label: 'Версия' },
               ].map((stat) => (
                 <div key={stat.label}>
                   <div className="font-mono text-2xl font-bold text-gradient">{stat.value}</div>

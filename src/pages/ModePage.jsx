@@ -91,7 +91,7 @@ export default function ModePage() {
                     />
                   ),
                 },
-                { label: 'Версия', value: stats?.version ?? '1.21', icon: <CubeIcon /> },
+                { label: 'Версия', value: stats?.version ?? '26.2', icon: <CubeIcon /> },
                 { label: 'Режим работы', value: '24/7', icon: <ClockIcon /> },
                 { label: 'IP адрес', value: 'play.pfaumc.ru', icon: <ServerIcon /> },
               ].map((s) => (

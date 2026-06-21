@@ -12,11 +12,11 @@ export function useServerStats() {
           online: data.online ?? false,
           players: data.players?.online ?? 0,
           maxPlayers: data.players?.max ?? 0,
-          version: data.version ?? '1.21',
+          version: data.version ?? '26.2',
         })
       })
       .catch(() => {
-        setStats({ online: false, players: 0, maxPlayers: 0, version: '1.21' })
+        setStats({ online: false, players: 0, maxPlayers: 0, version: '26.2' })
       })
       .finally(() => setLoading(false))
   }, [])

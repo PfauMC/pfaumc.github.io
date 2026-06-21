@@ -1,0 +1,139 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: 'Monocraft';
+  src: url('https://cdn.jsdelivr.net/gh/IdreesInc/Monocraft@3.0/fonts/Monocraft.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    @apply bg-bg-main text-white font-sans;
+    overflow-x: hidden;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+  }
+
+  img {
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
+    user-drag: none;
+    pointer-events: none;
+  }
+
+  /* Restore pointer events for logo and linked images */
+  a img, button img, [role="button"] img {
+    pointer-events: auto;
+  }
+
+  ::selection {
+    background: rgba(29, 165, 232, 0.3);
+    color: #fff;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-bg-main;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(29, 165, 232, 0.4);
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(29, 165, 232, 0.7);
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center gap-2 px-6 py-3 bg-accent hover:bg-accent-dark text-white font-semibold rounded-lg transition-all duration-200 hover:scale-105 hover:shadow-[0_0_20px_rgba(29,165,232,0.4)];
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center gap-2 px-6 py-3 border border-accent/40 hover:border-accent text-accent hover:bg-accent/10 font-semibold rounded-lg transition-all duration-200;
+  }
+
+  .section-title {
+    @apply font-mono text-3xl md:text-4xl font-bold text-white mb-4;
+  }
+
+  .section-subtitle {
+    @apply text-text-light text-lg leading-relaxed;
+  }
+
+  .card {
+    @apply bg-bg-card border border-white/5 rounded-2xl p-6 hover:border-accent/20 transition-all duration-300;
+  }
+
+  .glow-dot {
+    @apply absolute rounded-full pointer-events-none;
+    background: radial-gradient(circle, rgba(29, 165, 232, 0.15) 0%, transparent 70%);
+  }
+
+  .nav-link {
+    @apply text-text-light hover:text-white font-medium transition-colors duration-200 relative;
+  }
+
+  .nav-link::after {
+    content: '';
+    @apply absolute -bottom-1 left-0 w-0 h-0.5 bg-accent transition-all duration-200;
+  }
+
+  .nav-link:hover::after {
+    @apply w-full;
+  }
+
+  .copy-toast {
+    @apply fixed bottom-6 left-1/2 -translate-x-1/2 bg-accent text-white px-4 py-2 rounded-lg font-medium text-sm z-50 transition-all duration-300;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    background: linear-gradient(135deg, #1DA5E8 0%, #7DD3F8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .border-gradient {
+    border: 1px solid transparent;
+    background-clip: padding-box;
+    background-image: linear-gradient(#1B2330, #1B2330),
+      linear-gradient(135deg, rgba(29,165,232,0.5) 0%, rgba(29,165,232,0.1) 100%);
+    background-origin: border-box;
+  }
+
+  .grid-bg {
+    background-image:
+      linear-gradient(rgba(29, 165, 232, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(29, 165, 232, 0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+
+  .animate-delay-100 { animation-delay: 100ms; }
+  .animate-delay-200 { animation-delay: 200ms; }
+  .animate-delay-300 { animation-delay: 300ms; }
+  .animate-delay-400 { animation-delay: 400ms; }
+  .animate-delay-500 { animation-delay: 500ms; }
+
+  .opacity-0-init { opacity: 0; }
+}

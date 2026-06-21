@@ -39,10 +39,16 @@ export default function Navbar() {
 
   return (
     <header
-      style={{ position: 'relative', zIndex: 50 }}
-      className={`fixed top-0 left-0 right-0 transition-all duration-300 ${
-        scrolled ? 'bg-bg-main/95 backdrop-blur-md border-b border-white/5 py-3' : 'py-5'
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-in-out ${
+        scrolled
+          ? 'py-3 backdrop-blur-xl border-b border-white/8 shadow-[0_4px_30px_rgba(0,0,0,0.2)]'
+          : 'py-5 backdrop-blur-none'
       }`}
+      style={{
+        background: scrolled
+          ? 'rgba(var(--c-bg-main), 0.78)'
+          : 'transparent',
+      }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
         {/* Logo */}

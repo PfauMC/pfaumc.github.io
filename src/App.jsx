@@ -84,7 +84,7 @@ export default function App() {
       <div className={fadeOut || !loading ? 'visible' : 'invisible'}>
         <Fireflies count={22} />
         <Navbar />
-        <div style={{ position: 'relative', zIndex: 2 }}>
+        <div>
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/donate" element={<DonatePage />} />

@@ -39,7 +39,7 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="py-14 grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
           {/* Brand */}
-          <div className="sm:col-span-2">
+          <div className="sm:col-span-2 lg:col-span-1">
             <Link to="/" className="flex items-center gap-2.5 mb-4 w-fit">
               <PfauIcon className="w-7 h-7" />
               <span className="font-mono font-bold text-xl">
@@ -52,7 +52,7 @@ export default function Footer() {
             </p>
             <button
               onClick={copyIP}
-              className="group flex items-center gap-2.5 bg-bg-main/60 border border-white/10 hover:border-accent/40 rounded-lg px-4 py-2.5 transition-all duration-200 hover:bg-accent/5"
+              className="group flex items-center gap-2.5 bg-bg-main/60 border border-white/10 hover:border-accent/40 rounded-lg px-4 py-2.5 transition-all duration-200 hover:bg-accent/5 mb-4"
             >
               <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
               <span className="font-mono text-sm font-semibold text-white">{SERVER_IP}</span>
@@ -60,6 +60,10 @@ export default function Footer() {
                 {copied ? <span className="text-green-400">✓</span> : 'копировать'}
               </span>
             </button>
+            <div className="space-y-1">
+              <p className="text-text-light/50 text-xs">ИНН: 231227267502</p>
+              <p className="text-text-light/50 text-xs">Email: <a href="mailto:contact@goyland.ru" className="hover:text-white transition-colors">contact@goyland.ru</a></p>
+            </div>
           </div>
 
           {/* Nav */}
@@ -109,13 +113,39 @@ export default function Footer() {
               </li>
             </ul>
           </div>
+
+          {/* Документы */}
+          <div>
+            <h4 className="font-semibold text-white text-sm mb-4">Документы</h4>
+            <ul className="space-y-2.5">
+              <li>
+                <a href="/agreement.pdf" target="_blank" rel="noopener noreferrer"
+                  className="text-text-light/60 hover:text-white text-sm transition-colors">
+                  Пользовательское соглашение
+                </a>
+              </li>
+              <li>
+                <a href="/privacy.pdf" target="_blank" rel="noopener noreferrer"
+                  className="text-text-light/60 hover:text-white text-sm transition-colors">
+                  Политика конфиденциальности
+                </a>
+              </li>
+            </ul>
+          </div>
         </div>
 
         {/* Bottom */}
         <div className="py-5 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-text-light/40 text-xs">
+          <p className="text-text-light/40 text-xs text-center sm:text-left order-last sm:order-none">
             © {new Date().getFullYear()} PfauMC. Все права защищены. Не является официальным продуктом Mojang Studios.
           </p>
+          <div className="flex items-center gap-1.5 flex-wrap justify-center">
+            <TBankBadge />
+            <TPayBadge />
+            <VisaBadge />
+            <MastercardBadge />
+            <MirBadge />
+          </div>
           <div className="flex items-center gap-3">
             <a href="https://t.me/pfaumc" target="_blank" rel="noopener noreferrer" className="text-text-light/40 hover:text-[#29B6F6] transition-colors" aria-label="Telegram">
               <TelegramIcon className="w-4 h-4" />
@@ -130,6 +160,55 @@ export default function Footer() {
         </div>
       </div>
     </footer>
+  )
+}
+
+function TBankBadge() {
+  return (
+    <span className="inline-flex items-center gap-1 bg-[#FFDD2D] rounded px-2 py-0.5">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="12" fill="#FFDD2D"/>
+        <path d="M7 8h10v2H7V8zm0 3h10v2H7v-2zm0 3h7v2H7v-2z" fill="#000"/>
+      </svg>
+      <span className="text-black font-bold text-[10px] leading-none">Т-Банк</span>
+    </span>
+  )
+}
+
+function TPayBadge() {
+  return (
+    <span className="inline-flex items-center gap-1 bg-[#FFDD2D] rounded px-2 py-0.5">
+      <span className="text-black font-bold text-[10px] leading-none">T-Pay</span>
+    </span>
+  )
+}
+
+function VisaBadge() {
+  return (
+    <svg width="38" height="22" viewBox="0 0 38 22" fill="none" className="opacity-70 hover:opacity-100 transition-opacity">
+      <rect width="38" height="22" rx="3" fill="#1A1F71"/>
+      <text x="19" y="15" textAnchor="middle" fill="white" fontSize="11" fontFamily="Arial" fontWeight="bold" fontStyle="italic">VISA</text>
+    </svg>
+  )
+}
+
+function MastercardBadge() {
+  return (
+    <svg width="38" height="22" viewBox="0 0 38 22" fill="none" className="opacity-70 hover:opacity-100 transition-opacity">
+      <rect width="38" height="22" rx="3" fill="#252525"/>
+      <circle cx="14" cy="11" r="7" fill="#EB001B"/>
+      <circle cx="24" cy="11" r="7" fill="#F79E1B"/>
+      <path d="M19 5.8a7 7 0 0 1 0 10.4A7 7 0 0 1 19 5.8z" fill="#FF5F00"/>
+    </svg>
+  )
+}
+
+function MirBadge() {
+  return (
+    <svg width="38" height="22" viewBox="0 0 38 22" fill="none" className="opacity-70 hover:opacity-100 transition-opacity">
+      <rect width="38" height="22" rx="3" fill="#0F754E"/>
+      <text x="19" y="15" textAnchor="middle" fill="white" fontSize="10" fontFamily="Arial" fontWeight="bold">МИР</text>
+    </svg>
   )
 }
 

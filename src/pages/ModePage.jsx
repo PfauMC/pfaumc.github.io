@@ -64,9 +64,9 @@ export default function ModePage() {
               {mode.tag}
             </span>
 
-            <div className="flex items-center gap-4 mb-5">
-              <span className="text-5xl">{mode.emoji}</span>
-              <h1 className="font-mono text-5xl sm:text-6xl font-bold text-white">{mode.name}</h1>
+            <div className="flex items-center gap-3 sm:gap-4 mb-5">
+              <span className="text-4xl sm:text-5xl">{mode.emoji}</span>
+              <h1 className="font-mono text-4xl sm:text-5xl md:text-6xl font-bold text-white">{mode.name}</h1>
             </div>
 
             <p className="text-text-light text-lg leading-relaxed max-w-2xl mb-10">
@@ -74,7 +74,7 @@ export default function ModePage() {
             </p>
 
             {/* Stats bar */}
-            <div className="flex flex-wrap gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
               {[
                 {
                   label: 'Онлайн сейчас',
@@ -97,12 +97,12 @@ export default function ModePage() {
               ].map((s) => (
                 <div
                   key={s.label}
-                  className="flex items-center gap-3 bg-bg-card border border-white/5 rounded-xl px-4 py-3"
+                  className="flex items-center gap-3 bg-bg-card border border-white/5 rounded-xl px-3 sm:px-4 py-3 min-w-0"
                 >
-                  <span className="text-text-light/40 flex items-center">{s.icon}</span>
-                  <div>
+                  <span className="text-text-light/40 flex items-center flex-shrink-0">{s.icon}</span>
+                  <div className="min-w-0">
                     <div className="text-xs text-text-light/50 leading-none mb-1">{s.label}</div>
-                    <div className="font-mono font-semibold text-white text-sm flex items-center gap-1.5">
+                    <div className="font-mono font-semibold text-white text-xs sm:text-sm flex items-center gap-1.5 truncate">
                       {s.icon?.props?.className === undefined && s.icon}
                       {s.value}
                     </div>

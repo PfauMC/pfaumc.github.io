@@ -38,7 +38,7 @@ export default function Hero() {
       <div className="absolute bottom-1/4 right-1/4 w-64 h-64 rounded-full bg-accent/8 blur-3xl pointer-events-none" />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 w-full pt-24 pb-16">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           {/* Left content */}
           <div className={`transition-all duration-1000 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
             {/* Badge */}
@@ -53,7 +53,7 @@ export default function Hero() {
               <span className="text-gradient block">ТВОИ ПРАВИЛА.</span>
             </h1>
 
-            <p className="text-text-light text-lg leading-relaxed mb-8 max-w-lg">
+            <p className="text-text-light text-base sm:text-lg leading-relaxed mb-8 max-w-lg">
               PfauMC — это Minecraft-сервер, где каждый находит свой стиль игры.
               Ванила для тех, кто ценит классику, и ГойЛенд для тех, кто жаждет приключений.
             </p>
@@ -63,10 +63,10 @@ export default function Hero() {
               <p className="text-text-light/60 text-xs font-mono uppercase tracking-widest mb-2">IP-адрес сервера</p>
               <button
                 onClick={copyIP}
-                className="group flex items-center gap-3 bg-bg-card border border-white/10 hover:border-accent/40 rounded-xl px-5 py-3.5 transition-all duration-200 hover:bg-accent/5"
+                className="group flex items-center gap-3 bg-bg-card border border-white/10 hover:border-accent/40 rounded-xl px-5 py-3.5 transition-all duration-200 hover:bg-accent/5 w-full sm:w-auto"
               >
                 <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse flex-shrink-0" />
-                <span className="font-mono text-lg font-semibold text-white">{SERVER_IP}</span>
+                <span className="font-mono text-base sm:text-lg font-semibold text-white">{SERVER_IP}</span>
                 <span className="ml-auto text-text-light/40 group-hover:text-accent transition-colors text-sm">
                   {copied ? (
                     <span className="text-green-400 font-medium">Скопировано!</span>
@@ -101,7 +101,7 @@ export default function Hero() {
             </div>
 
             {/* Stats row */}
-            <div className="flex gap-8 mt-10 pt-8 border-t border-white/5">
+            <div className="flex flex-wrap gap-x-8 gap-y-3 mt-10 pt-8 border-t border-white/5">
               {[
                 { value: '2', label: 'Режима' },
                 { value: '24/7', label: 'Онлайн' },
@@ -117,31 +117,31 @@ export default function Hero() {
 
           {/* Right — mascot */}
           <div
-            className={`relative flex items-center justify-center transition-all duration-1000 delay-300 ${
+            className={`relative flex items-center justify-center py-4 lg:py-0 overflow-hidden transition-all duration-1000 delay-300 ${
               visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
             }`}
           >
-            {/* Glow rings */}
-            <div className="absolute w-[36rem] h-[36rem] rounded-full border border-accent/10 animate-[spin_20s_linear_infinite]" />
-            <div className="absolute w-[48rem] h-[48rem] rounded-full border border-accent/5 animate-[spin_30s_linear_infinite_reverse]" />
-            <div className="absolute w-[42rem] h-[42rem] rounded-full bg-accent/5 blur-3xl" />
+            {/* Glow rings — only on desktop */}
+            <div className="hidden lg:block absolute w-[36rem] h-[36rem] rounded-full border border-accent/10 animate-[spin_20s_linear_infinite]" />
+            <div className="hidden lg:block absolute w-[48rem] h-[48rem] rounded-full border border-accent/5 animate-[spin_30s_linear_infinite_reverse]" />
+            <div className="hidden lg:block absolute w-[42rem] h-[42rem] rounded-full bg-accent/5 blur-3xl" />
 
             <div className="relative animate-float">
-              <div className="absolute inset-0 bg-accent/10 blur-2xl rounded-full scale-75 translate-y-8" />
+              <div className="hidden lg:block absolute inset-0 bg-accent/10 blur-2xl rounded-full scale-75 translate-y-8" />
               <img
                 src="/assets/mascot.png"
                 alt="PfauMC Mascot"
-                className="relative w-[32rem] sm:w-[40rem] lg:w-[44rem] max-w-full object-contain drop-shadow-2xl"
+                className="relative w-48 sm:w-64 md:w-80 lg:w-[44rem] max-w-full object-contain drop-shadow-2xl"
                 loading="eager"
                 decoding="async"
               />
             </div>
 
-            {/* Floating badges */}
-            <div className="absolute top-8 right-4 sm:right-8 bg-bg-card/90 backdrop-blur border border-accent/20 rounded-xl px-3 py-2 text-xs font-mono">
+            {/* Floating badges — only on desktop */}
+            <div className="hidden lg:block absolute top-8 right-8 bg-bg-card/90 backdrop-blur border border-accent/20 rounded-xl px-3 py-2 text-xs font-mono">
               <span className="text-accent">✦</span> <span className="text-white">Ванила</span>
             </div>
-            <div className="absolute bottom-12 left-0 sm:left-4 bg-bg-card/90 backdrop-blur border border-accent/20 rounded-xl px-3 py-2 text-xs font-mono">
+            <div className="hidden lg:block absolute bottom-12 left-4 bg-bg-card/90 backdrop-blur border border-accent/20 rounded-xl px-3 py-2 text-xs font-mono">
               <span className="text-accent">✦</span> <span className="text-white">ГойЛенд</span>
             </div>
           </div>

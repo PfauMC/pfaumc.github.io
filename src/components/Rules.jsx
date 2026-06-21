@@ -43,12 +43,12 @@ export default function Rules() {
         </div>
 
         <div className={`flex gap-2 justify-center mb-8 transition-all duration-700 delay-200 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-          <div className="inline-flex bg-bg-card border border-white/5 rounded-xl p-1 gap-1">
+          <div className="inline-flex bg-bg-card border border-white/5 rounded-xl p-1 gap-1 overflow-x-auto scrollbar-none">
             {tabs.map((tab) => (
               <button
                 key={tab}
                 onClick={() => { setActiveTab(tab); setOpenItems({}) }}
-                className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
+                className={`px-3 sm:px-5 py-2 rounded-lg text-sm font-semibold transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
                   activeTab === tab
                     ? 'bg-accent text-white shadow-[0_0_12px_rgba(29,165,232,0.3)]'
                     : 'text-text-light hover:text-white hover:bg-white/5'

@@ -184,4 +184,12 @@
   .animate-delay-500 { animation-delay: 500ms; }
 
   .opacity-0-init { opacity: 0; }
+
+  .scrollbar-none {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
 }

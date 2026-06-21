@@ -74,7 +74,7 @@ export default function DonatePage() {
           </Link>
           <div className={`transition-all duration-700 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
             <p className="text-accent font-mono text-sm font-semibold tracking-widest uppercase mb-3">Поддержать сервер</p>
-            <h1 className="font-mono text-5xl sm:text-6xl font-bold text-white mb-4">Донат</h1>
+            <h1 className="font-mono text-3xl sm:text-5xl lg:text-6xl font-bold text-white mb-4">Донат</h1>
             <p className="text-text-light text-lg max-w-xl">
               Поддержи сервер и получи привилегии, валюту и кейсы. Все покупки — навсегда.
             </p>
@@ -216,7 +216,7 @@ export default function DonatePage() {
                   <span className="text-3xl">{c.icon}</span>
                   <h2 className="font-mono text-xl font-bold text-white">{c.name}</h2>
                 </div>
-                <div className="grid sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                   {c.packs.map((pack) => (
                     <div key={pack.keys} className={`card flex flex-col items-center gap-3 text-center hover:border-accent/20 transition-all duration-300 hover:scale-[1.02] ${pack.save ? 'border-accent/15' : ''}`}>
                       {pack.save ? (

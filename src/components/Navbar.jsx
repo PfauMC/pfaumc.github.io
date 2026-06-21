@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { PfauIcon } from './LoadingScreen'
+import { useTheme } from '../context/ThemeContext'
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const location = useLocation()
   const navigate = useNavigate()
+  const { theme, toggle } = useTheme()
   const isHome = location.pathname === '/'
 
   useEffect(() => {
@@ -31,11 +33,14 @@ export default function Navbar() {
     { label: 'Главная', action: () => handleSection('#hero') },
     { label: 'Режимы', action: () => handleSection('#modes') },
     { label: 'Правила', action: () => handleSection('#rules') },
+    { label: 'Вики', to: '/wiki' },
+    { label: 'Статистика', to: '/stats' },
   ]
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      style={{ position: 'relative', zIndex: 50 }}
+      className={`fixed top-0 left-0 right-0 transition-all duration-300 ${
         scrolled ? 'bg-bg-main/95 backdrop-blur-md border-b border-white/5 py-3' : 'py-5'
       }`}
     >
@@ -44,22 +49,41 @@ export default function Navbar() {
         <Link to="/" className="flex items-center gap-2.5 group">
           <PfauIcon className="w-8 h-8 group-hover:scale-110 transition-transform duration-200" />
           <div className="leading-none">
-            <span className="font-mono font-bold text-xl text-white">Pfau</span>
+            <span className="font-mono font-bold text-xl" style={{ color: 'rgb(var(--c-text-base))' }}>Pfau</span>
             <span className="font-mono font-bold text-xl text-accent">MC</span>
           </div>
         </Link>
 
         {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-8">
-          {navItems.map((item) => (
-            <button key={item.label} onClick={item.action} className="nav-link text-sm">
-              {item.label}
-            </button>
-          ))}
+        <nav className="hidden md:flex items-center gap-6">
+          {navItems.map((item) =>
+            item.to ? (
+              <Link
+                key={item.label}
+                to={item.to}
+                className={`nav-link text-sm ${location.pathname.startsWith(item.to) ? 'text-accent' : ''}`}
+              >
+                {item.label}
+              </Link>
+            ) : (
+              <button key={item.label} onClick={item.action} className="nav-link text-sm">
+                {item.label}
+              </button>
+            )
+          )}
         </nav>
 
-        {/* Social + CTA */}
+        {/* Social + theme + CTA */}
         <div className="hidden md:flex items-center gap-2">
+          {/* Theme toggle */}
+          <button
+            onClick={toggle}
+            title={theme === 'dark' ? 'Светлая тема' : 'Тёмная тема'}
+            className="w-9 h-9 flex items-center justify-center rounded-lg text-text-light/60 hover:text-accent hover:bg-white/5 transition-colors"
+          >
+            {theme === 'dark' ? <SunIcon className="w-5 h-5" /> : <MoonIcon className="w-5 h-5" />}
+          </button>
+
           <Link to="/donate" className="btn-ghost text-sm py-2 px-4">
             💎 Донат
           </Link>
@@ -77,30 +101,50 @@ export default function Navbar() {
           </a>
         </div>
 
-        {/* Mobile hamburger */}
-        <button
-          onClick={() => setMenuOpen(!menuOpen)}
-          className="md:hidden w-9 h-9 flex flex-col items-center justify-center gap-1.5 rounded-lg hover:bg-white/5 transition-colors"
-          aria-label="Меню"
-        >
-          <span className={`w-5 h-0.5 bg-white transition-all duration-200 ${menuOpen ? 'rotate-45 translate-y-2' : ''}`} />
-          <span className={`w-5 h-0.5 bg-white transition-all duration-200 ${menuOpen ? 'opacity-0' : ''}`} />
-          <span className={`w-5 h-0.5 bg-white transition-all duration-200 ${menuOpen ? '-rotate-45 -translate-y-2' : ''}`} />
-        </button>
+        {/* Mobile: theme toggle + hamburger */}
+        <div className="md:hidden flex items-center gap-1">
+          <button
+            onClick={toggle}
+            title={theme === 'dark' ? 'Светлая тема' : 'Тёмная тема'}
+            className="w-9 h-9 flex items-center justify-center rounded-lg text-text-light/60 hover:text-accent hover:bg-white/5 transition-colors"
+          >
+            {theme === 'dark' ? <SunIcon className="w-4 h-4" /> : <MoonIcon className="w-4 h-4" />}
+          </button>
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="w-9 h-9 flex flex-col items-center justify-center gap-1.5 rounded-lg hover:bg-white/5 transition-colors"
+            aria-label="Меню"
+          >
+            <span className={`w-5 h-0.5 transition-all duration-200 ${menuOpen ? 'rotate-45 translate-y-2' : ''}`} style={{ background: 'rgb(var(--c-text-base))' }} />
+            <span className={`w-5 h-0.5 transition-all duration-200 ${menuOpen ? 'opacity-0' : ''}`} style={{ background: 'rgb(var(--c-text-base))' }} />
+            <span className={`w-5 h-0.5 transition-all duration-200 ${menuOpen ? '-rotate-45 -translate-y-2' : ''}`} style={{ background: 'rgb(var(--c-text-base))' }} />
+          </button>
+        </div>
       </div>
 
       {/* Mobile menu */}
-      <div className={`md:hidden transition-all duration-300 overflow-hidden ${menuOpen ? 'max-h-72 opacity-100' : 'max-h-0 opacity-0'}`}>
+      <div className={`md:hidden transition-all duration-300 overflow-hidden ${menuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
         <div className="px-4 py-4 border-t border-white/5 bg-bg-main/98 flex flex-col gap-1">
-          {navItems.map((item) => (
-            <button
-              key={item.label}
-              onClick={item.action}
-              className="text-left text-text-light hover:text-white py-2.5 px-3 rounded-lg hover:bg-white/5 transition-colors font-medium"
-            >
-              {item.label}
-            </button>
-          ))}
+          {navItems.map((item) =>
+            item.to ? (
+              <Link
+                key={item.label}
+                to={item.to}
+                onClick={() => setMenuOpen(false)}
+                className="text-left text-text-light hover:text-white py-2.5 px-3 rounded-lg hover:bg-white/5 transition-colors font-medium"
+              >
+                {item.label}
+              </Link>
+            ) : (
+              <button
+                key={item.label}
+                onClick={item.action}
+                className="text-left text-text-light hover:text-white py-2.5 px-3 rounded-lg hover:bg-white/5 transition-colors font-medium"
+              >
+                {item.label}
+              </button>
+            )
+          )}
           <Link to="/donate" onClick={() => setMenuOpen(false)}
             className="inline-flex items-center justify-center gap-2 btn-primary text-sm mt-2">
             💎 Донат
@@ -122,6 +166,30 @@ export default function Navbar() {
         </div>
       </div>
     </header>
+  )
+}
+
+function SunIcon({ className = '' }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+      <circle cx="12" cy="12" r="5" />
+      <line x1="12" y1="1" x2="12" y2="3" />
+      <line x1="12" y1="21" x2="12" y2="23" />
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+      <line x1="1" y1="12" x2="3" y2="12" />
+      <line x1="21" y1="12" x2="23" y2="12" />
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+    </svg>
+  )
+}
+
+function MoonIcon({ className = '' }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+    </svg>
   )
 }
 

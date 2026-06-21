@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { Routes, Route } from 'react-router-dom'
+import { ThemeProvider } from './context/ThemeContext'
 import LoadingScreen from './components/LoadingScreen'
+import Fireflies from './components/Fireflies'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import Features from './components/Features'
@@ -9,6 +11,12 @@ import Rules from './components/Rules'
 import Footer from './components/Footer'
 import ModePage from './pages/ModePage'
 import DonatePage from './pages/DonatePage'
+import StatsPage from './pages/StatsPage'
+import WikiLayout from './pages/wiki/WikiLayout'
+import WikiIndex from './pages/wiki/WikiIndex'
+import WikiGuide from './pages/wiki/WikiGuide'
+import WikiFAQ from './pages/wiki/WikiFAQ'
+import WikiRules from './pages/wiki/WikiRules'
 
 function HomePage() {
   return (
@@ -46,7 +54,6 @@ export default function App() {
     }
   }, [])
 
-  // Copy & download protection
   useEffect(() => {
     const blockContextMenu = (e) => e.preventDefault()
     const blockDrag = (e) => {
@@ -72,17 +79,27 @@ export default function App() {
   }, [])
 
   return (
-    <>
+    <ThemeProvider>
       {loading && <LoadingScreen fadeOut={fadeOut} />}
       <div className={fadeOut || !loading ? 'visible' : 'invisible'}>
+        <Fireflies count={22} />
         <Navbar />
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/donate" element={<DonatePage />} />
-          <Route path="/:modeId" element={<ModePage />} />
-        </Routes>
-        <Footer />
+        <div style={{ position: 'relative', zIndex: 2 }}>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/donate" element={<DonatePage />} />
+            <Route path="/stats" element={<StatsPage />} />
+            <Route path="/wiki" element={<WikiLayout />}>
+              <Route index element={<WikiIndex />} />
+              <Route path="guide" element={<WikiGuide />} />
+              <Route path="faq" element={<WikiFAQ />} />
+              <Route path="rules" element={<WikiRules />} />
+            </Route>
+            <Route path="/:modeId" element={<ModePage />} />
+          </Routes>
+          <Footer />
+        </div>
       </div>
-    </>
+    </ThemeProvider>
   )
 }

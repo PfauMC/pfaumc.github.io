@@ -4,12 +4,12 @@ export default {
   theme: {
     extend: {
       colors: {
-        accent: '#1DA5E8',
-        'accent-dark': '#1589C5',
-        'bg-main': '#0D1520',
-        'bg-section': '#111827',
-        'bg-card': '#1B2330',
-        'text-light': '#DCE6EA',
+        accent: 'rgb(var(--c-accent) / <alpha-value>)',
+        'accent-dark': 'rgb(var(--c-accent-dark) / <alpha-value>)',
+        'bg-main': 'rgb(var(--c-bg-main) / <alpha-value>)',
+        'bg-section': 'rgb(var(--c-bg-section) / <alpha-value>)',
+        'bg-card': 'rgb(var(--c-bg-card) / <alpha-value>)',
+        'text-light': 'rgb(var(--c-text-light) / <alpha-value>)',
       },
       fontFamily: {
         mono: ['Monocraft', 'monospace'],

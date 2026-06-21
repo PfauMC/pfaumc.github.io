@@ -114,7 +114,7 @@ export default function Footer() {
         {/* Bottom */}
         <div className="py-5 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-text-light/40 text-xs">
-            © 2024 PfauMC. Все права защищены. Не является официальным продуктом Mojang Studios.
+            © {new Date().getFullYear()} PfauMC. Все права защищены. Не является официальным продуктом Mojang Studios.
           </p>
           <div className="flex items-center gap-3">
             <a href="https://t.me/pfaumc" target="_blank" rel="noopener noreferrer" className="text-text-light/40 hover:text-[#29B6F6] transition-colors" aria-label="Telegram">

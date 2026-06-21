@@ -40,7 +40,7 @@ export default function Hero() {
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 w-full pt-24 pb-16">
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           {/* Left content */}
-          <div className={`transition-all duration-1000 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+          <div className={`text-center lg:text-left transition-all duration-1000 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
             {/* Badge */}
             <div className="inline-flex items-center gap-2 bg-accent/10 border border-accent/20 text-accent text-sm font-medium px-4 py-1.5 rounded-full mb-6">
               <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
@@ -53,13 +53,13 @@ export default function Hero() {
               <span className="text-gradient block">ТВОИ ПРАВИЛА.</span>
             </h1>
 
-            <p className="text-text-light text-base sm:text-lg leading-relaxed mb-8 max-w-lg">
+            <p className="text-text-light text-base sm:text-lg leading-relaxed mb-8 max-w-lg mx-auto lg:mx-0">
               PfauMC — это Minecraft-сервер, где каждый находит свой стиль игры.
               Ванила для тех, кто ценит классику, и ГойЛенд для тех, кто жаждет приключений.
             </p>
 
             {/* Server IP */}
-            <div className="mb-8">
+            <div className="mb-8 flex flex-col items-center lg:items-start">
               <p className="text-text-light/60 text-xs font-mono uppercase tracking-widest mb-2">IP-адрес сервера</p>
               <button
                 onClick={copyIP}
@@ -78,7 +78,7 @@ export default function Hero() {
             </div>
 
             {/* CTAs */}
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-3 justify-center lg:justify-start">
               <a
                 href="https://discord.gg/BPmxWwdChY"
                 target="_blank"
@@ -101,7 +101,7 @@ export default function Hero() {
             </div>
 
             {/* Stats row */}
-            <div className="flex flex-wrap gap-x-8 gap-y-3 mt-10 pt-8 border-t border-white/5">
+            <div className="flex flex-wrap gap-x-8 gap-y-3 mt-10 pt-8 border-t border-white/5 justify-center lg:justify-start">
               {[
                 { value: '2', label: 'Режима' },
                 { value: '24/7', label: 'Онлайн' },

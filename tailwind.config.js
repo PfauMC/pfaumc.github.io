@@ -3,6 +3,9 @@ export default {
   content: ['./index.html', './src/**/*.{js,jsx}'],
   theme: {
     extend: {
+      screens: {
+        'nav': '850px',
+      },
       colors: {
         accent: 'rgb(var(--c-accent) / <alpha-value>)',
         'accent-dark': 'rgb(var(--c-accent-dark) / <alpha-value>)',

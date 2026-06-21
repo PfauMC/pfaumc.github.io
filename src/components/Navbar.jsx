@@ -59,7 +59,7 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-6">
+        <nav className="hidden nav:flex items-center gap-6">
           {navItems.map((item) =>
             item.to ? (
               <Link
@@ -78,7 +78,7 @@ export default function Navbar() {
         </nav>
 
         {/* Social + theme + CTA */}
-        <div className="hidden md:flex items-center gap-2">
+        <div className="hidden nav:flex items-center gap-2">
           {/* Theme toggle */}
           <button
             onClick={toggle}
@@ -106,7 +106,7 @@ export default function Navbar() {
         </div>
 
         {/* Mobile: theme toggle + hamburger */}
-        <div className="md:hidden flex items-center gap-1">
+        <div className="nav:hidden flex items-center gap-1">
           <button
             onClick={toggle}
             title={theme === 'dark' ? 'Светлая тема' : 'Тёмная тема'}
@@ -127,7 +127,7 @@ export default function Navbar() {
       </div>
 
       {/* Mobile menu */}
-      <div className={`md:hidden transition-all duration-300 overflow-hidden ${menuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
+      <div className={`nav:hidden transition-all duration-300 overflow-hidden ${menuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
         <div className="px-4 py-4 border-t border-white/5 bg-bg-main/98 flex flex-col gap-1">
           {navItems.map((item) =>
             item.to ? (

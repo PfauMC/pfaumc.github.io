@@ -93,7 +93,7 @@ export default function ModePage() {
                 },
                 { label: 'Версия', value: stats?.version ?? '26.2', icon: <CubeIcon /> },
                 { label: 'Режим работы', value: '24/7', icon: <ClockIcon /> },
-                { label: 'IP адрес', value: 'play.pfaumc.ru', icon: <ServerIcon /> },
+                { label: 'IP адрес', value: 'play.pfaumc.online', icon: <ServerIcon /> },
               ].map((s) => (
                 <div
                   key={s.label}
@@ -210,7 +210,7 @@ export default function ModePage() {
           <div className="flex flex-wrap gap-3 justify-center">
             <button
               onClick={() => {
-                navigator.clipboard.writeText('play.pfaumc.ru').catch(() => {})
+                navigator.clipboard.writeText('play.pfaumc.online').catch(() => {})
               }}
               className="btn-primary"
             >

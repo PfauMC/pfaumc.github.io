@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 
-const SERVER_IP = 'play.pfaumc.ru'
+const SERVER_IP = 'play.pfaumc.online'
 
 export default function Hero() {
   const [copied, setCopied] = useState(false)

@@ -5,7 +5,7 @@ export function useServerStats() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch('https://api.mcsrvstat.us/3/play.pfaumc.ru')
+    fetch('https://api.mcsrvstat.us/3/play.pfaumc.online')
       .then((r) => r.json())
       .then((data) => {
         setStats({

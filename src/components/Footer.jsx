@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { PfauIcon } from './LoadingScreen'
 
-const SERVER_IP = 'play.pfaumc.ru'
+const SERVER_IP = 'play.pfaumc.online'
 
 export default function Footer() {
   const [copied, setCopied] = useState(false)

@@ -1,9 +1,9 @@
 // T-Bank acquiring integration
-// Запросы идут через /api/tbank (Vite-прокси → securepay.tinkoff.ru в dev,
-// Netlify Function в prod). Password не виден в браузере.
+// securepay.tinkoff.ru поддерживает CORS (Access-Control-Allow-Origin: *)
+// — можно вызывать напрямую из браузера без прокси.
 const TERMINAL_KEY = '1782062080172DEMO'
 const PASSWORD = 'qJZaLC4r0#5$OZ8_'
-const API_URL = '/api/tbank'
+const API_URL = 'https://securepay.tinkoff.ru/v2/Init'
 
 async function sha256(str) {
   const buf = new TextEncoder().encode(str)

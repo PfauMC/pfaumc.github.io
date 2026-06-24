@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
+import PaymentModal from '../components/PaymentModal'
 
 const TABS = ['Привилегии', 'Валюта', 'Кейсы', 'Разное']
 
@@ -55,14 +56,52 @@ export default function DonatePage() {
   const [tab, setTab] = useState('Привилегии')
   const [openPriv, setOpenPriv] = useState(null)
   const [visible, setVisible] = useState(false)
+  const [selectedItem, setSelectedItem] = useState(null)
+  const [paidStatus, setPaidStatus] = useState(null)
+  const [searchParams, setSearchParams] = useSearchParams()
 
   useEffect(() => {
     window.scrollTo(0, 0)
     setTimeout(() => setVisible(true), 80)
+
+    const paid = searchParams.get('paid')
+    if (paid === 'ok') {
+      setPaidStatus('success')
+      setSearchParams({}, { replace: true })
+    } else if (paid === 'fail') {
+      setPaidStatus('fail')
+      setSearchParams({}, { replace: true })
+    }
   }, [])
+
+  const buy = (name, price) => setSelectedItem({ name, price })
 
   return (
     <div className="min-h-screen">
+      {/* Paid status banner */}
+      {paidStatus === 'success' && (
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3 bg-emerald-900/90 border border-emerald-500/40 text-emerald-300 text-sm font-semibold px-5 py-3 rounded-xl shadow-lg backdrop-blur">
+          <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+            <circle cx="12" cy="12" r="10"/><path d="M8 12l3 3 5-5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          Оплата прошла успешно! Привилегия будет выдана в течение нескольких минут.
+          <button onClick={() => setPaidStatus(null)} className="ml-2 opacity-60 hover:opacity-100">
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+      )}
+      {paidStatus === 'fail' && (
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3 bg-red-900/90 border border-red-500/40 text-red-300 text-sm font-semibold px-5 py-3 rounded-xl shadow-lg backdrop-blur">
+          <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+            <circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6" strokeLinecap="round"/>
+          </svg>
+          Платёж отменён или отклонён. Попробуйте ещё раз.
+          <button onClick={() => setPaidStatus(null)} className="ml-2 opacity-60 hover:opacity-100">
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+      )}
+
       {/* Hero */}
       <section className="relative pt-28 pb-14 overflow-hidden">
         <div className="absolute inset-0 grid-bg opacity-40" />
@@ -116,26 +155,20 @@ export default function DonatePage() {
                   className="relative rounded-2xl border border-white/5 bg-bg-card overflow-hidden flex flex-col transition-all duration-300 hover:border-white/10"
                   style={{ boxShadow: isOpen ? `0 0 24px ${style.glow}` : undefined }}
                 >
-                  {/* Top accent line */}
                   <div className="h-0.5 w-full" style={{ background: `linear-gradient(90deg, transparent, ${style.color}, transparent)` }} />
-
                   <div className="p-5 flex-1">
-                    {/* Tier badge + name */}
                     <div className="flex items-start justify-between mb-3">
                       <span className="text-xs font-semibold px-2 py-0.5 rounded-full border" style={{ color: style.color, borderColor: `${style.color}40`, background: `${style.color}12` }}>
                         {style.label}
                       </span>
                       <span className="text-xs text-text-light/40 font-mono">Tier {p.tier}</span>
                     </div>
-
                     <h3 className="font-mono text-2xl font-bold text-white mb-1">{p.displayName}</h3>
                     <div className="flex items-baseline gap-1 mb-4">
                       <span className="text-2xl font-bold" style={{ color: style.color }}>{p.price.toLocaleString('ru-RU')}</span>
                       <span className="text-text-light/60 text-sm">₽</span>
                       <span className="ml-2 text-xs bg-white/5 text-text-light/50 px-2 py-0.5 rounded-full">навсегда</span>
                     </div>
-
-                    {/* Features */}
                     <ul className="space-y-1.5 mb-4">
                       {p.features.map((f) => (
                         <li key={f} className="flex gap-2 text-xs text-text-light/80 leading-relaxed">
@@ -147,8 +180,6 @@ export default function DonatePage() {
                         </li>
                       ))}
                     </ul>
-
-                    {/* Commands toggle */}
                     {p.commands.length > 0 && (
                       <button
                         onClick={() => setOpenPriv(isOpen ? null : p.rankCode)}
@@ -168,10 +199,9 @@ export default function DonatePage() {
                       </div>
                     )}
                   </div>
-
-                  {/* Buy button */}
                   <div className="px-5 pb-5">
                     <button
+                      onClick={() => buy(`Привилегия ${p.displayName}`, p.price)}
                       className="w-full py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 hover:opacity-90 hover:scale-[1.02]"
                       style={{ background: `${style.color}20`, color: style.color, border: `1px solid ${style.color}30` }}
                     >
@@ -200,7 +230,12 @@ export default function DonatePage() {
                     <div className="text-text-light/50 text-sm">гхыбок</div>
                   </div>
                   <div className="text-center text-lg font-bold text-white">{pkg.price.toLocaleString('ru-RU')} ₽</div>
-                  <button className="btn-primary text-sm justify-center">Купить</button>
+                  <button
+                    onClick={() => buy(`${pkg.amount.toLocaleString('ru-RU')} гхыбок`, pkg.price)}
+                    className="btn-primary text-sm justify-center"
+                  >
+                    Купить
+                  </button>
                 </div>
               ))}
             </div>
@@ -225,7 +260,12 @@ export default function DonatePage() {
                       <div className="font-mono text-3xl font-bold text-white">×{pack.keys}</div>
                       <div className="text-text-light/50 text-xs">ключей</div>
                       <div className="font-bold text-white">{pack.price.toLocaleString('ru-RU')} ₽</div>
-                      <button className="w-full btn-ghost text-xs py-1.5">Купить</button>
+                      <button
+                        onClick={() => buy(`${c.name} — ×${pack.keys} ключ${pack.keys === 1 ? '' : 'ей'}`, pack.price)}
+                        className="w-full btn-ghost text-xs py-1.5"
+                      >
+                        Купить
+                      </button>
                     </div>
                   ))}
                 </div>
@@ -251,7 +291,12 @@ export default function DonatePage() {
                   </div>
                   <div className="mt-auto">
                     <div className="text-2xl font-bold text-gradient mb-3">{item.price} ₽</div>
-                    <button className="btn-primary text-sm w-full justify-center">Купить</button>
+                    <button
+                      onClick={() => buy(item.name, item.price)}
+                      className="btn-primary text-sm w-full justify-center"
+                    >
+                      Купить
+                    </button>
                   </div>
                 </div>
               ))}
@@ -267,6 +312,14 @@ export default function DonatePage() {
           <a href="https://discord.gg/BPmxWwdChY" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">Discord</a>.
         </div>
       </div>
+
+      {/* Payment modal */}
+      {selectedItem && (
+        <PaymentModal
+          item={selectedItem}
+          onClose={() => setSelectedItem(null)}
+        />
+      )}
     </div>
   )
 }

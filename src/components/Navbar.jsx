@@ -19,6 +19,11 @@ export default function Navbar() {
 
   useEffect(() => { setMenuOpen(false) }, [location.pathname])
 
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [menuOpen])
+
   const handleSection = (hash) => {
     setMenuOpen(false)
     if (isHome) {
@@ -126,44 +131,57 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile menu */}
-      <div className={`nav:hidden transition-all duration-300 overflow-hidden ${menuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
-        <div className="px-4 py-4 border-t border-white/5 bg-bg-main/98 flex flex-col gap-1">
-          {navItems.map((item) =>
-            item.to ? (
-              <Link
-                key={item.label}
-                to={item.to}
-                onClick={() => setMenuOpen(false)}
-                className="text-left text-text-light hover:text-white py-2.5 px-3 rounded-lg hover:bg-white/5 transition-colors font-medium"
-              >
-                {item.label}
-              </Link>
-            ) : (
-              <button
-                key={item.label}
-                onClick={item.action}
-                className="text-left text-text-light hover:text-white py-2.5 px-3 rounded-lg hover:bg-white/5 transition-colors font-medium"
-              >
-                {item.label}
-              </button>
-            )
-          )}
-          <Link to="/donate" onClick={() => setMenuOpen(false)}
-            className="inline-flex items-center justify-center gap-2 btn-primary text-sm mt-2">
-            💎 Донат
-          </Link>
-          <div className="flex gap-2 mt-2">
+      {/* Mobile menu — fullscreen overlay */}
+      <div className={`nav:hidden fixed inset-0 z-40 transition-opacity duration-300 ${
+        menuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+      }`}>
+        {/* Solid background */}
+        <div className="absolute inset-0" style={{ background: 'rgb(var(--c-bg-main))' }} />
+
+        {/* Content */}
+        <div className="relative flex flex-col h-full pt-20 px-5 pb-8 overflow-y-auto">
+          <div className="flex flex-col gap-1 flex-1">
+            {navItems.map((item) =>
+              item.to ? (
+                <Link
+                  key={item.label}
+                  to={item.to}
+                  onClick={() => setMenuOpen(false)}
+                  className="text-left text-text-light hover:text-white py-3 px-3 rounded-xl hover:bg-white/5 transition-colors font-medium text-lg"
+                >
+                  {item.label}
+                </Link>
+              ) : (
+                <button
+                  key={item.label}
+                  onClick={item.action}
+                  className="text-left text-text-light hover:text-white py-3 px-3 rounded-xl hover:bg-white/5 transition-colors font-medium text-lg"
+                >
+                  {item.label}
+                </button>
+              )
+            )}
+            <Link
+              to="/donate"
+              onClick={() => setMenuOpen(false)}
+              className="inline-flex items-center justify-center gap-2 btn-primary text-sm mt-3"
+            >
+              💎 Донат
+            </Link>
+          </div>
+
+          {/* Socials at bottom */}
+          <div className="flex gap-2 mt-6">
             <a href="https://t.me/pfaumc" target="_blank" rel="noopener noreferrer"
-              className="flex-1 inline-flex items-center justify-center gap-2 btn-ghost text-sm py-2">
+              className="flex-1 inline-flex items-center justify-center gap-2 btn-ghost text-sm py-2.5">
               <TelegramIcon className="w-4 h-4" /> Telegram
             </a>
             <a href="https://discord.gg/BPmxWwdChY" target="_blank" rel="noopener noreferrer"
-              className="flex-1 inline-flex items-center justify-center gap-2 btn-ghost text-sm py-2">
+              className="flex-1 inline-flex items-center justify-center gap-2 btn-ghost text-sm py-2.5">
               <DiscordIcon className="w-4 h-4" /> Discord
             </a>
             <a href="https://www.youtube.com/@PfauMC" target="_blank" rel="noopener noreferrer"
-              className="flex-1 inline-flex items-center justify-center gap-2 btn-ghost text-sm py-2">
+              className="flex-1 inline-flex items-center justify-center gap-2 btn-ghost text-sm py-2.5">
               <YouTubeIcon className="w-4 h-4" /> YouTube
             </a>
           </div>

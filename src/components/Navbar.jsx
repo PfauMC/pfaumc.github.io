@@ -93,9 +93,9 @@ export default function Navbar() {
             {theme === 'dark' ? <SunIcon className="w-5 h-5" /> : <MoonIcon className="w-5 h-5" />}
           </button>
 
-          <Link to="/donate" className="btn-ghost text-sm py-2 px-4">
+          {/* <Link to="/donate" className="btn-ghost text-sm py-2 px-4">
             💎 Донат
-          </Link>
+          </Link> */}
           <a href="https://t.me/pfaumc" target="_blank" rel="noopener noreferrer" aria-label="Telegram"
             className="w-9 h-9 flex items-center justify-center rounded-lg text-text-light/60 hover:text-[#29B6F6] hover:bg-white/5 transition-colors">
             <TelegramIcon className="w-5 h-5" />
@@ -161,13 +161,13 @@ export default function Navbar() {
                 </button>
               )
             )}
-            <Link
+            {/* <Link
               to="/donate"
               onClick={() => setMenuOpen(false)}
               className="inline-flex items-center justify-center gap-2 btn-primary text-sm mt-3"
             >
               💎 Донат
-            </Link>
+            </Link> */}
           </div>
 
           {/* Socials at bottom */}

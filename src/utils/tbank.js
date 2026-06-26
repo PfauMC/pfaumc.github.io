@@ -1,9 +1,10 @@
 // T-Bank acquiring integration
 // securepay.tinkoff.ru поддерживает CORS (Access-Control-Allow-Origin: *)
 // — можно вызывать напрямую из браузера без прокси.
-const TERMINAL_KEY = '1782062080172DEMO'
-const PASSWORD = 'qJZaLC4r0#5$OZ8_'
+const TERMINAL_KEY = '1782062080196'
+const PASSWORD = 'N*fW5QoTaI6I!D%J'
 const API_URL = 'https://securepay.tinkoff.ru/v2/Init'
+const NOTIFICATION_URL = 'https://shop-api.goyland.ru/api/v1/payment/tinkoffNotify'
 
 async function sha256(str) {
   const buf = new TextEncoder().encode(str)
@@ -29,6 +30,7 @@ export async function createPayment({ amount, description, nick }) {
     Amount: amount * 100, // в копейках
     OrderId: orderId,
     Description: `${description} | ${nick}`.slice(0, 140),
+    NotificationURL: NOTIFICATION_URL,
     SuccessURL: successURL,
     FailURL: failURL,
   }

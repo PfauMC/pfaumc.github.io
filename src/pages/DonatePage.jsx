@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import PaymentModal from '../components/PaymentModal'
 
 const fluxPackages = [
-  // { amount: 10000, price: 1     }, // тест — включить по запросу
+  { amount: 10000, price: 1     },
   { amount: 100,   price: 100   },
   { amount: 250,   price: 250   },
   { amount: 500,   price: 500   },

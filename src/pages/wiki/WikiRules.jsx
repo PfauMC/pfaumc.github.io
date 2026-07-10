@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, useLocation, useParams } from 'react-router-dom'
 import { generalRules, modeRules } from '../../data/rulesData'
 
 const TABS = [
@@ -8,10 +8,13 @@ const TABS = [
   { id: 'goyland', label: 'ГойЛенд', icon: '🔥' },
 ]
 
-function RuleSection({ category, icon, items }) {
+function RuleSection({ id, category, icon, items }) {
   const [open, setOpen] = useState(true)
+  const { hash } = useLocation()
+  const highlighted = hash === `#${id}`
+
   return (
-    <div className="card mb-4">
+    <div id={id} className={`card mb-4 scroll-mt-24 transition-shadow ${highlighted ? 'ring-1 ring-accent/50' : ''}`}>
       <button
         onClick={() => setOpen(!open)}
         className="w-full flex items-center gap-3 text-left group"
@@ -42,11 +45,18 @@ function RuleSection({ category, icon, items }) {
 
 export default function WikiRules() {
   const { tab: tabParam } = useParams()
+  const { hash } = useLocation()
   const tab = TABS.some((t) => t.id === tabParam) ? tabParam : 'general'
 
   const rules = tab === 'general'
     ? generalRules
     : modeRules[tab === 'vanilla' ? 'vanilla' : 'goyland']
+
+  useEffect(() => {
+    if (!hash) return
+    const el = document.getElementById(hash.slice(1))
+    el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [hash, tab])
 
   return (
     <article>
@@ -92,7 +102,7 @@ export default function WikiRules() {
       {/* Rules */}
       <div>
         {rules.map((section) => (
-          <RuleSection key={section.category} {...section} />
+          <RuleSection key={section.id} {...section} />
         ))}
       </div>
 

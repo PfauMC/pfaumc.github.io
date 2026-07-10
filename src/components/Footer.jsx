@@ -73,22 +73,15 @@ export default function Footer() {
               {[
                 { label: 'Главная', action: () => handleSection('#hero') },
                 { label: 'Режимы', action: () => handleSection('#modes') },
-                { label: 'Правила', to: '/wiki/rules' },
                 { label: '💎 Донат', action: () => navigate('/donate') },
               ].map((item) => (
                 <li key={item.label}>
-                  {item.to ? (
-                    <Link to={item.to} className="text-text-light/60 hover:text-white text-sm transition-colors">
-                      {item.label}
-                    </Link>
-                  ) : (
-                    <button
-                      onClick={item.action}
-                      className="text-text-light/60 hover:text-white text-sm transition-colors"
-                    >
-                      {item.label}
-                    </button>
-                  )}
+                  <button
+                    onClick={item.action}
+                    className="text-text-light/60 hover:text-white text-sm transition-colors"
+                  >
+                    {item.label}
+                  </button>
                 </li>
               ))}
             </ul>

@@ -7,7 +7,6 @@ import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import Features from './components/Features'
 import Modes from './components/Modes'
-import Rules from './components/Rules'
 import Footer from './components/Footer'
 import ModePage from './pages/ModePage'
 import DonatePage from './pages/DonatePage'
@@ -24,7 +23,6 @@ function HomePage() {
       <Hero />
       <Features />
       <Modes />
-      <Rules />
     </main>
   )
 }

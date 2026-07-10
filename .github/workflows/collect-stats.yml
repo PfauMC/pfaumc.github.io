@@ -1,0 +1,46 @@
+name: Collect online stats
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: collect-stats
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch and append online snapshot
+        run: |
+          FILE=public/data/online-history.json
+          mkdir -p public/data
+          [ -f "$FILE" ] || echo '[]' > "$FILE"
+
+          RESP=$(curl -s https://api.mcsrvstat.us/3/play.pfaumc.online)
+          ONLINE=$(echo "$RESP" | jq -r '.online // false')
+          PLAYERS=$(echo "$RESP" | jq -r '.players.online // 0')
+          TS=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+          if [ "$ONLINE" = "true" ]; then
+            jq --arg t "$TS" --argjson p "$PLAYERS" \
+              '. + [{t: $t, p: $p}] | sort_by(.t) | .[-1440:]' \
+              "$FILE" > /tmp/online-history.json
+            mv /tmp/online-history.json "$FILE"
+          fi
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add public/data/online-history.json
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: online stats snapshot"
+          git push

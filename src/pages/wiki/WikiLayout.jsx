@@ -1,5 +1,6 @@
-import { NavLink, Outlet, useLocation } from 'react-router-dom'
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useState } from 'react'
+import { generalRules, modeRules } from '../../data/rulesData'
 
 const sections = [
   {
@@ -14,19 +15,20 @@ const sections = [
       { label: '❓ Частые вопросы (FAQ)', to: '/wiki/faq' },
     ],
   },
-  {
-    title: 'Правила',
-    items: [
-      { label: '📜 Правила сервера', to: '/wiki/rules' },
-    ],
-  },
+]
+
+const rulesNav = [
+  { label: 'Общие правила', icon: '⚖️', to: '/wiki/rules', children: generalRules },
+  { label: 'Ванила', icon: '🌿', to: '/wiki/rules/vanilla', children: modeRules.vanilla },
+  { label: 'ГойЛенд', icon: '🔥', to: '/wiki/rules/goyland', children: modeRules.goyland },
 ]
 
 export default function WikiLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const location = useLocation()
 
-  const currentPage = sections.flatMap(s => s.items).find(i => i.to === location.pathname)
+  const currentPage = [...sections.flatMap(s => s.items), ...rulesNav].find(i => i.to === location.pathname)
+    ?? (location.pathname.startsWith('/wiki/rules') ? { label: '📜 Правила сервера' } : undefined)
 
   return (
     <div className="min-h-screen pt-20">
@@ -90,6 +92,56 @@ export default function WikiLayout() {
                   </ul>
                 </div>
               ))}
+
+              {/* Правила — nested TOC */}
+              <div className="mb-5">
+                <div className="text-text-light/40 text-xs font-mono uppercase tracking-widest px-3 mb-2">
+                  Правила
+                </div>
+                <ul className="space-y-0.5">
+                  {rulesNav.map((section) => {
+                    const isActiveSection = location.pathname === section.to
+                    return (
+                      <li key={section.to}>
+                        <NavLink
+                          to={section.to}
+                          className={({ isActive }) =>
+                            `flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+                              isActive
+                                ? 'bg-accent/15 text-accent border border-accent/25 font-medium'
+                                : 'text-text-light hover:text-white hover:bg-white/5'
+                            }`
+                          }
+                          onClick={() => setSidebarOpen(false)}
+                        >
+                          <span>{section.icon}</span>
+                          <span>{section.label}</span>
+                        </NavLink>
+                        {isActiveSection && (
+                          <ul className="mt-0.5 mb-1 ml-4 pl-3 border-l border-white/10 space-y-0.5">
+                            {section.children.map((cat) => (
+                              <li key={cat.id}>
+                                <Link
+                                  to={`${section.to}#${cat.id}`}
+                                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-colors ${
+                                    location.hash === `#${cat.id}`
+                                      ? 'text-accent font-medium'
+                                      : 'text-text-light/70 hover:text-white hover:bg-white/5'
+                                  }`}
+                                  onClick={() => setSidebarOpen(false)}
+                                >
+                                  <span>{cat.icon}</span>
+                                  <span>{cat.category}</span>
+                                </Link>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </li>
+                    )
+                  })}
+                </ul>
+              </div>
 
               {/* Join card */}
               <div className="mt-6 p-4 bg-accent/10 border border-accent/20 rounded-xl">

@@ -15,7 +15,7 @@ export function useServerStats(autoRefreshMs = 0) {
           players: data.players?.online ?? 0,
           maxPlayers: data.players?.max ?? 0,
           playerList: data.players?.list ?? [],
-          version: data.version ?? '26.2',
+          version: data.protocol?.name ?? '26.2',
           motd: data.motd?.clean?.[0] ?? 'PfauMC',
           software: data.software ?? null,
           icon: data.icon ?? null,

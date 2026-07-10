@@ -20,7 +20,7 @@ const sections = [
 const rulesNav = [
   { label: 'Общие правила', icon: '⚖️', to: '/wiki/rules', children: generalRules },
   { label: 'Ванила', icon: '🌿', to: '/wiki/rules/vanilla', children: modeRules.vanilla },
-  { label: 'ГойЛенд', icon: '🔥', to: '/wiki/rules/goyland', children: modeRules.goyland },
+  { label: 'Политическое выживание', icon: '🔥', to: '/wiki/rules/political-survival', children: modeRules['political-survival'] },
 ]
 
 export default function WikiLayout() {

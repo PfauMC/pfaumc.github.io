@@ -5,7 +5,7 @@ import { generalRules, modeRules } from '../../data/rulesData'
 const TABS = [
   { id: 'general', label: 'Общие правила', icon: '⚖️' },
   { id: 'vanilla', label: 'Ванила', icon: '🌿' },
-  { id: 'goyland', label: 'ГойЛенд', icon: '🔥' },
+  { id: 'political-survival', label: 'Политическое выживание', icon: '🔥' },
 ]
 
 function RuleSection({ id, category, icon, items }) {
@@ -48,9 +48,7 @@ export default function WikiRules() {
   const { hash } = useLocation()
   const tab = TABS.some((t) => t.id === tabParam) ? tabParam : 'general'
 
-  const rules = tab === 'general'
-    ? generalRules
-    : modeRules[tab === 'vanilla' ? 'vanilla' : 'goyland']
+  const rules = tab === 'general' ? generalRules : modeRules[tab]
 
   useEffect(() => {
     if (!hash) return

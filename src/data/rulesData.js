@@ -154,9 +154,9 @@ export const modeRules = {
       ],
     },
   ],
-  goyland: [
+  'political-survival': [
     {
-      id: 'goyland-combat',
+      id: 'ps-combat',
       category: 'Боевые действия',
       icon: '⚔️',
       items: [
@@ -168,7 +168,7 @@ export const modeRules = {
       ],
     },
     {
-      id: 'goyland-politics',
+      id: 'ps-politics',
       category: 'Кланы и политика',
       icon: '🏴',
       items: [
@@ -179,7 +179,7 @@ export const modeRules = {
       ],
     },
     {
-      id: 'goyland-banned',
+      id: 'ps-banned',
       category: 'Запрещено везде',
       icon: '🚫',
       items: [

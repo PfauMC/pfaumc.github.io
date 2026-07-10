@@ -55,7 +55,7 @@ export default function Hero() {
 
             <p className="text-text-light text-base sm:text-lg leading-relaxed mb-8 max-w-lg mx-auto lg:mx-0">
               PfauMC — это Minecraft-сервер, где каждый находит свой стиль игры.
-              Ванила для тех, кто ценит классику, и ГойЛенд для тех, кто жаждет приключений.
+              Ванила для тех, кто ценит классику, и Политическое выживание для тех, кто жаждет приключений.
             </p>
 
             {/* Server IP */}
@@ -142,7 +142,7 @@ export default function Hero() {
               <span className="text-accent">✦</span> <span className="text-white">Ванила</span>
             </div>
             <div className="hidden lg:block absolute bottom-12 left-4 bg-bg-card/90 backdrop-blur border border-accent/20 rounded-xl px-3 py-2 text-xs font-mono">
-              <span className="text-accent">✦</span> <span className="text-white">ГойЛенд</span>
+              <span className="text-accent">✦</span> <span className="text-white">Политическое выживание</span>
             </div>
           </div>
         </div>

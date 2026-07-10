@@ -141,7 +141,7 @@ export default function StatsPage() {
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <span className="w-2 h-2 rounded-full bg-orange-400 flex-shrink-0" />
-                  <span className="text-white font-medium">ГойЛенд</span>
+                  <span className="text-white font-medium">Политическое выживание</span>
                 </div>
               </div>
             </div>

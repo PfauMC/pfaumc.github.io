@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link, useParams } from 'react-router-dom'
 import { generalRules, modeRules } from '../../data/rulesData'
 
 const TABS = [
@@ -40,7 +41,8 @@ function RuleSection({ category, icon, items }) {
 }
 
 export default function WikiRules() {
-  const [tab, setTab] = useState('general')
+  const { tab: tabParam } = useParams()
+  const tab = TABS.some((t) => t.id === tabParam) ? tabParam : 'general'
 
   const rules = tab === 'general'
     ? generalRules
@@ -72,9 +74,9 @@ export default function WikiRules() {
       {/* Tabs */}
       <div className="flex flex-wrap gap-2 mb-6">
         {TABS.map((t) => (
-          <button
+          <Link
             key={t.id}
-            onClick={() => setTab(t.id)}
+            to={t.id === 'general' ? '/wiki/rules' : `/wiki/rules/${t.id}`}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
               tab === t.id
                 ? 'bg-accent text-white shadow-[0_0_15px_rgba(29,165,232,0.3)]'
@@ -83,7 +85,7 @@ export default function WikiRules() {
           >
             <span>{t.icon}</span>
             <span>{t.label}</span>
-          </button>
+          </Link>
         ))}
       </div>
 

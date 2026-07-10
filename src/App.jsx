@@ -94,6 +94,7 @@ export default function App() {
               <Route path="guide" element={<WikiGuide />} />
               <Route path="faq" element={<WikiFAQ />} />
               <Route path="rules" element={<WikiRules />} />
+              <Route path="rules/:tab" element={<WikiRules />} />
             </Route>
             <Route path="/:modeId" element={<ModePage />} />
           </Routes>

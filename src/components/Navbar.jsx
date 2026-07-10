@@ -37,7 +37,7 @@ export default function Navbar() {
   const navItems = [
     { label: 'Главная', action: () => handleSection('#hero') },
     { label: 'Режимы', action: () => handleSection('#modes') },
-    { label: 'Правила', action: () => handleSection('#rules') },
+    { label: 'Правила', to: '/wiki/rules' },
     { label: 'Вики', to: '/wiki' },
     { label: 'Статистика', to: '/stats' },
   ]

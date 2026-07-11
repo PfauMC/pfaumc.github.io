@@ -2,7 +2,7 @@ name: Collect online stats
 
 on:
   schedule:
-    - cron: '*/30 * * * *'
+    - cron: '*/5 * * * *'
   workflow_dispatch:
 
 permissions:
@@ -31,7 +31,7 @@ jobs:
 
           if [ "$ONLINE" = "true" ]; then
             jq --arg t "$TS" --argjson p "$PLAYERS" \
-              '. + [{t: $t, p: $p}] | sort_by(.t) | .[-1440:]' \
+              '. + [{t: $t, p: $p}] | sort_by(.t) | .[-4032:]' \
               "$FILE" > /tmp/online-history.json
             mv /tmp/online-history.json "$FILE"
           fi

@@ -1,13 +1,13 @@
 import { useServerStats } from '../hooks/useServerStats'
 import { useOnlineHistory } from '../hooks/useOnlineHistory'
-import WeeklyOnlineChart from '../components/WeeklyOnlineChart'
+import OnlineChart from '../components/OnlineChart'
 import { useSEO } from '../hooks/useSEO'
 
 export default function StatsPage() {
   useSEO('Онлайн сервера — PfauMC', 'Статистика и график онлайна Minecraft сервера PfauMC в реальном времени.')
 
   const { stats, loading, lastUpdated, refresh } = useServerStats(60000)
-  const { history } = useOnlineHistory()
+  const { series } = useOnlineHistory()
 
   const fmtTime = (d) => {
     if (!d) return '—'
@@ -151,11 +151,11 @@ export default function StatsPage() {
           </div>
         </div>
 
-        {/* Weekly online chart */}
+        {/* Online history chart */}
         <div className="card mb-6">
-          <div className="text-text-light/50 text-xs font-mono uppercase tracking-widest mb-4">Онлайн по неделям</div>
-          {history ? (
-            <WeeklyOnlineChart thisWeek={history.thisWeek} lastWeek={history.lastWeek} />
+          <div className="text-text-light/50 text-xs font-mono uppercase tracking-widest mb-4">Динамика онлайна</div>
+          {series ? (
+            <OnlineChart series={series} />
           ) : (
             <div className="text-center py-10 text-text-light/30 text-sm">Загрузка...</div>
           )}

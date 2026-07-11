@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
 import { generalRules, modeRules } from '../../data/rulesData'
+import { useSEO } from '../../hooks/useSEO'
 
 const TABS = [
   { id: 'general', label: 'Общие правила', icon: '⚖️' },
@@ -44,6 +45,8 @@ function RuleSection({ id, category, icon, items }) {
 }
 
 export default function WikiRules() {
+  useSEO('Правила сервера — PfauMC Wiki', 'Общие правила и правила режимов Ванила и Политическое выживание на Minecraft сервере PfauMC.')
+
   const { tab: tabParam } = useParams()
   const { hash } = useLocation()
   const tab = TABS.some((t) => t.id === tabParam) ? tabParam : 'general'

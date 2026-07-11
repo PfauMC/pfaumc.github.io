@@ -1,8 +1,11 @@
 import { useServerStats } from '../hooks/useServerStats'
 import { useOnlineHistory } from '../hooks/useOnlineHistory'
 import WeeklyOnlineChart from '../components/WeeklyOnlineChart'
+import { useSEO } from '../hooks/useSEO'
 
 export default function StatsPage() {
+  useSEO('Онлайн сервера — PfauMC', 'Статистика и график онлайна Minecraft сервера PfauMC в реальном времени.')
+
   const { stats, loading, lastUpdated, refresh } = useServerStats(60000)
   const { history } = useOnlineHistory()
 

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import PaymentModal from '../components/PaymentModal'
+import { useSEO } from '../hooks/useSEO'
 
 const fluxPackages = [
   { amount: 100,   price: 100   },
@@ -14,6 +15,8 @@ const fluxPackages = [
 ]
 
 export default function DonatePage() {
+  useSEO('Донат — PfauMC | Поддержать сервер', 'Поддержи PfauMC и получи Флюкс — донат-валюту сервера для доступа к привилегиям.')
+
   const [visible, setVisible] = useState(false)
   const [selectedItem, setSelectedItem] = useState(null)
   const [paidStatus, setPaidStatus] = useState(null)

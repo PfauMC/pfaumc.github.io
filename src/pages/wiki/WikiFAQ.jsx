@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useSEO } from '../../hooks/useSEO'
 
 const faqData = [
   {
@@ -126,6 +127,8 @@ function FAQItem({ q, a }) {
 }
 
 export default function WikiFAQ() {
+  useSEO('FAQ — PfauMC Wiki', 'Ответы на частые вопросы об игре на Minecraft сервере PfauMC.')
+
   return (
     <article>
       <div className="mb-8">

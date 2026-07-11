@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { useSEO } from '../../hooks/useSEO'
 
 const cards = [
   {
@@ -28,6 +29,8 @@ const cards = [
 ]
 
 export default function WikiIndex() {
+  useSEO('База знаний — PfauMC Wiki', 'Гайды, FAQ и правила Minecraft сервера PfauMC.')
+
   return (
     <div>
       {/* Hero */}

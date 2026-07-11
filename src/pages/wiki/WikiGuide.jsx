@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useSEO } from '../../hooks/useSEO'
 
 const SERVER_IP = 'play.pfaumc.online'
 
@@ -145,6 +146,8 @@ const steps = [
 ]
 
 export default function WikiGuide() {
+  useSEO('Как зайти на сервер — PfauMC Wiki', 'Пошаговый гайд по установке лаунчера и подключению к Minecraft серверу PfauMC.')
+
   const [copied, setCopied] = useState(false)
 
   const copyIP = async () => {

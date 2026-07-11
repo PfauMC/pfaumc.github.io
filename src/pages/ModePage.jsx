@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { getModeById } from '../data/modesData'
 import { generalRules, modeRules } from '../data/rulesData'
 import { useServerStats } from '../hooks/useServerStats'
+import { useSEO } from '../hooks/useSEO'
 
 export default function ModePage() {
   const { modeId } = useParams()
@@ -10,6 +11,11 @@ export default function ModePage() {
   const { stats, loading: statsLoading } = useServerStats()
   const [visible, setVisible] = useState(false)
   const [openSections, setOpenSections] = useState({})
+
+  useSEO(
+    mode ? `${mode.name} — PfauMC | Minecraft сервер` : 'PfauMC — Minecraft сервер',
+    mode ? mode.description : undefined
+  )
 
   useEffect(() => {
     window.scrollTo(0, 0)

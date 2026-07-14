@@ -26,6 +26,14 @@ const cards = [
     tag: 'Правила',
     tagColor: 'text-orange-400 bg-orange-400/10 border-orange-400/20',
   },
+  {
+    to: '/wiki/mechanics',
+    icon: '🧭',
+    title: 'Механики сервера',
+    desc: 'Голосовой чат, крыша Ада, защита спавна для новичков, CoreProtect и телепорты.',
+    tag: 'Справка',
+    tagColor: 'text-accent bg-accent/10 border-accent/20',
+  },
 ]
 
 export default function WikiIndex() {

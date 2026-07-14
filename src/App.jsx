@@ -16,6 +16,7 @@ import WikiIndex from './pages/wiki/WikiIndex'
 import WikiGuide from './pages/wiki/WikiGuide'
 import WikiFAQ from './pages/wiki/WikiFAQ'
 import WikiRules from './pages/wiki/WikiRules'
+import WikiMechanics from './pages/wiki/WikiMechanics'
 
 function HomePage() {
   return (
@@ -93,6 +94,7 @@ export default function App() {
               <Route path="faq" element={<WikiFAQ />} />
               <Route path="rules" element={<WikiRules />} />
               <Route path="rules/:tab" element={<WikiRules />} />
+              <Route path="mechanics" element={<WikiMechanics />} />
             </Route>
             <Route path="/:modeId" element={<ModePage />} />
           </Routes>

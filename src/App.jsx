@@ -9,8 +9,8 @@ import Features from './components/Features'
 import Modes from './components/Modes'
 import Footer from './components/Footer'
 import ModePage from './pages/ModePage'
-import DonatePage from './pages/DonatePage'
 import StatsPage from './pages/StatsPage'
+import NotFoundPage from './pages/NotFoundPage'
 import WikiLayout from './pages/wiki/WikiLayout'
 import WikiIndex from './pages/wiki/WikiIndex'
 import WikiGuide from './pages/wiki/WikiGuide'
@@ -86,7 +86,6 @@ export default function App() {
         <div>
           <Routes>
             <Route path="/" element={<HomePage />} />
-            <Route path="/donate" element={<DonatePage />} />
             <Route path="/stats" element={<StatsPage />} />
             <Route path="/wiki" element={<WikiLayout />}>
               <Route index element={<WikiIndex />} />
@@ -95,8 +94,10 @@ export default function App() {
               <Route path="rules" element={<WikiRules />} />
               <Route path="rules/:tab" element={<WikiRules />} />
               <Route path="mechanics" element={<WikiMechanics />} />
+              <Route path="*" element={<NotFoundPage />} />
             </Route>
             <Route path="/:modeId" element={<ModePage />} />
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
           <Footer />
         </div>

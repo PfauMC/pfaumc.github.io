@@ -73,7 +73,6 @@ export default function Footer() {
               {[
                 { label: 'Главная', action: () => handleSection('#hero') },
                 { label: 'Режимы', action: () => handleSection('#modes') },
-                { label: '💎 Донат', action: () => navigate('/donate') },
               ].map((item) => (
                 <li key={item.label}>
                   <button

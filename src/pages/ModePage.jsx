@@ -4,6 +4,7 @@ import { getModeById } from '../data/modesData'
 import { generalRules, modeRules } from '../data/rulesData'
 import { useServerStats } from '../hooks/useServerStats'
 import { useSEO } from '../hooks/useSEO'
+import NotFoundPage from './NotFoundPage'
 
 export default function ModePage() {
   const { modeId } = useParams()
@@ -24,12 +25,7 @@ export default function ModePage() {
   }, [modeId])
 
   if (!mode) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
-        <p className="text-white text-xl font-mono">Режим не найден</p>
-        <Link to="/" className="btn-primary">← На главную</Link>
-      </div>
-    )
+    return <NotFoundPage />
   }
 
   const specificRules = modeRules[mode.id] ?? []

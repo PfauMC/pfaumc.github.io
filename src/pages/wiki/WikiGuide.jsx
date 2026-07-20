@@ -1,9 +1,11 @@
-import { useState } from 'react'
 import { useSEO } from '../../hooks/useSEO'
+import { useCopyToClipboard } from '../../hooks/useCopyToClipboard'
+import CopyToast from '../../components/CopyToast'
+import { SERVER_VERSION } from '../../config'
 
 const SERVER_IP = 'play.pfaumc.online'
 
-function buildSteps(copyIP) {
+function buildSteps(onCopyIP) {
   return [
   {
     n: '1',
@@ -31,7 +33,7 @@ function buildSteps(copyIP) {
     content: (
       <>
         <p>
-          Мы рекомендуем <strong className="text-white">Prism Launcher</strong> — бесплатный
+          Мы рекомендуем <strong className="text-heading">Prism Launcher</strong> — бесплатный
           открытый лаунчер, который удобно управляет несколькими версиями игры и профилями.
         </p>
         <div className="mt-3 p-4 bg-accent/10 border border-accent/25 rounded-xl">
@@ -49,7 +51,7 @@ function buildSteps(copyIP) {
           </p>
         </div>
         <div className="mt-3 p-4 bg-bg-section border border-white/5 rounded-xl">
-          <div className="font-mono text-sm font-bold text-white mb-2">Официальный гайд по установке</div>
+          <div className="font-mono text-sm font-bold text-heading mb-2">Официальный гайд по установке</div>
           <a
             href="https://prismlauncher.org/wiki/"
             target="_blank"
@@ -98,7 +100,7 @@ function buildSteps(copyIP) {
         <ol className="mt-2 space-y-1.5 list-none">
           {[
             'Нажмите «Add Instance» (кнопка с плюсом)',
-            'Выберите Vanilla → нужную версию (см. главную страницу сайта)',
+            `Выберите Vanilla → версию ${SERVER_VERSION}`,
             'Нажмите OK — инстанс создан',
             'Запустите его кнопкой «Launch»',
           ].map((step, i) => (
@@ -124,13 +126,14 @@ function buildSteps(copyIP) {
             'В главном меню нажмите «Сетевая игра» → «Добавить сервер»',
             <span key="ip">
               Введите адрес сервера:{' '}
-              <code
-                onClick={copyIP}
-                title="Скопировать IP"
-                className="bg-bg-section px-2 py-0.5 rounded font-mono text-accent cursor-pointer hover:bg-accent/20 transition-colors"
+              <button
+                type="button"
+                onClick={onCopyIP}
+                aria-label={`Скопировать IP-адрес сервера ${SERVER_IP}`}
+                className="bg-bg-section px-2 py-0.5 rounded font-mono text-accent cursor-pointer hover:bg-accent/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 transition-colors"
               >
                 {SERVER_IP}
-              </code>
+              </button>
             </span>,
             'Нажмите «Готово», затем дважды кликните на сервер чтобы войти',
           ].map((step, i) => (
@@ -159,23 +162,8 @@ function buildSteps(copyIP) {
 export default function WikiGuide() {
   useSEO('Как зайти на сервер — PfauMC Wiki', 'Пошаговый гайд по установке лаунчера и подключению к Minecraft серверу PfauMC.')
 
-  const [copied, setCopied] = useState(false)
-
-  const copyIP = async () => {
-    try {
-      await navigator.clipboard.writeText(SERVER_IP)
-    } catch {
-      const el = document.createElement('textarea')
-      el.value = SERVER_IP
-      document.body.appendChild(el)
-      el.select()
-      document.execCommand('copy')
-      document.body.removeChild(el)
-    }
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
+  const { copied, error, copy } = useCopyToClipboard()
+  const copyIP = () => copy(SERVER_IP)
   const steps = buildSteps(copyIP)
 
   return (
@@ -183,7 +171,7 @@ export default function WikiGuide() {
       {/* Header */}
       <div className="mb-8">
         <div className="text-text-light/50 text-xs font-mono uppercase tracking-widest mb-3">Начало работы</div>
-        <h1 className="font-mono text-3xl sm:text-4xl font-bold text-white mb-3">
+        <h1 className="font-mono text-3xl sm:text-4xl font-bold text-heading mb-3">
           🚀 Как зайти на сервер
         </h1>
         <p className="text-text-light text-base leading-relaxed max-w-2xl">
@@ -194,24 +182,26 @@ export default function WikiGuide() {
 
       {/* IP quick access */}
       <div className="mb-8 p-4 bg-bg-section border border-white/10 rounded-2xl flex flex-col sm:flex-row sm:items-center gap-3">
-        <div>
+        <div className="min-w-0">
           <div className="text-text-light/50 text-xs font-mono uppercase tracking-widest mb-1">IP-адрес сервера</div>
-          <code
+          <button
+            type="button"
             onClick={copyIP}
-            title="Скопировать IP"
-            className="font-mono text-xl font-bold text-white cursor-pointer hover:text-accent transition-colors"
+            aria-label={`Скопировать IP-адрес сервера ${SERVER_IP}`}
+            className="font-mono text-xl font-bold text-heading cursor-pointer hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 rounded transition-colors break-all text-left"
           >
             {SERVER_IP}
-          </code>
+          </button>
         </div>
         <button
           onClick={copyIP}
-          className="sm:ml-auto btn-ghost text-sm py-2 px-4"
+          aria-label={`Скопировать IP-адрес сервера ${SERVER_IP}`}
+          className="sm:ml-auto flex-shrink-0 btn-ghost text-sm py-2 px-4"
         >
           {copied ? '✓ Скопировано' : 'Скопировать'}
         </button>
       </div>
-      {copied && <div className="copy-toast">IP скопирован</div>}
+      <CopyToast copied={copied} error={error} successMessage="IP скопирован" />
 
       {/* Launcher notice */}
       <div className="mb-8 grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -221,7 +211,7 @@ export default function WikiGuide() {
             <li className="text-sm text-text-light flex items-start gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-accent flex-shrink-0 mt-1.5" />
               <span>
-                <strong className="text-white">Prism Launcher</strong> — бесплатный, открытый,
+                <strong className="text-heading">Prism Launcher</strong> — бесплатный, открытый,
                 удобно управляет версиями и профилями
               </span>
             </li>
@@ -249,7 +239,7 @@ export default function WikiGuide() {
                 {step.n}
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="font-mono font-bold text-white text-base mb-3">{step.title}</h3>
+                <h3 className="font-mono font-bold text-heading text-base mb-3">{step.title}</h3>
                 <div className="text-text-light text-sm leading-relaxed space-y-2">
                   {step.content}
                 </div>

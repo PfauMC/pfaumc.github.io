@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { formatPlaytime } from '../utils/playerFormat'
 
 const LEVEL_THRESHOLDS = [0, 1, 30, 90, 180] // minutes
@@ -44,6 +44,14 @@ function groupIntoWeeks(days) {
   return weeks
 }
 
+function dateLabel(date) {
+  return new Date(`${date}T00:00:00Z`).toLocaleDateString('ru-RU', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+  })
+}
+
 export default function ActivityHeatmap({ activity }) {
   const minutesByDate = useMemo(() => new Map((activity ?? []).map((d) => [d.date, d.minutes])), [activity])
 
@@ -53,20 +61,65 @@ export default function ActivityHeatmap({ activity }) {
   }, [activity])
 
   const [selectedYear, setSelectedYear] = useState(years[0])
+  const [activeIndex, setActiveIndex] = useState(null)
+  const [focusIndex, setFocusIndex] = useState(0)
+  const containerRef = useRef(null)
+  const cellRefs = useRef([])
+
+  const days = selectedYear !== undefined ? buildYearDays(selectedYear, minutesByDate) : []
+  const weeks = groupIntoWeeks(days)
+
+  // Position the shared tooltip from the active cell's own rect, clamped so it
+  // never spills past the heatmap container's left/right edges.
+  // ponytail: hooks must run every render regardless of the empty-data early
+  // return below, so this stays above it even though it reads refs directly.
+  const tooltipStyle = useMemo(() => {
+    if (activeIndex == null || !containerRef.current) return null
+    const cellEl = cellRefs.current[activeIndex]
+    if (!cellEl) return null
+    const containerRect = containerRef.current.getBoundingClientRect()
+    const cellRect = cellEl.getBoundingClientRect()
+    const cellCenter = cellRect.left + cellRect.width / 2 - containerRect.left
+    const TOOLTIP_HALF_WIDTH = 90
+    const clampedCenter = Math.max(TOOLTIP_HALF_WIDTH, Math.min(containerRect.width - TOOLTIP_HALF_WIDTH, cellCenter))
+    return {
+      left: clampedCenter,
+      bottom: containerRect.bottom - cellRect.top + 6,
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeIndex])
 
   if (!activity || activity.length === 0 || selectedYear === undefined) return null
 
-  const days = buildYearDays(selectedYear, minutesByDate)
-  const weeks = groupIntoWeeks(days)
+  const activeDay = activeIndex != null ? days[activeIndex] : null
+
+  const moveFocus = (nextIndex) => {
+    const clamped = Math.max(0, Math.min(days.length - 1, nextIndex))
+    setFocusIndex(clamped)
+    setActiveIndex(clamped)
+    cellRefs.current[clamped]?.focus()
+  }
+
+  const onCellKeyDown = (e, index) => {
+    if (e.key === 'ArrowRight') { e.preventDefault(); moveFocus(index + 1) }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); moveFocus(index - 1) }
+    else if (e.key === 'ArrowDown') { e.preventDefault(); moveFocus(index + 7) }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); moveFocus(index - 7) }
+    else if (e.key === 'Escape') setActiveIndex(null)
+  }
+
+  let dayIndex = -1
   let lastMonth = null
 
   return (
-    <div className="w-full">
+    <div className="w-full relative" ref={containerRef}>
       <div className="flex justify-end mb-2">
+        <label className="sr-only" htmlFor="heatmap-year">Год активности</label>
         <select
+          id="heatmap-year"
           value={selectedYear}
-          onChange={(e) => setSelectedYear(Number(e.target.value))}
-          className="bg-bg-section border border-white/10 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none focus:border-accent/50"
+          onChange={(e) => { setSelectedYear(Number(e.target.value)); setActiveIndex(null) }}
+          className="bg-bg-section border border-white/10 rounded-lg px-2.5 py-1 text-xs text-heading focus:outline-none focus:border-accent/50"
         >
           {years.map((y) => <option key={y} value={y}>{y}</option>)}
         </select>
@@ -91,11 +144,28 @@ export default function ActivityHeatmap({ activity }) {
       </div>
 
       <div className="flex gap-[2px] w-full">
-        {weeks.map((week, i) => (
-          <div key={i} className="flex-1 min-w-0 max-w-[15px] flex flex-col gap-[2px]">
-            {week.map((day, j) =>
-              day ? <DayCell key={j} day={day} /> : <div key={j} className="w-full aspect-square" />
-            )}
+        {weeks.map((week, wi) => (
+          <div key={wi} className="flex-1 min-w-0 max-w-[15px] flex flex-col gap-[2px]">
+            {week.map((day, di) => {
+              if (!day) return <div key={di} className="w-full aspect-square" />
+              dayIndex++
+              const index = dayIndex
+              return (
+                <button
+                  key={di}
+                  type="button"
+                  ref={(el) => { cellRefs.current[index] = el }}
+                  tabIndex={index === focusIndex ? 0 : -1}
+                  aria-label={`${dateLabel(day.date)}: ${day.minutes > 0 ? formatPlaytime(day.minutes) : 'нет активности'}`}
+                  className={`w-full aspect-square rounded-[1.5px] cursor-pointer focus:outline-none focus-visible:ring-1 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-bg-card ${LEVEL_CLASSES[levelFor(day.minutes)]}`}
+                  onMouseEnter={() => setActiveIndex(index)}
+                  onMouseLeave={() => setActiveIndex((cur) => (cur === index ? null : cur))}
+                  onFocus={() => { setFocusIndex(index); setActiveIndex(index) }}
+                  onClick={() => setActiveIndex((cur) => (cur === index ? null : index))}
+                  onKeyDown={(e) => onCellKeyDown(e, index)}
+                />
+              )
+            })}
           </div>
         ))}
       </div>
@@ -107,26 +177,20 @@ export default function ActivityHeatmap({ activity }) {
         ))}
         <span>Больше</span>
       </div>
-    </div>
-  )
-}
 
-function DayCell({ day }) {
-  const dateLabel = new Date(`${day.date}T00:00:00Z`).toLocaleDateString('ru-RU', {
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric',
-  })
-
-  return (
-    <div className="relative group/cell w-full aspect-square">
-      <div className={`w-full h-full rounded-[1.5px] cursor-default ${LEVEL_CLASSES[levelFor(day.minutes)]}`} />
-      <div className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 z-20 whitespace-nowrap rounded-lg border border-white/10 bg-bg-card px-2.5 py-1.5 text-[11px] opacity-0 shadow-lg transition-opacity group-hover/cell:opacity-100">
-        <div className="text-white font-medium">{dateLabel}</div>
-        <div className="text-text-light/70">
-          {day.minutes > 0 ? `Сыграно: ${formatPlaytime(day.minutes)}` : 'Нет активности'}
+      {activeDay && tooltipStyle && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="absolute z-20 -translate-x-1/2 whitespace-nowrap rounded-lg border border-white/10 bg-bg-card px-2.5 py-1.5 text-[11px] shadow-lg pointer-events-none"
+          style={{ left: tooltipStyle.left, bottom: tooltipStyle.bottom }}
+        >
+          <div className="text-heading font-medium">{dateLabel(activeDay.date)}</div>
+          <div className="text-text-light/70">
+            {activeDay.minutes > 0 ? `Сыграно: ${formatPlaytime(activeDay.minutes)}` : 'Нет активности'}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }

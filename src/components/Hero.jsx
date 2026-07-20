@@ -1,36 +1,22 @@
 import { useState, useEffect, useRef } from 'react'
+import { useCopyToClipboard } from '../hooks/useCopyToClipboard'
+import CopyToast from './CopyToast'
+import { SERVER_VERSION } from '../config'
 
 const SERVER_IP = 'play.pfaumc.online'
 
 export default function Hero() {
-  const [copied, setCopied] = useState(false)
   const [visible, setVisible] = useState(false)
   const ref = useRef(null)
+  const { copied, error, copy } = useCopyToClipboard()
 
   useEffect(() => {
     const timer = setTimeout(() => setVisible(true), 100)
     return () => clearTimeout(timer)
   }, [])
 
-  const copyIP = async () => {
-    try {
-      await navigator.clipboard.writeText(SERVER_IP)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    } catch {
-      const el = document.createElement('textarea')
-      el.value = SERVER_IP
-      document.body.appendChild(el)
-      el.select()
-      document.execCommand('copy')
-      document.body.removeChild(el)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    }
-  }
-
   return (
-    <section id="hero" className="relative min-h-screen flex items-center overflow-hidden" ref={ref}>
+    <section id="hero" className="relative min-h-screen flex items-center overflow-hidden scroll-mt-20" ref={ref}>
       {/* Background effects */}
       <div className="absolute inset-0 grid-bg opacity-50" />
       <div className="absolute inset-0 bg-hero-glow" />
@@ -49,7 +35,7 @@ export default function Hero() {
 
             {/* Headline */}
             <h1 className="font-mono text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-4">
-              <span className="text-white block">ТВОЙ МИР.</span>
+              <span className="text-heading block">ТВОЙ МИР.</span>
               <span className="text-gradient block">ТВОИ ПРАВИЛА.</span>
             </h1>
 
@@ -62,20 +48,18 @@ export default function Hero() {
             <div className="mb-8 flex flex-col items-center lg:items-start">
               <p className="text-text-light/60 text-xs font-mono uppercase tracking-widest mb-2">IP-адрес сервера</p>
               <button
-                onClick={copyIP}
-                className="group flex items-center gap-3 bg-bg-card border border-white/10 hover:border-accent/40 rounded-xl px-5 py-3.5 transition-all duration-200 hover:bg-accent/5 w-full sm:w-auto"
+                onClick={() => copy(SERVER_IP)}
+                aria-label={`Скопировать IP-адрес сервера ${SERVER_IP}`}
+                className="group flex items-center gap-3 bg-bg-card border border-white/10 hover:border-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 rounded-xl px-5 py-3.5 transition-all duration-200 hover:bg-accent/5 w-full sm:w-auto"
               >
                 <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse flex-shrink-0" />
-                <span className="font-mono text-base sm:text-lg font-semibold text-white">{SERVER_IP}</span>
-                <span className="ml-auto text-text-light/40 group-hover:text-accent transition-colors text-sm">
-                  {copied ? (
-                    <span className="text-green-400 font-medium">Скопировано!</span>
-                  ) : (
-                    <CopyIcon className="w-4 h-4" />
-                  )}
+                <span className="font-mono text-base sm:text-lg font-semibold text-heading">{SERVER_IP}</span>
+                <span className="ml-auto flex-shrink-0 text-text-light/40 group-hover:text-accent transition-colors">
+                  {copied ? <CheckIcon className="w-4 h-4 text-green-400" /> : <CopyIcon className="w-4 h-4" />}
                 </span>
               </button>
             </div>
+            <CopyToast copied={copied} error={error} successMessage="IP скопирован" />
 
             {/* CTAs */}
             <div className="flex flex-wrap gap-3 justify-center lg:justify-start">
@@ -105,7 +89,7 @@ export default function Hero() {
               {[
                 { value: '2', label: 'Режима' },
                 { value: '24/7', label: 'Онлайн' },
-                { value: '26.2', label: 'Версия' },
+                { value: SERVER_VERSION, label: 'Версия' },
               ].map((stat) => (
                 <div key={stat.label}>
                   <div className="font-mono text-2xl font-bold text-gradient">{stat.value}</div>
@@ -121,10 +105,10 @@ export default function Hero() {
               visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
             }`}
           >
-            {/* Glow rings — only on desktop */}
-            <div className="hidden lg:block absolute w-[36rem] h-[36rem] rounded-full border border-accent/10 animate-[spin_20s_linear_infinite]" />
-            <div className="hidden lg:block absolute w-[48rem] h-[48rem] rounded-full border border-accent/5 animate-[spin_30s_linear_infinite_reverse]" />
-            <div className="hidden lg:block absolute w-[42rem] h-[42rem] rounded-full bg-accent/5 blur-3xl" />
+            {/* Glow rings — only on desktop, sized to the available column so they don't clip 1024-1280px */}
+            <div className="hidden lg:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 xl:w-96 xl:h-96 2xl:w-[36rem] 2xl:h-[36rem] rounded-full border border-accent/10 animate-[spin_20s_linear_infinite]" />
+            <div className="hidden lg:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 xl:w-[28rem] xl:h-[28rem] 2xl:w-[48rem] 2xl:h-[48rem] rounded-full border border-accent/5 animate-[spin_30s_linear_infinite_reverse]" />
+            <div className="hidden lg:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 xl:w-96 xl:h-96 2xl:w-[42rem] 2xl:h-[42rem] rounded-full bg-accent/5 blur-3xl" />
 
             <div className="relative animate-float">
               <div className="hidden lg:block absolute inset-0 bg-accent/10 blur-2xl rounded-full scale-75 translate-y-8" />
@@ -140,10 +124,11 @@ export default function Hero() {
         </div>
       </div>
 
-      {/* Scroll indicator */}
+      {/* Scroll indicator — absolute only from lg up, where hero content reliably fits one viewport;
+          on smaller screens the stacked layout can grow taller than 100vh and the arrow would overlap content */}
       <button
         onClick={() => document.querySelector('#features')?.scrollIntoView({ behavior: 'smooth' })}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 text-text-light/40 hover:text-accent transition-colors animate-bounce"
+        className="hidden lg:block absolute bottom-8 left-1/2 -translate-x-1/2 text-text-light/40 hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 rounded-full transition-colors motion-safe:animate-bounce"
         aria-label="Прокрутить вниз"
       >
         <ChevronDown className="w-6 h-6" />
@@ -157,6 +142,14 @@ function CopyIcon({ className = '' }) {
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
       <rect x="9" y="9" width="13" height="13" rx="2" />
       <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+    </svg>
+  )
+}
+
+function CheckIcon({ className = '' }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+      <polyline points="20,6 9,17 4,12" />
     </svg>
   )
 }

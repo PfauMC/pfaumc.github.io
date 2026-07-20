@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 export function usePlayerProfile(nickname) {
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
   const [error, setError] = useState(false)
+  const [reloadKey, setReloadKey] = useState(0)
 
   useEffect(() => {
     let cancelled = false
@@ -32,7 +33,9 @@ export function usePlayerProfile(nickname) {
       })
 
     return () => { cancelled = true }
-  }, [nickname])
+  }, [nickname, reloadKey])
 
-  return { profile, loading, notFound, error }
+  const retry = useCallback(() => setReloadKey((k) => k + 1), [])
+
+  return { profile, loading, notFound, error, retry }
 }

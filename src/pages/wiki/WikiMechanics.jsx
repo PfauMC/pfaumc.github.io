@@ -7,6 +7,7 @@ export const mechanicsSections = [
     id: 'mech-first-join',
     category: 'Первый вход и команды',
     icon: '🌍',
+    scope: 'all',
     items: [
       'При первом входе на сервер вы спавнитесь в случайной точке мира, а не на фиксированных координатах.',
       'На сервере нет команд свободной телепортации — /spawn, /tp, /home и подобных не существует. Перемещаться можно пешком, на транспорте или через порталы.',
@@ -17,6 +18,7 @@ export const mechanicsSections = [
     id: 'mech-newbie-spawn',
     category: 'Ограничения для новичков',
     icon: '🔰',
+    scope: 'all',
     items: [
       'Первое время после входа вы не можете ломать или ставить блоки в зоне спавна — ни в Обычном мире, ни в Нижнем мире. Это защита от случайного гриферства новичками.',
       'Ограничение снимается автоматически по мере игры на сервере; если оно не пропадает — обратитесь в Discord.',
@@ -26,6 +28,7 @@ export const mechanicsSections = [
     id: 'mech-mods',
     category: 'Клиентские модификации',
     icon: '🧩',
+    scope: 'all',
     items: [
       'Разрешены любые моды, улучшающие удобство игры, если они не дают преимущества над другими игроками.',
       'Мод на миникарту — разрешён.',
@@ -36,6 +39,7 @@ export const mechanicsSections = [
     id: 'mech-voice',
     category: 'Голосовой чат',
     icon: '🎙️',
+    scope: 'all',
     items: [
       'На сервере установлены Plasmo Voice и Simple Voice Chat — специальный плагин связывает их между собой, поэтому игроки с разными голосовыми модами слышат друг друга.',
       'Голос привязан к игровым координатам: чем ближе собеседник, тем громче слышно, как в реальной жизни.',
@@ -45,15 +49,18 @@ export const mechanicsSections = [
     id: 'mech-pve',
     category: 'PvE и убийства игроков',
     icon: '🕊️',
+    scope: 'vanilla',
     items: [
-      'Сервер полностью PvE — убийство другого игрока допустимо только при его добровольном согласии.',
-      'Нападение без согласия второй стороны — нарушение правил. Сообщайте о таких случаях в Discord с доказательствами.',
+      'Режим Ванила — PvE: убийство другого игрока допустимо только при его добровольном согласии, нападение без согласия — нарушение правил.',
+      'Режим Политическое выживание устроен иначе — там PvP разрешено по всей карте за пределами охраняемых зон. Подробности смотрите в правилах соответствующего режима.',
+      'Сообщайте о нарушениях в Discord с доказательствами.',
     ],
   },
   {
     id: 'mech-nether-roof',
     category: 'Крыша Нижнего мира',
     icon: '🔥',
+    scope: 'all',
     items: [
       'Находиться и строить на крыше Нижнего мира не запрещено.',
       'При этом администрация не несёт ответственности за то, что происходит с вами там, включая потерю вещей, гибель персонажа или невозможность самостоятельно выбраться.',
@@ -63,6 +70,7 @@ export const mechanicsSections = [
     id: 'mech-nether-restore',
     category: 'Постройки в Нижнем мире',
     icon: '⚠️',
+    scope: 'all',
     important: true,
     items: [
       'Магазины, базы и другое имущество, расположенные в Нижнем мире, не подлежат восстановлению после гриферства.',
@@ -73,6 +81,7 @@ export const mechanicsSections = [
     id: 'mech-spawn-building',
     category: 'Строительство на спавне',
     icon: '🏗️',
+    scope: 'all',
     items: [
       'Самовольное строительство на территории спавна запрещено.',
       'Разрешается размещать только магазины — и только после согласования со строителями или администрацией проекта.',
@@ -83,16 +92,19 @@ export const mechanicsSections = [
     id: 'mech-griefing',
     category: 'Гриферство и помощь администрации',
     icon: '🛟',
+    scope: 'vanilla',
     items: [
-      'Если вас загрифили — обратитесь к хелперам.',
+      'Эта процедура действует в режиме Ванила, где гриф запрещён. Если вас загрифили — обратитесь к хелперам.',
       'Сначала администрация постарается решить ситуацию мирно и договориться о добровольном возврате вещей — мы придерживаемся политики минимального вмешательства в ванильный игровой процесс и стараемся не использовать команды и откаты без необходимости.',
       'Если мирно решить не удалось: нарушитель получает блокировку, украденные вещи изымаются из его инвентаря и передаются пострадавшему, а постройки и животные восстанавливаются, если это технически возможно.',
+      { type: 'warning', text: 'В Политическом выживании гриф, мародёрство и уничтожение баз разрешены правилами режима — эта процедура восстановления на них не распространяется.' },
     ],
   },
   {
     id: 'mech-vulnerabilities',
     category: 'Уязвимости и баги',
     icon: '🔍',
+    scope: 'all',
     items: [
       'Мы стараемся исправлять все известные нам уязвимости сервера.',
       'Нашли новую уязвимость, дюп или способ обхода ограничений — сообщите администрации. За полезный и ответственный отчёт может быть предусмотрено вознаграждение.',
@@ -103,6 +115,7 @@ export const mechanicsSections = [
     id: 'mech-coreprotect',
     category: 'Логирование действий (CoreProtect)',
     icon: '🔍',
+    scope: 'all',
     items: [
       'Все действия игроков — ломание и установка блоков, убийства, взаимодействие с контейнерами — логируются плагином CoreProtect.',
       'Команда /co i включает режим инспекции: наведите взгляд на блок, чтобы увидеть, кто и когда его изменил.',
@@ -113,6 +126,7 @@ export const mechanicsSections = [
     id: 'mech-unauthorized-accounts',
     category: 'Неавторизованные аккаунты',
     icon: '🔐',
+    scope: 'all',
     important: true,
     items: [
       'Администрация не несёт ответственности за безопасность неавторизованных аккаунтов.',
@@ -122,7 +136,35 @@ export const mechanicsSections = [
   },
 ]
 
-function MechanicsSection({ id, category, icon, items, important }) {
+const SCOPE_LABELS = {
+  all: 'Общее правило для всех режимов',
+  vanilla: 'Относится только к Ваниле',
+  political: 'Относится только к Политическому выживанию',
+}
+
+function MechanicsItem({ item, important }) {
+  if (typeof item === 'string') {
+    return (
+      <li className="flex items-start gap-2.5">
+        <span className={`flex-shrink-0 w-1.5 h-1.5 rounded-full mt-2 ${important ? 'bg-orange-400' : 'bg-accent'}`} />
+        <span className="text-text-light text-sm leading-relaxed">{item}</span>
+      </li>
+    )
+  }
+
+  if (item.type === 'warning') {
+    return (
+      <li className="flex items-start gap-2.5 bg-orange-500/8 border border-orange-500/20 rounded-xl p-3">
+        <span className="text-orange-400 flex-shrink-0">⚠️</span>
+        <span className="text-text-light text-sm leading-relaxed">{item.text}</span>
+      </li>
+    )
+  }
+
+  return null
+}
+
+function MechanicsSection({ id, category, icon, items, important, scope }) {
   const [open, setOpen] = useState(true)
   const { hash } = useLocation()
   const highlighted = hash === `#${id}`
@@ -139,7 +181,7 @@ function MechanicsSection({ id, category, icon, items, important }) {
         className="w-full flex items-center gap-3 text-left group"
       >
         <span className="text-xl flex-shrink-0">{icon}</span>
-        <h3 className="font-mono font-bold text-white flex-1 group-hover:text-accent transition-colors flex items-center gap-2">
+        <h3 className="font-mono font-bold text-heading flex-1 min-w-0 group-hover:text-accent transition-colors flex items-center gap-2 flex-wrap">
           {category}
           {important && (
             <span className="text-orange-400 text-xs font-mono font-bold border border-orange-500/30 bg-orange-500/10 rounded-full px-2 py-0.5">
@@ -154,14 +196,18 @@ function MechanicsSection({ id, category, icon, items, important }) {
         </span>
       </button>
       {open && (
-        <ul className="mt-4 space-y-2.5">
-          {items.map((rule, i) => (
-            <li key={i} className="flex items-start gap-2.5">
-              <span className={`flex-shrink-0 w-1.5 h-1.5 rounded-full mt-2 ${important ? 'bg-orange-400' : 'bg-accent'}`} />
-              <span className="text-text-light text-sm leading-relaxed">{rule}</span>
-            </li>
-          ))}
-        </ul>
+        <>
+          {scope && scope !== 'all' && (
+            <span className="inline-flex items-center gap-1.5 text-xs font-mono px-2.5 py-1 rounded-full border text-accent bg-accent/10 border-accent/20 mt-3">
+              {SCOPE_LABELS[scope]}
+            </span>
+          )}
+          <ul className="mt-4 space-y-2.5">
+            {items.map((rule, i) => (
+              <MechanicsItem key={i} item={rule} important={important} />
+            ))}
+          </ul>
+        </>
       )}
     </div>
   )
@@ -182,7 +228,7 @@ export default function WikiMechanics() {
     <article>
       <div className="mb-8">
         <div className="text-text-light/50 text-xs font-mono uppercase tracking-widest mb-3">Справка</div>
-        <h1 className="font-mono text-3xl sm:text-4xl font-bold text-white mb-3">
+        <h1 className="font-mono text-3xl sm:text-4xl font-bold text-heading mb-3">
           🧭 Механики сервера
         </h1>
         <p className="text-text-light text-base leading-relaxed max-w-2xl">

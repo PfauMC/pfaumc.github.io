@@ -61,7 +61,7 @@ export default function Features() {
               <div className="w-12 h-12 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center mb-5 group-hover:bg-accent/20 transition-colors">
                 <f.icon className="w-6 h-6 text-accent" />
               </div>
-              <h3 className="font-semibold text-white text-lg mb-2">{f.title}</h3>
+              <h3 className="font-semibold text-heading text-lg mb-2">{f.title}</h3>
               <p className="text-text-light text-sm leading-relaxed">{f.desc}</p>
             </div>
           ))}

@@ -68,13 +68,13 @@ export default function DonatePage() {
         <div className="absolute inset-0 grid-bg opacity-40" />
         <div className="absolute inset-0 bg-hero-glow pointer-events-none" />
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6">
-          <Link to="/" className="inline-flex items-center gap-2 text-text-light/60 hover:text-white text-sm font-medium mb-10 transition-colors">
+          <Link to="/" className="inline-flex items-center gap-2 text-text-light/60 hover:text-heading text-sm font-medium mb-10 transition-colors">
             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
             На главную
           </Link>
           <div className={`transition-all duration-700 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
             <p className="text-accent font-mono text-sm font-semibold tracking-widest uppercase mb-3">Поддержать сервер</p>
-            <h1 className="font-mono text-3xl sm:text-5xl lg:text-6xl font-bold text-white mb-4">Донат</h1>
+            <h1 className="font-mono text-3xl sm:text-5xl lg:text-6xl font-bold text-heading mb-4">Донат</h1>
             <p className="text-text-light text-lg max-w-xl">
               Поддержи сервер и получи внутриигровую валюту — гхыбки.
             </p>
@@ -85,7 +85,7 @@ export default function DonatePage() {
       {/* Currency packages */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
         <div className="mb-8">
-          <h2 className="font-mono text-2xl font-bold text-white mb-2">Гхыбки — игровая валюта</h2>
+          <h2 className="font-mono text-2xl font-bold text-heading mb-2">Гхыбки — игровая валюта</h2>
           <p className="text-text-light">Внутриигровая валюта сервера. Используй для торговли, покупок и обменов.</p>
         </div>
 
@@ -100,7 +100,7 @@ export default function DonatePage() {
                 <div className="font-mono text-2xl font-bold text-gradient">{pkg.amount.toLocaleString('ru-RU')}</div>
                 <div className="text-text-light/50 text-sm">гхыбок</div>
               </div>
-              <div className="text-center text-lg font-bold text-white">{pkg.price.toLocaleString('ru-RU')} ₽</div>
+              <div className="text-center text-lg font-bold text-heading">{pkg.price.toLocaleString('ru-RU')} ₽</div>
               <button
                 onClick={() => setSelectedItem({ name: `${pkg.amount.toLocaleString('ru-RU')} гхыбок`, price: pkg.price })}
                 className="btn-primary text-sm justify-center"

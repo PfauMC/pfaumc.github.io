@@ -42,34 +42,11 @@
   body {
     @apply bg-bg-main font-sans;
     color: rgb(var(--c-text-base));
-    overflow-x: hidden;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    user-select: none;
-  }
-
-  img {
-    -webkit-user-drag: none;
-    -khtml-user-drag: none;
-    -moz-user-drag: none;
-    -o-user-drag: none;
-    user-drag: none;
-    pointer-events: none;
-  }
-
-  a img, button img, [role="button"] img {
-    pointer-events: auto;
   }
 
   ::selection {
     background: rgba(29, 165, 232, 0.3);
     color: #fff;
-  }
-
-  body.wiki-copy-enabled {
-    -webkit-user-select: text;
-    -moz-user-select: text;
-    user-select: text;
   }
 
   ::-webkit-scrollbar { width: 6px; }
@@ -84,17 +61,6 @@
 }
 
 /* ===== LIGHT MODE OVERRIDES ===== */
-:root.light .text-white {
-  color: rgb(15 23 42);
-}
-
-/* Keep white text inside accent buttons */
-:root.light .btn-primary,
-:root.light .btn-primary span,
-:root.light .btn-primary svg {
-  color: #fff;
-}
-
 /* Borders */
 :root.light .border-white\/5  { border-color: rgba(15,23,42,0.06); }
 :root.light .border-white\/10 { border-color: rgba(15,23,42,0.10); }
@@ -130,7 +96,7 @@
   }
 
   .card {
-    @apply bg-bg-card border border-white/5 rounded-2xl p-6 hover:border-accent/20 transition-all duration-300;
+    @apply bg-bg-card border border-white/5 rounded-2xl p-4 sm:p-6 hover:border-accent/20 transition-all duration-300;
   }
 
   .glow-dot {
@@ -139,11 +105,7 @@
   }
 
   .nav-link {
-    @apply text-text-light hover:text-white font-medium transition-colors duration-200 relative;
-  }
-
-  :root.light .nav-link:hover {
-    color: rgb(15 23 42);
+    @apply text-text-light hover:text-heading font-medium transition-colors duration-200 relative;
   }
 
   .nav-link::after {
@@ -156,7 +118,7 @@
   }
 
   .copy-toast {
-    @apply fixed bottom-6 left-1/2 -translate-x-1/2 bg-accent text-white px-4 py-2 rounded-lg font-medium text-sm z-50 transition-all duration-300;
+    @apply text-white px-4 py-2 rounded-lg font-medium text-sm shadow-lg;
   }
 }
 

@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { PfauIcon } from './LoadingScreen'
 import { useTheme } from '../context/ThemeContext'
+
+const MENU_ID = 'mobile-nav-menu'
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
@@ -10,6 +12,7 @@ export default function Navbar() {
   const navigate = useNavigate()
   const { theme, toggle } = useTheme()
   const isHome = location.pathname === '/'
+  const menuButtonRef = useRef(null)
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40)
@@ -24,13 +27,26 @@ export default function Navbar() {
     return () => { document.body.style.overflow = '' }
   }, [menuOpen])
 
+  useEffect(() => {
+    if (!menuOpen) return
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape') closeMenu()
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [menuOpen])
+
+  const closeMenu = () => {
+    setMenuOpen(false)
+    menuButtonRef.current?.focus()
+  }
+
   const handleSection = (hash) => {
     setMenuOpen(false)
     if (isHome) {
       document.querySelector(hash)?.scrollIntoView({ behavior: 'smooth' })
     } else {
-      navigate('/')
-      setTimeout(() => document.querySelector(hash)?.scrollIntoView({ behavior: 'smooth' }), 300)
+      navigate({ pathname: '/', hash })
     }
   }
 
@@ -120,9 +136,12 @@ export default function Navbar() {
             {theme === 'dark' ? <SunIcon className="w-4 h-4" /> : <MoonIcon className="w-4 h-4" />}
           </button>
           <button
+            ref={menuButtonRef}
             onClick={() => setMenuOpen(!menuOpen)}
             className="w-9 h-9 flex flex-col items-center justify-center gap-1.5 rounded-lg hover:bg-white/5 transition-colors"
-            aria-label="Меню"
+            aria-label={menuOpen ? 'Закрыть меню' : 'Открыть меню'}
+            aria-expanded={menuOpen}
+            aria-controls={MENU_ID}
           >
             <span className={`w-5 h-0.5 transition-all duration-200 ${menuOpen ? 'rotate-45 translate-y-2' : ''}`} style={{ background: 'rgb(var(--c-text-base))' }} />
             <span className={`w-5 h-0.5 transition-all duration-200 ${menuOpen ? 'opacity-0' : ''}`} style={{ background: 'rgb(var(--c-text-base))' }} />
@@ -132,14 +151,26 @@ export default function Navbar() {
       </div>
 
       {/* Mobile menu — fullscreen overlay */}
-      <div className={`nav:hidden fixed inset-0 z-40 transition-opacity duration-300 ${
-        menuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-      }`}>
+      <div
+        id={MENU_ID}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Мобильное меню"
+        className={`nav:hidden fixed inset-0 z-40 transition-opacity duration-300 ${
+          menuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
+      >
         {/* Solid background */}
         <div className="absolute inset-0" style={{ background: 'rgb(var(--c-bg-main))' }} />
 
         {/* Content */}
-        <div className="relative flex flex-col h-full pt-20 px-5 pb-8 overflow-y-auto">
+        <div
+          className="relative flex flex-col h-[100dvh] px-5 overflow-y-auto"
+          style={{
+            paddingTop: 'calc(env(safe-area-inset-top) + 5rem)',
+            paddingBottom: 'calc(env(safe-area-inset-bottom) + 2rem)',
+          }}
+        >
           <div className="flex flex-col gap-1 flex-1">
             {navItems.map((item) =>
               item.to ? (
@@ -147,7 +178,7 @@ export default function Navbar() {
                   key={item.label}
                   to={item.to}
                   onClick={() => setMenuOpen(false)}
-                  className="text-left text-text-light hover:text-white py-3 px-3 rounded-xl hover:bg-white/5 transition-colors font-medium text-lg"
+                  className="text-left text-text-light hover:text-heading py-3 px-3 rounded-xl hover:bg-white/5 transition-colors font-medium text-lg"
                 >
                   {item.label}
                 </Link>
@@ -155,34 +186,27 @@ export default function Navbar() {
                 <button
                   key={item.label}
                   onClick={item.action}
-                  className="text-left text-text-light hover:text-white py-3 px-3 rounded-xl hover:bg-white/5 transition-colors font-medium text-lg"
+                  className="text-left text-text-light hover:text-heading py-3 px-3 rounded-xl hover:bg-white/5 transition-colors font-medium text-lg"
                 >
                   {item.label}
                 </button>
               )
             )}
-            {/* <Link
-              to="/donate"
-              onClick={() => setMenuOpen(false)}
-              className="inline-flex items-center justify-center gap-2 btn-primary text-sm mt-3"
-            >
-              💎 Донат
-            </Link> */}
           </div>
 
-          {/* Socials at bottom */}
-          <div className="flex gap-2 mt-6">
-            <a href="https://t.me/pfaumc" target="_blank" rel="noopener noreferrer"
-              className="flex-1 inline-flex items-center justify-center gap-2 btn-ghost text-sm py-2.5">
-              <TelegramIcon className="w-4 h-4" /> Telegram
+          {/* Socials at bottom — icon-only so 3 buttons never overflow at 320px */}
+          <div className="grid grid-cols-3 gap-2 mt-6 flex-shrink-0">
+            <a href="https://t.me/pfaumc" target="_blank" rel="noopener noreferrer" aria-label="Telegram"
+              className="flex items-center justify-center gap-2 btn-ghost text-sm py-3 px-2">
+              <TelegramIcon className="w-5 h-5 flex-shrink-0" />
             </a>
-            <a href="https://discord.gg/BPmxWwdChY" target="_blank" rel="noopener noreferrer"
-              className="flex-1 inline-flex items-center justify-center gap-2 btn-ghost text-sm py-2.5">
-              <DiscordIcon className="w-4 h-4" /> Discord
+            <a href="https://discord.gg/BPmxWwdChY" target="_blank" rel="noopener noreferrer" aria-label="Discord"
+              className="flex items-center justify-center gap-2 btn-ghost text-sm py-3 px-2">
+              <DiscordIcon className="w-5 h-5 flex-shrink-0" />
             </a>
-            <a href="https://www.youtube.com/@PfauMC" target="_blank" rel="noopener noreferrer"
-              className="flex-1 inline-flex items-center justify-center gap-2 btn-ghost text-sm py-2.5">
-              <YouTubeIcon className="w-4 h-4" /> YouTube
+            <a href="https://www.youtube.com/@PfauMC" target="_blank" rel="noopener noreferrer" aria-label="YouTube"
+              className="flex items-center justify-center gap-2 btn-ghost text-sm py-3 px-2">
+              <YouTubeIcon className="w-5 h-5 flex-shrink-0" />
             </a>
           </div>
         </div>

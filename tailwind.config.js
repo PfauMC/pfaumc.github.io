@@ -13,6 +13,7 @@ export default {
         'bg-section': 'rgb(var(--c-bg-section) / <alpha-value>)',
         'bg-card': 'rgb(var(--c-bg-card) / <alpha-value>)',
         'text-light': 'rgb(var(--c-text-light) / <alpha-value>)',
+        heading: 'rgb(var(--c-text-base) / <alpha-value>)',
       },
       fontFamily: {
         mono: ['Monocraft', 'monospace'],

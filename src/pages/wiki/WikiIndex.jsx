@@ -38,7 +38,7 @@ export default function WikiIndex() {
         <div className="inline-flex items-center gap-2 bg-accent/10 border border-accent/20 text-accent text-xs font-mono px-3 py-1.5 rounded-full mb-4">
           📖 База знаний PfauMC
         </div>
-        <h1 className="font-mono text-3xl sm:text-4xl font-bold text-white mb-3">
+        <h1 className="font-mono text-3xl sm:text-4xl font-bold text-heading mb-3">
           Вики
         </h1>
         <p className="text-text-light text-base max-w-xl leading-relaxed">
@@ -58,7 +58,7 @@ export default function WikiIndex() {
             <div className="text-4xl flex-shrink-0 mt-0.5">{c.icon}</div>
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                <h2 className="font-mono font-bold text-lg text-white group-hover:text-accent transition-colors">
+                <h2 className="font-mono font-bold text-lg text-heading group-hover:text-accent transition-colors">
                   {c.title}
                 </h2>
                 <span className={`text-xs font-mono px-2 py-0.5 rounded-full border ${c.tagColor}`}>
@@ -77,7 +77,7 @@ export default function WikiIndex() {
         <div className="flex flex-col sm:flex-row sm:items-center gap-4">
           <div className="text-3xl">💬</div>
           <div>
-            <div className="font-mono font-bold text-white mb-0.5">Нужна помощь?</div>
+            <div className="font-mono font-bold text-heading mb-0.5">Нужна помощь?</div>
             <p className="text-text-light/70 text-sm">
               Если в вики нет ответа — обратитесь в наш Discord или Telegram.
               Администрация отвечает в течение нескольких часов.

@@ -1,10 +1,15 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { getModeById } from '../data/modesData'
 import { generalRules, modeRules } from '../data/rulesData'
 import { useServerStats } from '../hooks/useServerStats'
 import { useSEO } from '../hooks/useSEO'
+import { useCopyToClipboard } from '../hooks/useCopyToClipboard'
+import CopyToast from '../components/CopyToast'
 import NotFoundPage from './NotFoundPage'
+import { SERVER_VERSION } from '../config'
+
+const SERVER_IP = 'play.pfaumc.online'
 
 export default function ModePage() {
   const { modeId } = useParams()
@@ -12,6 +17,7 @@ export default function ModePage() {
   const { stats, loading: statsLoading } = useServerStats()
   const [visible, setVisible] = useState(false)
   const [openSections, setOpenSections] = useState({})
+  const { copied, error, copy } = useCopyToClipboard()
 
   useSEO(
     mode ? `${mode.name} — PfauMC | Minecraft сервер` : 'PfauMC — Minecraft сервер',
@@ -51,7 +57,7 @@ export default function ModePage() {
           {/* Back */}
           <Link
             to="/"
-            className={`inline-flex items-center gap-2 text-text-light/60 hover:text-white text-sm font-medium mb-10 transition-all duration-500 ${visible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'}`}
+            className={`inline-flex items-center gap-2 text-text-light/60 hover:text-heading text-sm font-medium mb-10 transition-all duration-500 ${visible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'}`}
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
               <path d="M19 12H5M12 19l-7-7 7-7" />
@@ -66,9 +72,9 @@ export default function ModePage() {
               {mode.tag}
             </span>
 
-            <div className="flex items-center gap-3 sm:gap-4 mb-5">
-              <span className="text-4xl sm:text-5xl">{mode.emoji}</span>
-              <h1 className="font-mono text-4xl sm:text-5xl md:text-6xl font-bold text-white">{mode.name}</h1>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-5">
+              <span className="text-4xl sm:text-5xl flex-shrink-0">{mode.emoji}</span>
+              <h1 className="min-w-0 break-words font-mono text-3xl sm:text-5xl md:text-6xl font-bold text-heading">{mode.name}</h1>
             </div>
 
             <p className="text-text-light text-lg leading-relaxed max-w-2xl mb-10">
@@ -93,25 +99,36 @@ export default function ModePage() {
                     />
                   ),
                 },
-                { label: 'Версия', value: stats?.version ?? '26.2', icon: <CubeIcon /> },
+                { label: 'Версия', value: SERVER_VERSION, icon: <CubeIcon /> },
                 { label: 'Режим работы', value: '24/7', icon: <ClockIcon /> },
-                { label: 'IP адрес', value: 'play.pfaumc.online', icon: <ServerIcon /> },
+                { label: 'IP адрес', value: SERVER_IP, icon: <ServerIcon />, isIp: true },
               ].map((s) => (
                 <div
                   key={s.label}
-                  className="flex items-center gap-3 bg-bg-card border border-white/5 rounded-xl px-3 sm:px-4 py-3 min-w-0"
+                  className={`flex items-center gap-3 bg-bg-card border border-white/5 rounded-xl px-3 sm:px-4 py-3 min-w-0 ${s.isIp ? 'col-span-2 lg:col-span-1' : ''}`}
                 >
                   <span className="text-text-light/40 flex items-center flex-shrink-0">{s.icon}</span>
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <div className="text-xs text-text-light/50 leading-none mb-1">{s.label}</div>
-                    <div className="font-mono font-semibold text-white text-xs sm:text-sm flex items-center gap-1.5 truncate">
-                      {s.icon?.props?.className === undefined && s.icon}
-                      {s.value}
-                    </div>
+                    {s.isIp ? (
+                      <button
+                        type="button"
+                        onClick={() => copy(SERVER_IP)}
+                        aria-label={`Скопировать IP-адрес сервера ${SERVER_IP}`}
+                        className="font-mono font-semibold text-heading text-xs sm:text-sm break-all text-left hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 rounded transition-colors"
+                      >
+                        {s.value}
+                      </button>
+                    ) : (
+                      <div className="font-mono font-semibold text-heading text-xs sm:text-sm truncate">
+                        {s.value}
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
             </div>
+            <CopyToast copied={copied} error={error} successMessage="IP скопирован" />
           </div>
         </div>
       </section>
@@ -119,7 +136,7 @@ export default function ModePage() {
       {/* Highlights */}
       <section className="py-16 bg-bg-section border-t border-white/5">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
-          <h2 className="font-mono text-2xl font-bold text-white mb-8">Особенности режима</h2>
+          <h2 className="font-mono text-2xl font-bold text-heading mb-8">Особенности режима</h2>
           <div className="grid sm:grid-cols-2 gap-4">
             {mode.highlights.map((h, i) => (
               <div
@@ -130,7 +147,7 @@ export default function ModePage() {
                 <div className="flex gap-4">
                   <span className="text-2xl flex-shrink-0">{h.icon}</span>
                   <div>
-                    <h3 className="font-semibold text-white mb-1">{h.title}</h3>
+                    <h3 className="font-semibold text-heading mb-1">{h.title}</h3>
                     <p className="text-text-light text-sm leading-relaxed">{h.desc}</p>
                   </div>
                 </div>
@@ -144,7 +161,7 @@ export default function ModePage() {
       <section className="py-16 relative">
         <div className="absolute inset-0 grid-bg opacity-20" />
         <div className="relative max-w-5xl mx-auto px-4 sm:px-6">
-          <h2 className="font-mono text-2xl font-bold text-white mb-8">Правила</h2>
+          <h2 className="font-mono text-2xl font-bold text-heading mb-8">Правила</h2>
 
           <div className="space-y-6">
             {allRules.map(({ group, sections }) => (
@@ -163,10 +180,12 @@ export default function ModePage() {
                       <div key={key} className="card">
                         <button
                           onClick={() => toggleSection(key)}
+                          aria-expanded={isOpen}
+                          aria-controls={`mode-rule-${key}`}
                           className="w-full flex items-center gap-3 text-left"
                         >
                           <span className="text-lg">{section.icon}</span>
-                          <h3 className="font-semibold text-white text-sm flex-1">{section.category}</h3>
+                          <h3 className="font-semibold text-heading text-sm flex-1 min-w-0">{section.category}</h3>
                           <svg
                             className={`w-4 h-4 text-text-light/40 transition-transform duration-200 flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`}
                             viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}
@@ -174,8 +193,11 @@ export default function ModePage() {
                             <polyline points="6,9 12,15 18,9" />
                           </svg>
                         </button>
-                        <div className={`overflow-hidden transition-all duration-300 ${isOpen ? 'max-h-[1200px] opacity-100' : 'max-h-0 opacity-0'}`}>
-                          <ul className="mt-3 space-y-2 pl-2">
+                        <div
+                          id={`mode-rule-${key}`}
+                          className={`grid transition-[grid-template-rows] duration-300 motion-reduce:transition-none ${isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}
+                        >
+                          <ul className="overflow-hidden mt-3 space-y-2 pl-2">
                             {section.items.map((item, iIdx) => (
                               <ModeRuleItem key={iIdx} item={item} accentColor={mode.accentColor} />
                             ))}
@@ -202,17 +224,16 @@ export default function ModePage() {
       {/* CTA */}
       <section className="py-16 bg-bg-section border-t border-white/5">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 text-center">
-          <h2 className="font-mono text-3xl font-bold text-white mb-3">Готов начать?</h2>
+          <h2 className="font-mono text-3xl font-bold text-heading mb-3">Готов начать?</h2>
           <p className="text-text-light mb-8">Подключайся и начинай играть прямо сейчас</p>
           <div className="flex flex-wrap gap-3 justify-center">
             <button
-              onClick={() => {
-                navigator.clipboard.writeText('play.pfaumc.online').catch(() => {})
-              }}
+              onClick={() => copy(SERVER_IP)}
+              aria-label={`Скопировать IP-адрес сервера ${SERVER_IP}`}
               className="btn-primary"
             >
               <ServerIcon className="w-4 h-4" />
-              Скопировать IP
+              {copied ? 'IP скопирован' : 'Скопировать IP'}
             </button>
             <a href="https://discord.gg/BPmxWwdChY" target="_blank" rel="noopener noreferrer" className="btn-ghost">
               <DiscordIcon className="w-4 h-4" />

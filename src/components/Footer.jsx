@@ -1,34 +1,21 @@
-import { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { PfauIcon } from './LoadingScreen'
+import { useCopyToClipboard } from '../hooks/useCopyToClipboard'
+import CopyToast from './CopyToast'
 
 const SERVER_IP = 'play.pfaumc.online'
 
 export default function Footer() {
-  const [copied, setCopied] = useState(false)
+  const { copied, error, copy } = useCopyToClipboard()
   const navigate = useNavigate()
   const location = useLocation()
   const isHome = location.pathname === '/'
-
-  const copyIP = async () => {
-    try { await navigator.clipboard.writeText(SERVER_IP) } catch {
-      const el = document.createElement('textarea')
-      el.value = SERVER_IP
-      document.body.appendChild(el)
-      el.select()
-      document.execCommand('copy')
-      document.body.removeChild(el)
-    }
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
 
   const handleSection = (hash) => {
     if (isHome) {
       document.querySelector(hash)?.scrollIntoView({ behavior: 'smooth' })
     } else {
-      navigate('/')
-      setTimeout(() => document.querySelector(hash)?.scrollIntoView({ behavior: 'smooth' }), 300)
+      navigate({ pathname: '/', hash })
     }
   }
 
@@ -43,7 +30,7 @@ export default function Footer() {
             <Link to="/" className="flex items-center gap-2.5 mb-4 w-fit">
               <PfauIcon className="w-7 h-7" />
               <span className="font-mono font-bold text-xl">
-                <span className="text-white">Pfau</span>
+                <span className="text-heading">Pfau</span>
                 <span className="text-accent">MC</span>
               </span>
             </Link>
@@ -51,24 +38,26 @@ export default function Footer() {
               Твой мир. Твои правила. Присоединяйся к сообществу PfauMC и найди свой стиль игры.
             </p>
             <button
-              onClick={copyIP}
-              className="group flex items-center gap-2.5 bg-bg-main/60 border border-white/10 hover:border-accent/40 rounded-lg px-4 py-2.5 transition-all duration-200 hover:bg-accent/5 mb-4"
+              onClick={() => copy(SERVER_IP)}
+              aria-label={`Скопировать IP-адрес сервера ${SERVER_IP}`}
+              className="group flex items-center gap-2.5 bg-bg-main/60 border border-white/10 hover:border-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 rounded-lg px-4 py-2.5 transition-all duration-200 hover:bg-accent/5 mb-4"
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-              <span className="font-mono text-sm font-semibold text-white">{SERVER_IP}</span>
-              <span className="ml-auto text-text-light/40 group-hover:text-accent transition-colors text-xs">
-                {copied ? <span className="text-green-400">✓</span> : 'копировать'}
+              <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse flex-shrink-0" />
+              <span className="font-mono text-sm font-semibold text-heading">{SERVER_IP}</span>
+              <span className="ml-auto flex-shrink-0 text-text-light/40 group-hover:text-accent transition-colors text-xs">
+                {copied ? <CheckIcon className="w-3.5 h-3.5 text-green-400" /> : 'копировать'}
               </span>
             </button>
+            <CopyToast copied={copied} error={error} successMessage="IP скопирован" />
             <div className="space-y-1">
               <p className="text-text-light/50 text-xs">ИНН: 231227267502</p>
-              <p className="text-text-light/50 text-xs">Email: <a href="mailto:contact@goyland.ru" className="hover:text-white transition-colors">contact@goyland.ru</a></p>
+              <p className="text-text-light/50 text-xs">Email: <a href="mailto:contact@goyland.ru" className="hover:text-heading transition-colors">contact@goyland.ru</a></p>
             </div>
           </div>
 
           {/* Nav */}
           <div>
-            <h4 className="font-semibold text-white text-sm mb-4">Сервер</h4>
+            <h4 className="font-semibold text-heading text-sm mb-4">Сервер</h4>
             <ul className="space-y-2.5">
               {[
                 { label: 'Главная', action: () => handleSection('#hero') },
@@ -77,7 +66,7 @@ export default function Footer() {
                 <li key={item.label}>
                   <button
                     onClick={item.action}
-                    className="text-text-light/60 hover:text-white text-sm transition-colors"
+                    className="text-text-light/60 hover:text-heading text-sm transition-colors"
                   >
                     {item.label}
                   </button>
@@ -88,18 +77,18 @@ export default function Footer() {
 
           {/* Socials */}
           <div>
-            <h4 className="font-semibold text-white text-sm mb-1">Сообщество</h4>
+            <h4 className="font-semibold text-heading text-sm mb-1">Сообщество</h4>
             <p className="text-text-light/40 text-xs mb-3">Вопросы — в Discord или Telegram</p>
             <ul className="space-y-2.5">
               <li>
                 <a href="https://discord.gg/BPmxWwdChY" target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-text-light/60 hover:text-white text-sm transition-colors">
+                  className="flex items-center gap-2 text-text-light/60 hover:text-heading text-sm transition-colors">
                   <DiscordIcon className="w-4 h-4" /> Discord
                 </a>
               </li>
               <li>
                 <a href="https://t.me/pfaumc" target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-text-light/60 hover:text-white text-sm transition-colors">
+                  className="flex items-center gap-2 text-text-light/60 hover:text-heading text-sm transition-colors">
                   <TelegramIcon className="w-4 h-4" /> Telegram
                 </a>
               </li>
@@ -114,17 +103,17 @@ export default function Footer() {
 
           {/* Документы */}
           <div>
-            <h4 className="font-semibold text-white text-sm mb-4">Документы</h4>
+            <h4 className="font-semibold text-heading text-sm mb-4">Документы</h4>
             <ul className="space-y-2.5">
               <li>
                 <a href="/agreement.pdf" target="_blank" rel="noopener noreferrer"
-                  className="text-text-light/60 hover:text-white text-sm transition-colors">
+                  className="text-text-light/60 hover:text-heading text-sm transition-colors">
                   Пользовательское соглашение
                 </a>
               </li>
               <li>
                 <a href="/privacy.pdf" target="_blank" rel="noopener noreferrer"
-                  className="text-text-light/60 hover:text-white text-sm transition-colors">
+                  className="text-text-light/60 hover:text-heading text-sm transition-colors">
                   Политика конфиденциальности
                 </a>
               </li>
@@ -158,6 +147,14 @@ export default function Footer() {
         </div>
       </div>
     </footer>
+  )
+}
+
+function CheckIcon({ className = '' }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+      <polyline points="20,6 9,17 4,12" />
+    </svg>
   )
 }
 

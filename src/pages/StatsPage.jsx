@@ -1,13 +1,11 @@
 import { useServerStats } from '../hooks/useServerStats'
-import { useOnlineHistory } from '../hooks/useOnlineHistory'
-import OnlineChart from '../components/OnlineChart'
 import { useSEO } from '../hooks/useSEO'
+import { SERVER_VERSION } from '../config'
 
 export default function StatsPage() {
-  useSEO('Онлайн сервера — PfauMC', 'Статистика и график онлайна Minecraft сервера PfauMC в реальном времени.')
+  useSEO('Онлайн сервера — PfauMC', 'Статистика сервера Minecraft сервера PfauMC в реальном времени.')
 
   const { stats, loading, lastUpdated, refresh } = useServerStats(60000)
-  const { series } = useOnlineHistory()
 
   const fmtTime = (d) => {
     if (!d) return '—'
@@ -22,7 +20,7 @@ export default function StatsPage() {
 
         {/* Header */}
         <div className="mb-10">
-          <h1 className="font-mono text-3xl sm:text-4xl font-bold text-white mb-2">
+          <h1 className="font-mono text-3xl sm:text-4xl font-bold text-heading mb-2">
             Статистика сервера
           </h1>
           <p className="text-text-light text-base">
@@ -46,7 +44,11 @@ export default function StatsPage() {
                     ? 'bg-green-500/10 border-green-500/30'
                     : 'bg-red-500/10 border-red-500/30'
                 }`}>
-                  <span className="text-3xl">{stats?.online ? '🟢' : '🔴'}</span>
+                  {stats?.online ? (
+                    <CheckCircleIcon className="w-7 h-7 text-green-400" />
+                  ) : (
+                    <OfflineIcon className="w-7 h-7 text-red-400" />
+                  )}
                 </div>
               )}
               <div>
@@ -80,7 +82,7 @@ export default function StatsPage() {
           <div className="card col-span-1 sm:col-span-2">
             <div className="text-text-light/50 text-xs font-mono uppercase tracking-widest mb-3">Игроков онлайн</div>
             <div className="flex items-end gap-3 mb-4">
-              <div className="font-mono text-5xl font-bold text-white">
+              <div className="font-mono text-5xl font-bold text-heading">
                 {loading ? <span className="opacity-30">—</span> : stats?.players ?? 0}
               </div>
               <div className="font-mono text-2xl text-text-light/40 mb-1">
@@ -128,9 +130,7 @@ export default function StatsPage() {
             {/* Version */}
             <div className="card flex-1">
               <div className="text-text-light/50 text-xs font-mono uppercase tracking-widest mb-2">Версия</div>
-              <div className="font-mono text-2xl font-bold text-white">
-                {loading ? <span className="opacity-30">—</span> : stats?.version ?? '—'}
-              </div>
+              <div className="font-mono text-2xl font-bold text-heading">{SERVER_VERSION}</div>
               <div className="text-text-light/40 text-xs mt-1">Java Edition</div>
             </div>
 
@@ -140,25 +140,15 @@ export default function StatsPage() {
               <div className="flex flex-col gap-1.5">
                 <div className="flex items-center gap-2 text-sm">
                   <span className="w-2 h-2 rounded-full bg-green-400 flex-shrink-0" />
-                  <span className="text-white font-medium">Ванила</span>
+                  <span className="text-heading font-medium">Ванила</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <span className="w-2 h-2 rounded-full bg-orange-400 flex-shrink-0" />
-                  <span className="text-white font-medium">Политическое выживание</span>
+                  <span className="text-heading font-medium">Политическое выживание</span>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Online history chart */}
-        <div className="card mb-6">
-          <div className="text-text-light/50 text-xs font-mono uppercase tracking-widest mb-4">Динамика онлайна</div>
-          {series ? (
-            <OnlineChart series={series} />
-          ) : (
-            <div className="text-center py-10 text-text-light/30 text-sm">Загрузка...</div>
-          )}
         </div>
 
         {/* Server info cards */}
@@ -197,9 +187,28 @@ function InfoCard({ icon, title, value, desc }) {
     <div className="card text-center">
       <div className="text-3xl mb-3">{icon}</div>
       <div className="text-text-light/50 text-xs font-mono uppercase tracking-widest mb-1">{title}</div>
-      <div className="font-mono text-lg font-bold text-white mb-1">{value}</div>
+      <div className="font-mono text-lg font-bold text-heading mb-1">{value}</div>
       <div className="text-text-light/50 text-xs">{desc}</div>
     </div>
+  )
+}
+
+function CheckCircleIcon({ className = '' }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+      <circle cx="12" cy="12" r="10" />
+      <polyline points="8,12.5 11,15.5 16,9" />
+    </svg>
+  )
+}
+
+function OfflineIcon({ className = '' }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+      <circle cx="12" cy="12" r="10" />
+      <line x1="8" y1="8" x2="16" y2="16" />
+      <line x1="16" y1="8" x2="8" y2="16" />
+    </svg>
   )
 }
 

@@ -7,7 +7,7 @@ import ActivityHeatmap from '../components/ActivityHeatmap'
 
 export default function PlayerProfilePage() {
   const { nickname } = useParams()
-  const { profile, loading, notFound, error } = usePlayerProfile(nickname)
+  const { profile, loading, notFound, error, retry } = usePlayerProfile(nickname)
 
   useSEO(
     profile ? `${profile.name} — профиль игрока | PfauMC` : `Игрок ${nickname} — PfauMC`,
@@ -19,7 +19,7 @@ export default function PlayerProfilePage() {
   if (notFound) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4 text-center px-4">
-        <p className="font-mono text-2xl font-bold text-white">Игрок не найден</p>
+        <p className="font-mono text-2xl font-bold text-heading">Игрок не найден</p>
         <p className="text-text-light text-sm max-w-sm">
           Такого игрока нет в базе, либо он ещё ни разу не заходил на сервер.
         </p>
@@ -32,7 +32,10 @@ export default function PlayerProfilePage() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4 text-center px-4">
         <p className="text-text-light">Не удалось загрузить профиль игрока</p>
-        <Link to="/players" className="btn-ghost">← К списку игроков</Link>
+        <div className="flex gap-3">
+          <button onClick={retry} className="btn-primary">Повторить</button>
+          <Link to="/players" className="btn-ghost">← К списку игроков</Link>
+        </div>
       </div>
     )
   }
@@ -40,7 +43,7 @@ export default function PlayerProfilePage() {
   return (
     <div className="min-h-screen pt-24 pb-16">
       <div className="max-w-3xl mx-auto px-4 sm:px-6">
-        <Link to="/players" className="inline-flex items-center gap-2 text-text-light/60 hover:text-white text-sm font-medium mb-8 transition-colors">
+        <Link to="/players" className="inline-flex items-center gap-2 text-text-light/60 hover:text-heading text-sm font-medium mb-8 transition-colors">
           <BackIcon className="w-4 h-4" />
           К списку игроков
         </Link>
@@ -56,7 +59,7 @@ export default function PlayerProfilePage() {
           />
 
           <div className="flex-1 min-w-0 text-center sm:text-left">
-            <h1 className="font-mono text-2xl sm:text-3xl font-bold text-white break-words">{profile.name}</h1>
+            <h1 className="font-mono text-2xl sm:text-3xl font-bold text-heading break-words">{profile.name}</h1>
 
             <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mt-2">
               <span className="text-xs font-mono px-2.5 py-1 rounded-full border text-accent bg-accent/10 border-accent/20">
@@ -69,7 +72,7 @@ export default function PlayerProfilePage() {
 
         {/* Stats */}
         <div className="mb-6">
-          <h2 className="font-mono font-bold text-white text-sm mb-3 uppercase tracking-widest text-text-light/50">
+          <h2 className="font-mono font-bold text-heading text-sm mb-3 uppercase tracking-widest text-text-light/50">
             Статистика
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -83,7 +86,7 @@ export default function PlayerProfilePage() {
         {/* Activity heatmap */}
         {profile.activity && profile.activity.some((d) => d.minutes > 0) && (
           <div className="mb-6">
-            <h2 className="font-mono font-bold text-white text-sm mb-3 uppercase tracking-widest text-text-light/50">
+            <h2 className="font-mono font-bold text-heading text-sm mb-3 uppercase tracking-widest text-text-light/50">
               Активность за год
             </h2>
             <div className="card">
@@ -94,7 +97,7 @@ export default function PlayerProfilePage() {
 
         {profile.integrations && profile.integrations.length > 0 && (
           <div>
-            <h2 className="font-mono font-bold text-white text-sm mb-3 uppercase tracking-widest text-text-light/50">
+            <h2 className="font-mono font-bold text-heading text-sm mb-3 uppercase tracking-widest text-text-light/50">
               Интеграции
             </h2>
             <div className="flex flex-wrap gap-2">
@@ -141,7 +144,7 @@ function StatusBadge({ online, lastSeen }) {
 function StatTile({ label, value }) {
   return (
     <div className="card text-center py-4">
-      <div className="font-mono text-lg font-bold text-white">{value}</div>
+      <div className="font-mono text-lg font-bold text-heading">{value}</div>
       <div className="text-text-light/50 text-xs mt-1">{label}</div>
     </div>
   )

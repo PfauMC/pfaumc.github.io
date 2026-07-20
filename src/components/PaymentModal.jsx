@@ -47,7 +47,7 @@ export default function PaymentModal({ item, onClose }) {
         {/* Close */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-text-light/40 hover:text-white transition-colors"
+          className="absolute top-4 right-4 text-text-light/40 hover:text-heading transition-colors"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
             <path d="M18 6L6 18M6 6l12 12"/>
@@ -57,7 +57,7 @@ export default function PaymentModal({ item, onClose }) {
         {/* Header */}
         <div className="mb-5">
           <p className="text-accent font-mono text-xs font-semibold tracking-widest uppercase mb-2">Оплата</p>
-          <h3 className="font-mono text-lg font-bold text-white leading-tight">{item.name}</h3>
+          <h3 className="font-mono text-lg font-bold text-heading leading-tight">{item.name}</h3>
           <div className="flex items-baseline gap-1 mt-1.5">
             <span className="text-3xl font-bold text-accent">{item.price.toLocaleString('ru-RU')}</span>
             <span className="text-text-light/60 text-base">₽</span>
@@ -80,7 +80,7 @@ export default function PaymentModal({ item, onClose }) {
             placeholder="Minecraft никнейм"
             maxLength={16}
             autoFocus
-            className="w-full bg-bg-section border border-white/10 rounded-xl px-4 py-3 text-white placeholder-text-light/25 focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/30 transition-colors font-mono text-sm"
+            className="w-full bg-bg-section border border-white/10 rounded-xl px-4 py-3 text-heading placeholder-text-light/25 focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/30 transition-colors font-mono text-sm"
           />
           {error && (
             <p className="mt-2 text-red-400 text-xs flex items-center gap-1">

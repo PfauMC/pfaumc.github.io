@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Routes, Route, useLocation } from 'react-router-dom'
+import { Routes, Route } from 'react-router-dom'
 import { ThemeProvider } from './context/ThemeContext'
 import LoadingScreen from './components/LoadingScreen'
 import Fireflies from './components/Fireflies'
@@ -18,8 +18,10 @@ import WikiIndex from './pages/wiki/WikiIndex'
 import WikiGuide from './pages/wiki/WikiGuide'
 import WikiRules from './pages/wiki/WikiRules'
 import WikiMechanics from './pages/wiki/WikiMechanics'
+import { useScrollToHash } from './hooks/useScrollToHash'
 
 function HomePage() {
+  useScrollToHash()
   return (
     <main>
       <Hero />
@@ -32,20 +34,14 @@ function HomePage() {
 export default function App() {
   const [loading, setLoading] = useState(true)
   const [fadeOut, setFadeOut] = useState(false)
-  const location = useLocation()
-  const isWiki = location.pathname.startsWith('/wiki')
 
   useEffect(() => {
-    const minDisplayTime = 1800
-    const start = Date.now()
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const fadeDuration = reduceMotion ? 0 : 500
 
     const handleLoad = () => {
-      const elapsed = Date.now() - start
-      const remaining = Math.max(0, minDisplayTime - elapsed)
-      setTimeout(() => {
-        setFadeOut(true)
-        setTimeout(() => setLoading(false), 500)
-      }, remaining)
+      setFadeOut(true)
+      setTimeout(() => setLoading(false), fadeDuration)
     }
 
     if (document.readyState === 'complete') {
@@ -55,32 +51,6 @@ export default function App() {
       return () => window.removeEventListener('load', handleLoad)
     }
   }, [])
-
-  useEffect(() => {
-    if (isWiki) return
-
-    const blockContextMenu = (e) => e.preventDefault()
-    const blockDrag = (e) => {
-      if (e.target.tagName === 'IMG') e.preventDefault()
-    }
-    const blockShortcuts = (e) => {
-      const key = e.key.toLowerCase()
-      if ((e.ctrlKey || e.metaKey) && ['s', 'u', 'p'].includes(key)) {
-        e.preventDefault()
-      }
-      if (e.key === 'F12') e.preventDefault()
-    }
-
-    document.addEventListener('contextmenu', blockContextMenu)
-    document.addEventListener('dragstart', blockDrag)
-    document.addEventListener('keydown', blockShortcuts)
-
-    return () => {
-      document.removeEventListener('contextmenu', blockContextMenu)
-      document.removeEventListener('dragstart', blockDrag)
-      document.removeEventListener('keydown', blockShortcuts)
-    }
-  }, [isWiki])
 
   return (
     <ThemeProvider>

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 const DEBOUNCE_MS = 350
 
@@ -6,40 +6,52 @@ export function usePlayerSearch(query) {
   const [results, setResults] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
-  const requestId = useRef(0)
+  const abortRef = useRef(null)
+  const lastQueryRef = useRef('')
+
+  const runSearch = useCallback((trimmed) => {
+    abortRef.current?.abort()
+    const controller = new AbortController()
+    abortRef.current = controller
+
+    setLoading(true)
+    setError(false)
+
+    fetch(`/api/players/search?q=${encodeURIComponent(trimmed)}`, { signal: controller.signal })
+      .then((r) => {
+        if (!r.ok) throw new Error('bad response')
+        return r.json()
+      })
+      .then((json) => setResults(json.results ?? []))
+      .catch((e) => {
+        if (e.name !== 'AbortError') setError(true)
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false)
+      })
+  }, [])
 
   useEffect(() => {
     const trimmed = query.trim()
+    lastQueryRef.current = trimmed
+
     if (!trimmed) {
+      abortRef.current?.abort()
       setResults([])
       setLoading(false)
       setError(false)
       return
     }
 
-    setLoading(true)
-    setError(false)
-    const id = ++requestId.current
-
-    const timer = setTimeout(() => {
-      fetch(`/api/players/search?q=${encodeURIComponent(trimmed)}`)
-        .then((r) => {
-          if (!r.ok) throw new Error('bad response')
-          return r.json()
-        })
-        .then((json) => {
-          if (requestId.current === id) setResults(json.results ?? [])
-        })
-        .catch(() => {
-          if (requestId.current === id) setError(true)
-        })
-        .finally(() => {
-          if (requestId.current === id) setLoading(false)
-        })
-    }, DEBOUNCE_MS)
-
+    const timer = setTimeout(() => runSearch(trimmed), DEBOUNCE_MS)
     return () => clearTimeout(timer)
-  }, [query])
+  }, [query, runSearch])
 
-  return { results, loading, error }
+  useEffect(() => () => abortRef.current?.abort(), [])
+
+  const retry = useCallback(() => {
+    if (lastQueryRef.current) runSearch(lastQueryRef.current)
+  }, [runSearch])
+
+  return { results, loading, error, retry }
 }

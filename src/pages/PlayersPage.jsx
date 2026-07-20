@@ -12,14 +12,15 @@ export default function PlayersPage() {
   const trimmedQuery = query.trim()
   const isSearching = trimmedQuery.length > 0
 
-  const { data: online, loading: onlineLoading, error: onlineError, refresh } = usePlayersOnline()
-  const { results, loading: searchLoading, error: searchError } = usePlayerSearch(query)
+  const { data: online, loading: onlineLoading, error: onlineError, refresh: refreshOnline } = usePlayersOnline()
+  const { results, loading: searchLoading, error: searchError, retry: retrySearch } = usePlayerSearch(query)
 
   const onlineCount = online?.count ?? 0
 
   const showList = isSearching ? results : online?.players ?? []
   const listLoading = isSearching ? searchLoading : onlineLoading
   const listError = isSearching ? searchError : onlineError
+  const retry = isSearching ? retrySearch : refreshOnline
 
   const emptyMessage = useMemo(() => {
     if (isSearching) return 'Игроки с таким никнеймом не найдены'
@@ -32,14 +33,14 @@ export default function PlayersPage() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="font-mono text-3xl sm:text-4xl font-bold text-white mb-2">Игроки</h1>
+          <h1 className="font-mono text-3xl sm:text-4xl font-bold text-heading mb-2">Игроки</h1>
           <p className="text-text-light text-base">
             {onlineLoading && !online ? 'Загрузка...' : `Сейчас на сервере: ${formatOnlineCount(onlineCount)}`}
           </p>
         </div>
 
         {/* Search */}
-        <div className="relative mb-8">
+        <div className="relative mb-3">
           <SearchIcon className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-text-light/40" />
           <input
             type="text"
@@ -47,15 +48,35 @@ export default function PlayersPage() {
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Поиск по нику..."
             maxLength={40}
-            className="w-full bg-bg-card border border-white/10 rounded-xl pl-11 pr-4 py-3 text-white placeholder-text-light/30 focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/30 transition-colors text-sm"
+            aria-label="Поиск игроков по нику"
+            className="w-full bg-bg-card border border-white/10 rounded-xl pl-11 pr-11 py-3 text-heading placeholder-text-light/30 focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/30 transition-colors text-sm"
           />
+          {query && (
+            <button
+              onClick={() => setQuery('')}
+              aria-label="Очистить поиск"
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center rounded-lg text-text-light/40 hover:text-heading hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 transition-colors"
+            >
+              <ClearIcon className="w-4 h-4" />
+            </button>
+          )}
         </div>
+
+        {/* Result count while searching — kept separate from the online count above */}
+        {isSearching && !searchLoading && !searchError && (
+          <p className="text-text-light/50 text-sm mb-5">
+            {results.length === 0 ? 'Ничего не найдено' : `Найдено: ${formatOnlineCount(results.length)}`}
+          </p>
+        )}
+        {!isSearching && <div className="mb-5" />}
 
         {/* Content */}
         {listError ? (
           <div className="card text-center py-10">
-            <p className="text-text-light mb-4">Не удалось загрузить список игроков</p>
-            <button onClick={refresh} className="btn-ghost text-sm py-2 px-4">
+            <p className="text-text-light mb-4">
+              {isSearching ? 'Не удалось выполнить поиск' : 'Не удалось загрузить список игроков'}
+            </p>
+            <button onClick={retry} className="btn-ghost text-sm py-2 px-4">
               Повторить
             </button>
           </div>
@@ -94,6 +115,15 @@ function SearchIcon({ className = '' }) {
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
       <circle cx="11" cy="11" r="8" />
       <line x1="21" y1="21" x2="16.65" y2="16.65" />
+    </svg>
+  )
+}
+
+function ClearIcon({ className = '' }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
     </svg>
   )
 }

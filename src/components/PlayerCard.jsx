@@ -24,7 +24,7 @@ export default function PlayerCard({ player }) {
       </div>
 
       <div className="flex-1 min-w-0">
-        <div className="font-mono text-sm font-semibold text-white group-hover:text-accent transition-colors truncate">
+        <div className="font-mono text-sm font-semibold text-heading group-hover:text-accent transition-colors truncate">
           {name}
         </div>
         <div className="text-text-light/50 text-xs truncate">{role}</div>

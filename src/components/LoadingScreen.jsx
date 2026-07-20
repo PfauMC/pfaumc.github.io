@@ -13,7 +13,7 @@ export default function LoadingScreen({ fadeOut }) {
         <div className="flex items-center gap-3 animate-fade-in">
           <PfauIcon className="w-12 h-12 text-accent" />
           <div>
-            <span className="font-mono text-3xl font-bold text-white tracking-wide">Pfau</span>
+            <span className="font-mono text-3xl font-bold text-heading tracking-wide">Pfau</span>
             <span className="font-mono text-3xl font-bold text-accent">MC</span>
           </div>
         </div>
@@ -30,13 +30,15 @@ export default function LoadingScreen({ fadeOut }) {
 
       <style>{`
         .loading-bar {
-          animation: loadBar 1.8s ease-in-out forwards;
+          animation: loadBar 1.8s ease-in-out infinite;
         }
         @keyframes loadBar {
           0% { width: 0%; }
-          30% { width: 45%; }
-          70% { width: 75%; }
+          50% { width: 70%; }
           100% { width: 100%; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .loading-bar { animation: none; width: 60%; }
         }
       `}</style>
     </div>

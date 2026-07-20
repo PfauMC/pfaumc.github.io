@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { SERVER_VERSION } from '../config'
 
 export function useServerStats(autoRefreshMs = 0) {
   const [stats, setStats] = useState(null)
@@ -15,7 +16,7 @@ export function useServerStats(autoRefreshMs = 0) {
           players: data.players?.online ?? 0,
           maxPlayers: data.players?.max ?? 0,
           playerList: data.players?.list ?? [],
-          version: data.protocol?.name ?? '26.2',
+          version: data.protocol?.name ?? SERVER_VERSION,
           motd: data.motd?.clean?.[0] ?? 'PfauMC',
           software: data.software ?? null,
           icon: data.icon ?? null,
@@ -23,7 +24,7 @@ export function useServerStats(autoRefreshMs = 0) {
         setLastUpdated(new Date())
       })
       .catch(() => {
-        setStats({ online: false, players: 0, maxPlayers: 0, playerList: [], version: '26.2', motd: 'PfauMC', software: null, icon: null })
+        setStats({ online: false, players: 0, maxPlayers: 0, playerList: [], version: SERVER_VERSION, motd: 'PfauMC', software: null, icon: null })
         setLastUpdated(new Date())
       })
       .finally(() => setLoading(false))

@@ -16,7 +16,7 @@ export default function Modes() {
   }, [])
 
   return (
-    <section id="modes" className="py-20 sm:py-28 bg-bg-section relative" ref={ref}>
+    <section id="modes" className="py-20 sm:py-28 bg-bg-section relative scroll-mt-20" ref={ref}>
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
@@ -65,7 +65,7 @@ function ModeCard({ mode, visible, delay }) {
             </span>
             <div className="flex items-center gap-3">
               <span className="text-3xl">{mode.emoji}</span>
-              <h3 className="font-mono text-3xl font-bold text-white">{mode.name}</h3>
+              <h3 className="font-mono text-3xl font-bold text-heading">{mode.name}</h3>
             </div>
           </div>
         </div>

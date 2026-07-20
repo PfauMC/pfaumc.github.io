@@ -136,14 +136,6 @@ export default function Hero() {
                 decoding="async"
               />
             </div>
-
-            {/* Floating badges — only on desktop */}
-            <div className="hidden lg:block absolute top-8 right-8 bg-bg-card/90 backdrop-blur border border-accent/20 rounded-xl px-3 py-2 text-xs font-mono">
-              <span className="text-accent">✦</span> <span className="text-white">Ванила</span>
-            </div>
-            <div className="hidden lg:block absolute bottom-12 left-4 bg-bg-card/90 backdrop-blur border border-accent/20 rounded-xl px-3 py-2 text-xs font-mono">
-              <span className="text-accent">✦</span> <span className="text-white">Политическое выживание</span>
-            </div>
           </div>
         </div>
       </div>

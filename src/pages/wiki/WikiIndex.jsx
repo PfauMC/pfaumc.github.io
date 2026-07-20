@@ -11,14 +11,6 @@ const cards = [
     tagColor: 'text-green-400 bg-green-400/10 border-green-400/20',
   },
   {
-    to: '/wiki/faq',
-    icon: '❓',
-    title: 'Часто задаваемые вопросы',
-    desc: 'Ответы на самые популярные вопросы о сервере, правилах, моде и техническом устройстве.',
-    tag: 'Справка',
-    tagColor: 'text-accent bg-accent/10 border-accent/20',
-  },
-  {
     to: '/wiki/rules',
     icon: '📜',
     title: 'Правила сервера',
@@ -30,7 +22,7 @@ const cards = [
     to: '/wiki/mechanics',
     icon: '🧭',
     title: 'Механики сервера',
-    desc: 'Голосовой чат, крыша Ада, защита спавна для новичков, CoreProtect и телепорты.',
+    desc: 'Первый вход, команды, моды, голосовой чат, PvE, крыша Нижнего мира, гриферство и защита спавна для новичков.',
     tag: 'Справка',
     tagColor: 'text-accent bg-accent/10 border-accent/20',
   },

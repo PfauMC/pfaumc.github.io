@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, useLocation } from 'react-router-dom'
 import { ThemeProvider } from './context/ThemeContext'
 import LoadingScreen from './components/LoadingScreen'
 import Fireflies from './components/Fireflies'
@@ -14,7 +14,6 @@ import NotFoundPage from './pages/NotFoundPage'
 import WikiLayout from './pages/wiki/WikiLayout'
 import WikiIndex from './pages/wiki/WikiIndex'
 import WikiGuide from './pages/wiki/WikiGuide'
-import WikiFAQ from './pages/wiki/WikiFAQ'
 import WikiRules from './pages/wiki/WikiRules'
 import WikiMechanics from './pages/wiki/WikiMechanics'
 
@@ -31,6 +30,8 @@ function HomePage() {
 export default function App() {
   const [loading, setLoading] = useState(true)
   const [fadeOut, setFadeOut] = useState(false)
+  const location = useLocation()
+  const isWiki = location.pathname.startsWith('/wiki')
 
   useEffect(() => {
     const minDisplayTime = 1800
@@ -54,6 +55,8 @@ export default function App() {
   }, [])
 
   useEffect(() => {
+    if (isWiki) return
+
     const blockContextMenu = (e) => e.preventDefault()
     const blockDrag = (e) => {
       if (e.target.tagName === 'IMG') e.preventDefault()
@@ -75,7 +78,7 @@ export default function App() {
       document.removeEventListener('dragstart', blockDrag)
       document.removeEventListener('keydown', blockShortcuts)
     }
-  }, [])
+  }, [isWiki])
 
   return (
     <ThemeProvider>
@@ -90,7 +93,6 @@ export default function App() {
             <Route path="/wiki" element={<WikiLayout />}>
               <Route index element={<WikiIndex />} />
               <Route path="guide" element={<WikiGuide />} />
-              <Route path="faq" element={<WikiFAQ />} />
               <Route path="rules" element={<WikiRules />} />
               <Route path="rules/:tab" element={<WikiRules />} />
               <Route path="mechanics" element={<WikiMechanics />} />

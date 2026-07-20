@@ -1,5 +1,5 @@
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { generalRules, modeRules } from '../../data/rulesData'
 import { mechanicsSections } from './WikiMechanics'
 
@@ -8,12 +8,6 @@ const sections = [
     title: 'Начало работы',
     items: [
       { label: '🚀 Как зайти на сервер', to: '/wiki/guide' },
-    ],
-  },
-  {
-    title: 'Справка',
-    items: [
-      { label: '❓ Частые вопросы (FAQ)', to: '/wiki/faq' },
     ],
   },
 ]
@@ -28,9 +22,32 @@ const mechanicsNav = [
   { label: 'Механики сервера', icon: '🧭', to: '/wiki/mechanics', children: mechanicsSections },
 ]
 
+const SERVER_IP = 'play.pfaumc.online'
+
 export default function WikiLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [ipCopied, setIpCopied] = useState(false)
   const location = useLocation()
+
+  useEffect(() => {
+    document.body.classList.add('wiki-copy-enabled')
+    return () => document.body.classList.remove('wiki-copy-enabled')
+  }, [])
+
+  const copyIP = async () => {
+    try {
+      await navigator.clipboard.writeText(SERVER_IP)
+    } catch {
+      const el = document.createElement('textarea')
+      el.value = SERVER_IP
+      document.body.appendChild(el)
+      el.select()
+      document.execCommand('copy')
+      document.body.removeChild(el)
+    }
+    setIpCopied(true)
+    setTimeout(() => setIpCopied(false), 2000)
+  }
 
   const currentPage = [...sections.flatMap(s => s.items), ...rulesNav, ...mechanicsNav].find(i => i.to === location.pathname)
     ?? (location.pathname.startsWith('/wiki/rules') ? { label: '📜 Правила сервера' } : undefined)
@@ -201,8 +218,16 @@ export default function WikiLayout() {
               {/* Join card */}
               <div className="mt-6 p-4 bg-accent/10 border border-accent/20 rounded-xl">
                 <div className="font-mono text-xs font-bold text-accent mb-1">IP-адрес</div>
-                <div className="font-mono text-sm text-white break-all">play.pfaumc.online</div>
-                <div className="text-text-light/50 text-xs mt-1">Java Edition 1.21+</div>
+                <button
+                  onClick={copyIP}
+                  title="Скопировать IP"
+                  className="font-mono text-sm text-white break-all text-left cursor-pointer hover:text-accent transition-colors"
+                >
+                  {SERVER_IP}
+                </button>
+                <div className="text-text-light/50 text-xs mt-1">
+                  {ipCopied ? <span className="text-accent">✓ Скопировано</span> : 'Java Edition 1.21+ · нажмите чтобы скопировать'}
+                </div>
               </div>
             </div>
           </aside>
@@ -211,6 +236,7 @@ export default function WikiLayout() {
           <main className="flex-1 min-w-0">
             <Outlet />
           </main>
+          {ipCopied && <div className="copy-toast">IP скопирован</div>}
         </div>
       </div>
     </div>

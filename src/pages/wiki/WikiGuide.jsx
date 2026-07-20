@@ -3,7 +3,8 @@ import { useSEO } from '../../hooks/useSEO'
 
 const SERVER_IP = 'play.pfaumc.online'
 
-const steps = [
+function buildSteps(copyIP) {
+  return [
   {
     n: '1',
     title: 'Получите Minecraft Java Edition',
@@ -121,7 +122,16 @@ const steps = [
         <ol className="mt-2 space-y-1.5 list-none">
           {[
             'В главном меню нажмите «Сетевая игра» → «Добавить сервер»',
-            <span key="ip">Введите адрес сервера: <code className="bg-bg-section px-2 py-0.5 rounded font-mono text-accent">{SERVER_IP}</code></span>,
+            <span key="ip">
+              Введите адрес сервера:{' '}
+              <code
+                onClick={copyIP}
+                title="Скопировать IP"
+                className="bg-bg-section px-2 py-0.5 rounded font-mono text-accent cursor-pointer hover:bg-accent/20 transition-colors"
+              >
+                {SERVER_IP}
+              </code>
+            </span>,
             'Нажмите «Готово», затем дважды кликните на сервер чтобы войти',
           ].map((step, i) => (
             <li key={i} className="flex items-start gap-2.5 text-text-light text-sm">
@@ -143,7 +153,8 @@ const steps = [
       </>
     ),
   },
-]
+  ]
+}
 
 export default function WikiGuide() {
   useSEO('Как зайти на сервер — PfauMC Wiki', 'Пошаговый гайд по установке лаунчера и подключению к Minecraft серверу PfauMC.')
@@ -153,8 +164,6 @@ export default function WikiGuide() {
   const copyIP = async () => {
     try {
       await navigator.clipboard.writeText(SERVER_IP)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
     } catch {
       const el = document.createElement('textarea')
       el.value = SERVER_IP
@@ -162,10 +171,12 @@ export default function WikiGuide() {
       el.select()
       document.execCommand('copy')
       document.body.removeChild(el)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
     }
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
   }
+
+  const steps = buildSteps(copyIP)
 
   return (
     <article>
@@ -185,7 +196,13 @@ export default function WikiGuide() {
       <div className="mb-8 p-4 bg-bg-section border border-white/10 rounded-2xl flex flex-col sm:flex-row sm:items-center gap-3">
         <div>
           <div className="text-text-light/50 text-xs font-mono uppercase tracking-widest mb-1">IP-адрес сервера</div>
-          <code className="font-mono text-xl font-bold text-white">{SERVER_IP}</code>
+          <code
+            onClick={copyIP}
+            title="Скопировать IP"
+            className="font-mono text-xl font-bold text-white cursor-pointer hover:text-accent transition-colors"
+          >
+            {SERVER_IP}
+          </code>
         </div>
         <button
           onClick={copyIP}
@@ -194,6 +211,7 @@ export default function WikiGuide() {
           {copied ? '✓ Скопировано' : 'Скопировать'}
         </button>
       </div>
+      {copied && <div className="copy-toast">IP скопирован</div>}
 
       {/* Launcher notice */}
       <div className="mb-8 grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -241,52 +259,6 @@ export default function WikiGuide() {
         ))}
       </div>
 
-      {/* Prism official resources */}
-      <div className="mt-8 p-6 bg-bg-section rounded-2xl border border-white/5">
-        <h3 className="font-mono font-bold text-white mb-4">📚 Официальные ресурсы Prism Launcher</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {[
-            {
-              title: 'Официальный сайт',
-              url: 'https://prismlauncher.org',
-              desc: 'Скачать лаунчер',
-            },
-            {
-              title: 'Getting Started',
-              url: 'https://prismlauncher.org/wiki/getting-started/',
-              desc: 'Гайд по первому запуску',
-            },
-            {
-              title: 'Создание инстанса',
-              url: 'https://prismlauncher.org/wiki/getting-started/create-instance/',
-              desc: 'Как создать профиль игры',
-            },
-            {
-              title: 'Добавление аккаунта',
-              url: 'https://prismlauncher.org/wiki/getting-started/adding-an-account/',
-              desc: 'Microsoft / offline аккаунт',
-            },
-          ].map(r => (
-            <a
-              key={r.url}
-              href={r.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-start gap-3 p-3 bg-bg-card border border-white/5 rounded-xl hover:border-accent/25 hover:bg-accent/5 transition-all group"
-            >
-              <div className="flex-1 min-w-0">
-                <div className="font-mono text-sm font-medium text-white group-hover:text-accent transition-colors truncate">
-                  {r.title}
-                </div>
-                <div className="text-text-light/50 text-xs mt-0.5">{r.desc}</div>
-                <div className="text-accent/60 text-xs mt-1 font-mono truncate">{r.url}</div>
-              </div>
-              <ExternalIcon className="w-4 h-4 text-text-light/30 group-hover:text-accent flex-shrink-0 mt-0.5 transition-colors" />
-            </a>
-          ))}
-        </div>
-      </div>
-
       {/* Help */}
       <div className="mt-6 p-4 bg-accent/8 border border-accent/20 rounded-xl text-sm text-text-light">
         <span className="text-accent font-bold">Не получается войти? </span>
@@ -301,15 +273,5 @@ export default function WikiGuide() {
         — помогут разобраться.
       </div>
     </article>
-  )
-}
-
-function ExternalIcon({ className = '' }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-      <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
-      <polyline points="15,3 21,3 21,9" />
-      <line x1="10" y1="14" x2="21" y2="3" />
-    </svg>
   )
 }

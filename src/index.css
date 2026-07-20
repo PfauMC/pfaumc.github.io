@@ -4,7 +4,7 @@
 
 @font-face {
   font-family: 'Monocraft';
-  src: url('https://cdn.jsdelivr.net/gh/IdreesInc/Monocraft@3.0/fonts/Monocraft.woff2') format('woff2');
+  src: url('/assets/fonts/Monocraft.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -64,6 +64,12 @@
   ::selection {
     background: rgba(29, 165, 232, 0.3);
     color: #fff;
+  }
+
+  body.wiki-copy-enabled {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    user-select: text;
   }
 
   ::-webkit-scrollbar { width: 6px; }

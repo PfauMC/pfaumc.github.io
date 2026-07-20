@@ -4,9 +4,8 @@
   <url><loc>https://pfaumc.io/vanilla</loc><priority>0.8</priority></url>
   <url><loc>https://pfaumc.io/political-survival</loc><priority>0.8</priority></url>
   <url><loc>https://pfaumc.io/stats</loc><priority>0.5</priority></url>
-  <url><loc>https://pfaumc.io/donate</loc><priority>0.5</priority></url>
   <url><loc>https://pfaumc.io/wiki</loc><priority>0.7</priority></url>
   <url><loc>https://pfaumc.io/wiki/guide</loc><priority>0.6</priority></url>
-  <url><loc>https://pfaumc.io/wiki/faq</loc><priority>0.6</priority></url>
   <url><loc>https://pfaumc.io/wiki/rules</loc><priority>0.6</priority></url>
+  <url><loc>https://pfaumc.io/wiki/mechanics</loc><priority>0.6</priority></url>
 </urlset>

@@ -9,6 +9,51 @@ const TABS = [
   { id: 'political-survival', label: 'Политическое выживание', icon: '🔥' },
 ]
 
+function RuleItem({ item }) {
+  if (typeof item === 'string') {
+    return (
+      <li className="flex items-start gap-2.5">
+        <span className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-accent mt-2" />
+        <span className="text-text-light text-sm leading-relaxed">{item}</span>
+      </li>
+    )
+  }
+
+  if (item.type === 'subheading') {
+    return (
+      <li className="pt-2 first:pt-0">
+        <h4 className="font-mono text-xs font-bold text-accent uppercase tracking-widest">{item.text}</h4>
+      </li>
+    )
+  }
+
+  if (item.type === 'warning') {
+    return (
+      <li className="flex items-start gap-2.5 bg-orange-500/8 border border-orange-500/20 rounded-xl p-3">
+        <span className="text-orange-400 flex-shrink-0">⚠️</span>
+        <span className="text-text-light text-sm leading-relaxed">{item.text}</span>
+      </li>
+    )
+  }
+
+  if (item.type === 'example') {
+    return (
+      <li className="grid sm:grid-cols-2 gap-3">
+        <div className="p-3 rounded-xl border border-red-500/20 bg-red-500/5">
+          <div className="text-red-400 text-xs font-mono font-bold mb-1">✗ Неправильно</div>
+          <p className="text-text-light text-sm leading-relaxed">{item.wrong}</p>
+        </div>
+        <div className="p-3 rounded-xl border border-green-500/20 bg-green-500/5">
+          <div className="text-green-400 text-xs font-mono font-bold mb-1">✓ Правильно</div>
+          <p className="text-text-light text-sm leading-relaxed">{item.right}</p>
+        </div>
+      </li>
+    )
+  }
+
+  return null
+}
+
 function RuleSection({ id, category, icon, items }) {
   const [open, setOpen] = useState(true)
   const { hash } = useLocation()
@@ -33,10 +78,7 @@ function RuleSection({ id, category, icon, items }) {
       {open && (
         <ul className="mt-4 space-y-2.5">
           {items.map((rule, i) => (
-            <li key={i} className="flex items-start gap-2.5">
-              <span className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-accent mt-2" />
-              <span className="text-text-light text-sm leading-relaxed">{rule}</span>
-            </li>
+            <RuleItem key={i} item={rule} />
           ))}
         </ul>
       )}

@@ -174,15 +174,10 @@ export default function ModePage() {
                             <polyline points="6,9 12,15 18,9" />
                           </svg>
                         </button>
-                        <div className={`overflow-hidden transition-all duration-300 ${isOpen ? 'max-h-[400px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                        <div className={`overflow-hidden transition-all duration-300 ${isOpen ? 'max-h-[1200px] opacity-100' : 'max-h-0 opacity-0'}`}>
                           <ul className="mt-3 space-y-2 pl-2">
                             {section.items.map((item, iIdx) => (
-                              <li key={iIdx} className="flex gap-3 text-sm text-text-light leading-relaxed">
-                                <svg className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={1.5} style={{ color: mode.accentColor }}>
-                                  <path d="M2 8h12M8 2l6 6-6 6" />
-                                </svg>
-                                {item}
-                              </li>
+                              <ModeRuleItem key={iIdx} item={item} accentColor={mode.accentColor} />
                             ))}
                           </ul>
                         </div>
@@ -229,6 +224,53 @@ export default function ModePage() {
       </section>
     </div>
   )
+}
+
+function ModeRuleItem({ item, accentColor }) {
+  if (typeof item === 'string') {
+    return (
+      <li className="flex gap-3 text-sm text-text-light leading-relaxed">
+        <svg className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={1.5} style={{ color: accentColor }}>
+          <path d="M2 8h12M8 2l6 6-6 6" />
+        </svg>
+        {item}
+      </li>
+    )
+  }
+
+  if (item.type === 'subheading') {
+    return (
+      <li className="pt-2 first:pt-0">
+        <h4 className="font-mono text-xs font-bold uppercase tracking-widest" style={{ color: accentColor }}>{item.text}</h4>
+      </li>
+    )
+  }
+
+  if (item.type === 'warning') {
+    return (
+      <li className="flex items-start gap-2.5 bg-orange-500/8 border border-orange-500/20 rounded-xl p-3">
+        <span className="text-orange-400 flex-shrink-0">⚠️</span>
+        <span className="text-text-light text-sm leading-relaxed">{item.text}</span>
+      </li>
+    )
+  }
+
+  if (item.type === 'example') {
+    return (
+      <li className="grid sm:grid-cols-2 gap-3">
+        <div className="p-3 rounded-xl border border-red-500/20 bg-red-500/5">
+          <div className="text-red-400 text-xs font-mono font-bold mb-1">✗ Неправильно</div>
+          <p className="text-text-light text-sm leading-relaxed">{item.wrong}</p>
+        </div>
+        <div className="p-3 rounded-xl border border-green-500/20 bg-green-500/5">
+          <div className="text-green-400 text-xs font-mono font-bold mb-1">✓ Правильно</div>
+          <p className="text-text-light text-sm leading-relaxed">{item.right}</p>
+        </div>
+      </li>
+    )
+  }
+
+  return null
 }
 
 function CubeIcon() {

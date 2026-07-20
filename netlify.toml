@@ -11,6 +11,21 @@
   status = 200
 
 [[redirects]]
+  from = "/api/players/online"
+  to = "/.netlify/functions/players-online"
+  status = 200
+
+[[redirects]]
+  from = "/api/players/search"
+  to = "/.netlify/functions/players-search"
+  status = 200
+
+[[redirects]]
+  from = "/api/players/profile"
+  to = "/.netlify/functions/players-profile"
+  status = 200
+
+[[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200

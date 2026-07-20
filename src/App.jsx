@@ -10,6 +10,8 @@ import Modes from './components/Modes'
 import Footer from './components/Footer'
 import ModePage from './pages/ModePage'
 import StatsPage from './pages/StatsPage'
+import PlayersPage from './pages/PlayersPage'
+import PlayerProfilePage from './pages/PlayerProfilePage'
 import NotFoundPage from './pages/NotFoundPage'
 import WikiLayout from './pages/wiki/WikiLayout'
 import WikiIndex from './pages/wiki/WikiIndex'
@@ -90,6 +92,8 @@ export default function App() {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/stats" element={<StatsPage />} />
+            <Route path="/players" element={<PlayersPage />} />
+            <Route path="/u/:nickname" element={<PlayerProfilePage />} />
             <Route path="/wiki" element={<WikiLayout />}>
               <Route index element={<WikiIndex />} />
               <Route path="guide" element={<WikiGuide />} />

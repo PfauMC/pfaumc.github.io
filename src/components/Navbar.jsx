@@ -38,6 +38,7 @@ export default function Navbar() {
     { label: 'Главная', action: () => handleSection('#hero') },
     { label: 'Режимы', action: () => handleSection('#modes') },
     { label: 'Вики', to: '/wiki' },
+    { label: 'Игроки', to: '/players' },
     { label: 'Статистика', to: '/stats' },
   ]
 

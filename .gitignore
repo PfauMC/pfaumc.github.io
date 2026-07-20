@@ -4,3 +4,7 @@ dist
 *.local
 .idea/
 *.iml
+
+# Local Netlify folder
+.netlify
+deno.lock

@@ -51,12 +51,12 @@ function buildSteps(copyIP) {
         <div className="mt-3 p-4 bg-bg-section border border-white/5 rounded-xl">
           <div className="font-mono text-sm font-bold text-white mb-2">Официальный гайд по установке</div>
           <a
-            href="https://prismlauncher.org/wiki/getting-started/"
+            href="https://prismlauncher.org/wiki/"
             target="_blank"
             rel="noopener noreferrer"
             className="text-accent hover:underline font-mono text-xs break-all"
           >
-            prismlauncher.org/wiki/getting-started/
+            prismlauncher.org/wiki/
           </a>
           <p className="text-text-light/70 text-xs mt-1.5">
             Пошаговый гайд на английском — установка Java, добавление аккаунта, создание инстанса

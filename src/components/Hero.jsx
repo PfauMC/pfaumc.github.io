@@ -129,7 +129,7 @@ export default function Hero() {
             <div className="relative animate-float">
               <div className="hidden lg:block absolute inset-0 bg-accent/10 blur-2xl rounded-full scale-75 translate-y-8" />
               <img
-                src="/assets/mascot.png"
+                src="/assets/mascot-v2.png"
                 alt="PfauMC Mascot"
                 className="relative w-48 sm:w-64 md:w-80 lg:w-[44rem] max-w-full object-contain drop-shadow-2xl"
                 loading="eager"

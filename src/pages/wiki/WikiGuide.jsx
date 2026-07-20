@@ -204,30 +204,21 @@ export default function WikiGuide() {
       <CopyToast copied={copied} error={error} successMessage="IP скопирован" />
 
       {/* Launcher notice */}
-      <div className="mb-8 grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div className="p-4 bg-accent/8 border border-accent/20 rounded-xl">
-          <div className="font-mono text-sm font-bold text-accent mb-2">⭐ Рекомендуем</div>
-          <ul className="space-y-2">
-            <li className="text-sm text-text-light flex items-start gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-accent flex-shrink-0 mt-1.5" />
-              <span>
-                <strong className="text-heading">Prism Launcher</strong> — бесплатный, открытый,
-                удобно управляет версиями и профилями
-              </span>
-            </li>
-            <li className="text-sm text-text-light flex items-start gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-accent flex-shrink-0 mt-1.5" />
-              <span>Официальный лаунчер Minecraft (лицензия)</span>
-            </li>
-          </ul>
-        </div>
-        <div className="p-4 bg-red-500/8 border border-red-500/20 rounded-xl">
-          <div className="font-mono text-sm font-bold text-red-400 mb-2">⚠️ TLauncher</div>
-          <p className="text-text-light/80 text-sm leading-relaxed">
-            Проблемы, возникшие при использовании TLauncher, мы <strong className="text-red-400">не рассматриваем</strong>.
-            Если у тебя баг или ошибка — убедись что дело не в лаунчере, переключившись на рекомендуемый.
-          </p>
-        </div>
+      <div className="mb-8 p-4 bg-accent/8 border border-accent/20 rounded-xl">
+        <div className="font-mono text-sm font-bold text-accent mb-2">⭐ Рекомендуем</div>
+        <ul className="space-y-2">
+          <li className="text-sm text-text-light flex items-start gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-accent flex-shrink-0 mt-1.5" />
+            <span>
+              <strong className="text-heading">Prism Launcher</strong> — бесплатный, открытый,
+              удобно управляет версиями и профилями
+            </span>
+          </li>
+          <li className="text-sm text-text-light flex items-start gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-accent flex-shrink-0 mt-1.5" />
+            <span>Официальный лаунчер Minecraft (лицензия)</span>
+          </li>
+        </ul>
       </div>
 
       {/* Steps */}

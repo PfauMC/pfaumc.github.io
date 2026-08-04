@@ -25,6 +25,18 @@
   to = "/.netlify/functions/players-profile"
   status = 200
 
+# Форум и авторизация объявляют свои пути через `export const config` внутри
+# функций; дублируем правилами, чтобы SPA-фолбэк ниже точно их не перехватил.
+[[redirects]]
+  from = "/api/forum/*"
+  to = "/.netlify/functions/forum/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/api/auth/*"
+  to = "/.netlify/functions/auth/:splat"
+  status = 200
+
 [[redirects]]
   from = "/*"
   to = "/index.html"

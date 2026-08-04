@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { PfauIcon } from './LoadingScreen'
 import { useTheme } from '../context/ThemeContext'
+import UserArea from './forum/UserArea'
 
 const MENU_ID = 'mobile-nav-menu'
 
@@ -54,6 +55,7 @@ export default function Navbar() {
     { label: 'Главная', action: () => handleSection('#hero') },
     { label: 'Режимы', action: () => handleSection('#modes') },
     { label: 'Вики', to: '/wiki' },
+    { label: 'Форум', to: '/forum' },
     { label: 'Игроки', to: '/players' },
     { label: 'Статистика', to: '/stats' },
   ]
@@ -124,10 +126,16 @@ export default function Navbar() {
             className="w-9 h-9 flex items-center justify-center rounded-lg text-text-light/60 hover:text-[#FF0000] hover:bg-white/5 transition-colors">
             <YouTubeIcon className="w-5 h-5" />
           </a>
+
+          {/* Форум: уведомления + голова скина */}
+          <div className="ml-1 pl-2 border-l border-white/10">
+            <UserArea />
+          </div>
         </div>
 
-        {/* Mobile: theme toggle + hamburger */}
+        {/* Mobile: форум-аккаунт + theme toggle + hamburger */}
         <div className="nav:hidden flex items-center gap-1">
+          <UserArea compact />
           <button
             onClick={toggle}
             title={theme === 'dark' ? 'Светлая тема' : 'Тёмная тема'}

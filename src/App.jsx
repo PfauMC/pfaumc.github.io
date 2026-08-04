@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import { ThemeProvider } from './context/ThemeContext'
+import { ForumAuthProvider } from './context/ForumAuthContext'
 import LoadingScreen from './components/LoadingScreen'
 import Fireflies from './components/Fireflies'
 import Navbar from './components/Navbar'
@@ -18,6 +19,13 @@ import WikiIndex from './pages/wiki/WikiIndex'
 import WikiGuide from './pages/wiki/WikiGuide'
 import WikiRules from './pages/wiki/WikiRules'
 import WikiMechanics from './pages/wiki/WikiMechanics'
+import ForumHome from './pages/forum/ForumHome'
+import CategoryPage from './pages/forum/CategoryPage'
+import TopicPage from './pages/forum/TopicPage'
+import SearchPage from './pages/forum/SearchPage'
+import AuthGamePage from './pages/forum/AuthGamePage'
+import { MyPostsPage, SubscriptionsPage, ForumSettingsPage } from './pages/forum/UserPages'
+import { ReportsPage, ModLogPage, TrashPage } from './pages/forum/ModPages'
 import { useScrollToHash } from './hooks/useScrollToHash'
 
 function HomePage() {
@@ -54,6 +62,7 @@ export default function App() {
 
   return (
     <ThemeProvider>
+      <ForumAuthProvider>
       {loading && <LoadingScreen fadeOut={fadeOut} />}
       <div className={fadeOut || !loading ? 'visible' : 'invisible'}>
         <Fireflies count={22} />
@@ -72,12 +81,24 @@ export default function App() {
               <Route path="mechanics" element={<WikiMechanics />} />
               <Route path="*" element={<NotFoundPage />} />
             </Route>
+            <Route path="/forum" element={<ForumHome />} />
+            <Route path="/forum/c/:slug" element={<CategoryPage />} />
+            <Route path="/forum/t/:id" element={<TopicPage />} />
+            <Route path="/forum/search" element={<SearchPage />} />
+            <Route path="/forum/my-posts" element={<MyPostsPage />} />
+            <Route path="/forum/subscriptions" element={<SubscriptionsPage />} />
+            <Route path="/forum/settings" element={<ForumSettingsPage />} />
+            <Route path="/forum/reports" element={<ReportsPage />} />
+            <Route path="/forum/trash" element={<TrashPage />} />
+            <Route path="/forum/log" element={<ModLogPage />} />
+            <Route path="/auth/game" element={<AuthGamePage />} />
             <Route path="/:modeId" element={<ModePage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
           <Footer />
         </div>
       </div>
+      </ForumAuthProvider>
     </ThemeProvider>
   )
 }

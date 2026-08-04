@@ -7,20 +7,25 @@
 - React 18 + React Router 7
 - Vite 8
 - Tailwind CSS
-- Netlify Functions (серверная часть API) + Netlify Blobs (хранилище)
+- Netlify Functions (серверная часть API)
+- Netlify Blobs (статистика игроков) + Netlify DB / Neon Postgres (форум)
 
 ## Структура
 
 ```
 src/
-  components/   переиспользуемые UI-компоненты
-  context/      React-контексты (тема и т.п.)
-  data/         статические данные
-  hooks/        кастомные хуки
-  pages/        страницы, включая pages/wiki — вики сервера
+  components/       переиспользуемые UI-компоненты
+    forum/          UI форума (редактор, сообщения, уведомления, меню игрока)
+  context/          React-контексты (тема, сессия форума)
+  data/             статические данные
+  hooks/            кастомные хуки
+  lib/              клиентские утилиты форума (API, разметка, форматирование)
+  pages/            страницы; pages/wiki — вики, pages/forum — форум
   utils/
-netlify/functions/  серверлесс-функции API (игроки, донат, статистика)
-scripts/            служебные скрипты (players-selfcheck.mjs)
+netlify/functions/  серверлесс-функции API
+  _lib/forum/       серверная логика форума + schema.sql
+scripts/            служебные скрипты (миграции, selfcheck)
+docs/               документация API (в т.ч. для Minecraft-плагина)
 public/             статика
 ```
 
@@ -28,20 +33,60 @@ public/             статика
 
 ```bash
 npm install
-npm run dev       # локальный сервер разработки
-npm run build     # прод-сборка в dist/
-npm run preview   # предпросмотр прод-сборки
+npm run dev        # фронтенд без функций
+netlify dev        # фронтенд + функции + локальная БД
+npm run build      # прод-сборка в dist/
+npm run selfcheck  # проверки чистой логики (без сети и БД)
 ```
+
+## Форум
+
+Полноценный форум с категориями, темами, ответами, реакциями, подписками,
+уведомлениями, поиском, жалобами и модерацией. Авторизация — только через
+Minecraft (`/login` в игре), сессия в `HttpOnly`-cookie.
+
+### Первый запуск
+
+```bash
+netlify db init                                  # создаёт Netlify DB (Neon)
+netlify env:set FORUM_PLUGIN_SECRET "$(node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))")"
+netlify dev:exec npm run db:migrate              # применяет schema.sql
+```
+
+Выдать модератора:
+
+```sql
+UPDATE forum_users SET role_key = 'moderator' WHERE name_lower = 'ник';
+```
+
+Категории не зашиты в код — их создаёт модератор прямо в интерфейсе форума.
+
+### Переменные окружения
+
+| Переменная                  | Обязательна | По умолчанию | Назначение                          |
+|-----------------------------|-------------|--------------|-------------------------------------|
+| `NETLIFY_DATABASE_URL`      | да          | —            | Postgres форума (`netlify db init`) |
+| `FORUM_PLUGIN_SECRET`       | да          | —            | секрет для API выдачи токенов входа |
+| `FORUM_SITE_URL`            | нет         | `URL`        | база для ссылки `/auth/game`        |
+| `FORUM_LOGIN_TOKEN_TTL_SEC` | нет         | `300`        | срок жизни одноразового токена      |
+| `FORUM_SESSION_DAYS`        | нет         | `30`         | срок «Запомнить меня»               |
+| `FORUM_POST_COOLDOWN_SEC`   | нет         | `15`         | пауза между сообщениями             |
+
+Документация для разработчика Minecraft-плагина: [`docs/forum-auth-api.md`](docs/forum-auth-api.md).
 
 ## API
 
-Роуты `/api/*` проксируются на Netlify Functions (см. `netlify.toml`):
+Роуты `/api/*` обслуживаются Netlify Functions (см. `netlify.toml`):
 
-- `GET /api/players/online` — онлайн-игроки
-- `GET /api/players/search` — поиск игрока
-- `GET /api/players/profile` — профиль игрока
+- `GET  /api/players/online` — онлайн-игроки
+- `GET  /api/players/search` — поиск игрока
+- `GET  /api/players/profile` — профиль игрока
 - `POST /api/tbank` — оплата донатов (Т-Банк)
+- `/api/auth/*` — вход через Minecraft, сессии, настройки уведомлений
+- `/api/forum/*` — категории, темы, сообщения, поиск, уведомления, модерация
 
 ## Деплой
 
-Автоматический через Netlify при пуше в `main` (`netlify.toml`: `npm run build`, публикация `dist/`).
+Автоматический через Netlify при пуше в `main` (`netlify.toml`: `npm run build`,
+публикация `dist/`). Форуму нужна привязанная Netlify DB и переменные окружения
+из таблицы выше.

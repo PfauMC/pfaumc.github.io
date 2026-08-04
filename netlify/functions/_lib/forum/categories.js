@@ -2,10 +2,10 @@ import { q, one, logModeration } from './db.js'
 import { badRequest, notFound, json } from './http.js'
 import { requireModerator, requireCsrf } from './auth.js'
 import * as shape from './shape.js'
-import { LIMITS, requireText, optionalText, requireBool, slugify } from './validate.js'
+import { LIMITS, requireText, optionalText, requireBool, requireId, slugify } from './validate.js'
 
 const CATEGORY_SELECT = `
-  SELECT c.id, c.slug, c.title, c.description, c.icon, c.position, c.is_visible, c.is_active,
+  SELECT c.id, c.group_id, c.slug, c.title, c.description, c.icon, c.position, c.is_visible, c.is_active,
          COALESCE(agg.topic_count, 0)::int  AS topic_count,
          COALESCE(agg.post_count, 0)::int   AS post_count,
          lp.id AS last_post_id, lp.post_number AS last_post_number, lp.created_at AS last_post_at,
@@ -47,8 +47,97 @@ function viewerParams(ctx) {
 }
 
 export async function list(req, ctx) {
-  const rows = await q(`${CATEGORY_SELECT} ORDER BY c.position, c.id`, viewerParams(ctx))
-  return json({ categories: rows.map(shape.category) })
+  const isMod = Boolean(ctx?.user.role.canModerate)
+  const [rows, groups] = await Promise.all([
+    q(`${CATEGORY_SELECT} ORDER BY c.position, c.id`, viewerParams(ctx)),
+    q(
+      `SELECT id, title, position, is_visible FROM forum_groups
+        WHERE deleted_at IS NULL AND ($1 OR is_visible)
+        ORDER BY position, id`,
+      [isMod]
+    ),
+  ])
+  return json({ groups: groups.map(shape.group), categories: rows.map(shape.category) })
+}
+
+/* ===== Разделы ===== */
+
+export async function createGroup(req, ctx, body) {
+  const mod = requireModerator(ctx)
+  requireCsrf(req, ctx)
+  const title = requireText(body.title, 'title', { ...LIMITS.title, label: 'Название раздела' })
+
+  const row = await one(
+    `INSERT INTO forum_groups (title, position, is_visible)
+     VALUES ($1, COALESCE((SELECT max(position) + 1 FROM forum_groups WHERE deleted_at IS NULL), 0), $2)
+     RETURNING id`,
+    [title, requireBool(body.isVisible, true)]
+  )
+  await logModeration(mod.id, 'group.create', 'group', row.id, { title })
+  return list(req, ctx)
+}
+
+export async function updateGroup(req, ctx, id, body) {
+  const mod = requireModerator(ctx)
+  requireCsrf(req, ctx)
+
+  const current = await one('SELECT * FROM forum_groups WHERE id = $1 AND deleted_at IS NULL', [id])
+  if (!current) throw notFound('Раздел не найден')
+
+  const title =
+    body.title == null ? current.title : requireText(body.title, 'title', { ...LIMITS.title, label: 'Название раздела' })
+
+  await q('UPDATE forum_groups SET title = $2, is_visible = $3, updated_at = now() WHERE id = $1', [
+    id,
+    title,
+    requireBool(body.isVisible, current.is_visible),
+  ])
+  await logModeration(mod.id, 'group.update', 'group', id, { title })
+  return list(req, ctx)
+}
+
+export async function removeGroup(req, ctx, id) {
+  const mod = requireModerator(ctx)
+  requireCsrf(req, ctx)
+
+  // Категории раздела не удаляем — они просто выходят из него (ON DELETE SET NULL
+  // здесь не сработает, потому что удаление мягкое).
+  const row = await one(
+    'UPDATE forum_groups SET deleted_at = now() WHERE id = $1 AND deleted_at IS NULL RETURNING title',
+    [id]
+  )
+  if (!row) throw notFound('Раздел не найден')
+  await q('UPDATE forum_categories SET group_id = NULL, updated_at = now() WHERE group_id = $1', [id])
+
+  await logModeration(mod.id, 'group.delete', 'group', id, { title: row.title })
+  return list(req, ctx)
+}
+
+export async function reorderGroups(req, ctx, body) {
+  const mod = requireModerator(ctx)
+  requireCsrf(req, ctx)
+
+  const ids = Array.isArray(body.ids) ? body.ids.map((v) => Number.parseInt(v, 10)) : []
+  if (!ids.length || ids.some((n) => !Number.isSafeInteger(n) || n <= 0)) throw badRequest('Ожидался список id разделов')
+
+  await q(
+    `UPDATE forum_groups g
+        SET position = ordered.position, updated_at = now()
+       FROM (SELECT id, ordinality - 1 AS position FROM unnest($1::bigint[]) WITH ORDINALITY AS t(id, ordinality)) ordered
+      WHERE g.id = ordered.id`,
+    [ids]
+  )
+  await logModeration(mod.id, 'group.reorder', 'group', null, { ids })
+  return list(req, ctx)
+}
+
+/** Проверяет, что раздел существует; null допустим («без раздела»). */
+async function resolveGroupId(raw) {
+  if (raw == null || raw === '') return null
+  const id = requireId(raw, 'groupId')
+  const group = await one('SELECT id FROM forum_groups WHERE id = $1 AND deleted_at IS NULL', [id])
+  if (!group) throw notFound('Раздел не найден')
+  return id
 }
 
 export async function getBySlug(slug, ctx) {
@@ -78,14 +167,15 @@ export async function create(req, ctx, body) {
   const description = optionalText(body.description, { max: LIMITS.description.max, label: 'Описание' })
   const icon = optionalText(body.icon, { max: LIMITS.icon.max, label: 'Иконка' }) || '💬'
   const slug = await uniqueSlug(title)
+  const groupId = await resolveGroupId(body.groupId)
 
   const row = await one(
-    `INSERT INTO forum_categories (slug, title, description, icon, position, is_visible, is_active)
+    `INSERT INTO forum_categories (slug, title, description, icon, position, is_visible, is_active, group_id)
      VALUES ($1, $2, $3, $4,
              COALESCE((SELECT max(position) + 1 FROM forum_categories WHERE deleted_at IS NULL), 0),
-             $5, $6)
+             $5, $6, $7)
      RETURNING id`,
-    [slug, title, description, icon, requireBool(body.isVisible, true), requireBool(body.isActive, true)]
+    [slug, title, description, icon, requireBool(body.isVisible, true), requireBool(body.isActive, true), groupId]
   )
 
   await logModeration(mod.id, 'category.create', 'category', row.id, { title })
@@ -108,12 +198,14 @@ export async function update(req, ctx, id, body) {
   const isVisible = requireBool(body.isVisible, current.is_visible)
   const isActive = requireBool(body.isActive, current.is_active)
   const slug = title === current.title ? current.slug : await uniqueSlug(title, id)
+  const groupId = 'groupId' in body ? await resolveGroupId(body.groupId) : current.group_id
 
   await q(
     `UPDATE forum_categories
-        SET title = $2, slug = $3, description = $4, icon = $5, is_visible = $6, is_active = $7, updated_at = now()
+        SET title = $2, slug = $3, description = $4, icon = $5, is_visible = $6, is_active = $7,
+            group_id = $8, updated_at = now()
       WHERE id = $1`,
-    [id, title, slug, description, icon, isVisible, isActive]
+    [id, title, slug, description, icon, isVisible, isActive, groupId]
   )
 
   await logModeration(mod.id, 'category.update', 'category', id, { title })

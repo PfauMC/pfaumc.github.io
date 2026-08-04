@@ -11,7 +11,10 @@ const POST_SELECT = `
   SELECT p.id, p.topic_id, p.author_id, p.post_number, p.body, p.created_at, p.edited_at, p.edited_by,
          p.deleted_at, p.reply_to_id,
          rp.post_number AS reply_to_number, ru.name AS reply_to_author,
-         ${shape.authorFields('pu', 'a', 'pr')}
+         ${shape.authorFields('pu', 'a', 'pr')},
+         pu.created_at AS a_joined_at,
+         (SELECT count(*)::int FROM forum_posts fp
+           WHERE fp.author_id = p.author_id AND fp.deleted_at IS NULL) AS a_post_count
     FROM forum_posts p
     JOIN forum_users pu ON pu.id = p.author_id
     JOIN forum_roles pr ON pr.key = pu.role_key

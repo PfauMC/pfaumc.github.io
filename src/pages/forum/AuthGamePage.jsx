@@ -3,8 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useSEO } from '../../hooks/useSEO'
 import { useForumAuth } from '../../context/ForumAuthContext'
 import { api } from '../../lib/forumApi'
-import { UserHead, RoleBadge, FormError } from '../../components/forum/ui'
-import { Toggle } from './ForumHome'
+import { UserHead, RoleBadge, FormError, Toggle } from '../../components/forum/ui'
 
 export default function AuthGamePage() {
   useSEO('Вход через Minecraft — PfauMC', 'Подтверждение входа на форум PfauMC по одноразовой ссылке из игры.')

@@ -44,6 +44,10 @@ export const REPORT_REASON_LABELS = {
 }
 
 export const MOD_ACTION_LABELS = {
+  'group.create': 'создал раздел',
+  'group.update': 'изменил раздел',
+  'group.delete': 'удалил раздел',
+  'group.reorder': 'изменил порядок разделов',
   'category.create': 'создал категорию',
   'category.update': 'изменил категорию',
   'category.delete': 'удалил категорию',

@@ -1,14 +1,13 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useSEO } from '../../hooks/useSEO'
-import { useForumData } from '../../hooks/useForumData'
+import { useApiData } from '../../hooks/useApiData'
 import { useForumAuth } from '../../context/ForumAuthContext'
 import { api } from '../../lib/forumApi'
 import { formatSmartTime } from '../../lib/forumFormat'
 import {
-  Breadcrumbs, ListSkeleton, ErrorState, EmptyState, Pagination, LoginNotice, ConfirmDialog, FormError, UserHead, RoleBadge,
+  Breadcrumbs, ListSkeleton, ErrorState, EmptyState, Pagination, LoginNotice, ConfirmDialog, FormError, UserHead, RoleBadge, Toggle,
 } from '../../components/forum/ui'
-import { Toggle } from './ForumHome'
 
 function Shell({ title, children, crumb }) {
   return (
@@ -34,7 +33,7 @@ export function MyPostsPage() {
   useSEO('Мои ответы — Форум PfauMC')
   const { user } = useForumAuth()
   const [page, setPage] = useState(1)
-  const { data, loading, error, reload } = useForumData(user ? `/forum/my-posts?page=${page}` : null)
+  const { data, loading, error, reload } = useApiData(user ? `/forum/my-posts?page=${page}` : null)
 
   return (
     <Shell title="Мои ответы" crumb="Мои ответы">
@@ -70,7 +69,7 @@ export function MyPostsPage() {
 export function SubscriptionsPage() {
   useSEO('Подписки — Форум PfauMC')
   const { user } = useForumAuth()
-  const { data, loading, error, reload } = useForumData(user ? '/forum/subscriptions' : null)
+  const { data, loading, error, reload } = useApiData(user ? '/forum/subscriptions' : null)
   const [busyId, setBusyId] = useState(null)
 
   const unsubscribe = async (topicId) => {

@@ -1,8 +1,10 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { api } from '../../lib/forumApi'
 import { renderMarkup, buildQuote } from '../../lib/markup'
 import { formatSmartTime, formatDateTime, REACTIONS, REPORT_REASON_LABELS } from '../../lib/forumFormat'
 import { useForumAuth } from '../../context/ForumAuthContext'
+import { avatarUrl } from '../../utils/playerFormat'
 import Editor from './Editor'
 import { UserHead, RoleBadge, Modal, ConfirmDialog, FormError } from './ui'
 
@@ -63,177 +65,184 @@ export default function PostCard({ post, topic, onQuote, onReply, onChanged, hig
   return (
     <article
       id={`post-${post.postNumber}`}
-      className={`card p-0 overflow-hidden scroll-mt-28 transition-colors ${
-        highlighted ? 'border-accent/50 shadow-[0_0_24px_rgba(29,165,232,0.15)]' : ''
-      } ${post.isDeleted ? 'opacity-70 border-red-500/30' : ''}`}
+      className={`rounded-2xl border bg-bg-card overflow-hidden scroll-mt-28 transition-colors ${
+        highlighted
+          ? 'border-accent/50 shadow-[0_0_24px_rgba(29,165,232,0.15)]'
+          : post.isDeleted
+            ? 'border-red-500/30 opacity-70'
+            : 'border-white/5'
+      }`}
     >
-      {/* Шапка */}
-      <header className="flex items-start gap-3 px-4 pt-4 sm:px-5">
-        <UserHead user={post.author} size={40} />
-        <div className="flex-1 min-w-0">
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-            <span className="font-mono text-sm font-semibold text-heading truncate">{post.author?.name ?? '—'}</span>
-            <RoleBadge role={post.author?.role} />
-          </div>
-          <div className="flex flex-wrap items-center gap-x-2 text-xs text-text-light/50 mt-0.5">
-            <time dateTime={post.createdAt} title={formatDateTime(post.createdAt)}>
+      <div className="flex flex-col sm:flex-row">
+        <AuthorPane author={post.author} />
+
+        <div className="flex-1 min-w-0 flex flex-col">
+          {/* Дата и номер сообщения */}
+          <header className="flex items-center gap-3 px-4 sm:px-5 py-3 border-b border-white/5">
+            <time
+              dateTime={post.createdAt}
+              title={formatDateTime(post.createdAt)}
+              className="text-xs text-text-light/50"
+            >
               {formatSmartTime(post.createdAt)}
             </time>
             {post.editedAt && (
-              <span title={formatDateTime(post.editedAt)}>
+              <span className="text-xs text-text-light/40" title={formatDateTime(post.editedAt)}>
                 · изменено{post.editedByModerator ? ' модератором' : ''}
               </span>
             )}
-          </div>
-        </div>
-        <a
-          href={`#post-${post.postNumber}`}
-          className="flex-shrink-0 text-xs text-text-light/40 hover:text-accent transition-colors tabular-nums"
-          aria-label={`Сообщение №${post.postNumber}`}
-        >
-          #{post.postNumber}
-        </a>
-      </header>
-
-      {/* Тело */}
-      <div className="px-4 sm:px-5 py-3">
-        {post.isDeleted && (
-          <p className="mb-2 text-xs text-red-400/90">Сообщение удалено — видно только модераторам.</p>
-        )}
-        {post.replyTo && (
-          <a
-            href={`#post-${post.replyTo.postNumber}`}
-            className="inline-flex items-center gap-1.5 mb-2 text-xs text-text-light/50 hover:text-accent transition-colors"
-          >
-            ↩ ответ на #{post.replyTo.postNumber} · {post.replyTo.authorName}
-          </a>
-        )}
-
-        {editing ? (
-          <Editor
-            value={draft}
-            onChange={setDraft}
-            onSubmit={saveEdit}
-            onCancel={() => { setEditing(false); setDraft(post.body); setError(null) }}
-            submitLabel="Сохранить"
-            busy={busy}
-            error={error}
-            compact
-            autoFocus
-          />
-        ) : (
-          <div className="text-text-light text-[0.95rem] leading-relaxed">
-            {renderMarkup(post.body, `p${post.id}`)}
-          </div>
-        )}
-      </div>
-
-      {/* Реакции */}
-      {!editing && (
-        <div className="px-4 sm:px-5 pb-3 flex flex-wrap items-center gap-1.5">
-          {reactions.map((r) => (
-            <button
-              key={r.emoji}
-              onClick={() => toggleReaction(r.emoji)}
-              disabled={!user}
-              title={user ? 'Поставить реакцию' : 'Нужна авторизация'}
-              className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs border transition-colors disabled:cursor-not-allowed ${
-                r.mine
-                  ? 'border-accent/50 bg-accent/10 text-accent'
-                  : 'border-white/10 text-text-light/70 hover:border-accent/30 hover:text-accent'
-              }`}
+            <a
+              href={`#post-${post.postNumber}`}
+              className="ml-auto text-xs text-text-light/40 hover:text-accent transition-colors tabular-nums"
+              aria-label={`Ссылка на сообщение №${post.postNumber}`}
             >
-              <span aria-hidden="true">{r.emoji}</span>
-              <span className="tabular-nums">{r.count}</span>
-            </button>
-          ))}
+              #{post.postNumber}
+            </a>
+          </header>
 
-          {user && !post.isDeleted && (
-            <div className="relative">
-              <button
-                onClick={() => setPickerOpen((o) => !o)}
-                aria-label="Добавить реакцию"
-                aria-expanded={pickerOpen}
-                className="w-7 h-7 flex items-center justify-center rounded-lg border border-dashed border-white/15 text-text-light/50 hover:text-accent hover:border-accent/40 transition-colors"
+          {/* Тело */}
+          <div className="px-4 sm:px-5 py-4 flex-1">
+            {post.isDeleted && (
+              <p className="mb-2 text-xs text-red-400/90">Сообщение удалено — видно только модераторам.</p>
+            )}
+            {post.replyTo && (
+              <a
+                href={`#post-${post.replyTo.postNumber}`}
+                className="inline-flex items-center gap-1.5 mb-2 text-xs text-text-light/50 hover:text-accent transition-colors"
               >
-                +
-              </button>
-              {pickerOpen && (
-                <>
-                  <div className="fixed inset-0 z-10" onClick={() => setPickerOpen(false)} aria-hidden="true" />
-                  <div className="absolute bottom-full left-0 mb-2 z-20 flex gap-0.5 p-1 rounded-xl bg-bg-card border border-white/10 shadow-xl">
-                    {REACTIONS.map((emoji) => (
-                      <button
-                        key={emoji}
-                        onClick={() => toggleReaction(emoji)}
-                        className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors text-base"
-                      >
-                        {emoji}
-                      </button>
-                    ))}
+                ↩ ответ на #{post.replyTo.postNumber} · {post.replyTo.authorName}
+              </a>
+            )}
+
+            {editing ? (
+              <Editor
+                value={draft}
+                onChange={setDraft}
+                onSubmit={saveEdit}
+                onCancel={() => { setEditing(false); setDraft(post.body); setError(null) }}
+                submitLabel="Сохранить"
+                busy={busy}
+                error={error}
+                compact
+                autoFocus
+              />
+            ) : (
+              <div className="text-text-light text-[0.95rem] leading-relaxed">
+                {renderMarkup(post.body, `p${post.id}`)}
+              </div>
+            )}
+          </div>
+
+          {/* Реакции */}
+          {!editing && (reactions.length > 0 || (user && !post.isDeleted)) && (
+            <div className="px-4 sm:px-5 pb-3">
+              <div className="flex flex-wrap items-center gap-1.5 rounded-xl bg-black/10 border border-white/5 px-2.5 py-2">
+                {reactions.map((r) => (
+                  <button
+                    key={r.emoji}
+                    onClick={() => toggleReaction(r.emoji)}
+                    disabled={!user}
+                    title={user ? 'Поставить реакцию' : 'Нужна авторизация'}
+                    className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs border transition-colors disabled:cursor-not-allowed ${
+                      r.mine
+                        ? 'border-accent/50 bg-accent/10 text-accent'
+                        : 'border-transparent bg-white/5 text-text-light/70 hover:text-accent hover:border-accent/30'
+                    }`}
+                  >
+                    <span aria-hidden="true">{r.emoji}</span>
+                    <span className="tabular-nums">{r.count}</span>
+                  </button>
+                ))}
+
+                {user && !post.isDeleted && (
+                  <div className="relative">
+                    <button
+                      onClick={() => setPickerOpen((o) => !o)}
+                      aria-label="Добавить реакцию"
+                      aria-expanded={pickerOpen}
+                      className="w-7 h-7 flex items-center justify-center rounded-lg text-text-light/40 hover:text-accent hover:bg-white/5 transition-colors"
+                    >
+                      ☺+
+                    </button>
+                    {pickerOpen && (
+                      <>
+                        <div className="fixed inset-0 z-10" onClick={() => setPickerOpen(false)} aria-hidden="true" />
+                        <div className="absolute bottom-full left-0 mb-2 z-20 flex gap-0.5 p-1 rounded-xl bg-bg-card border border-white/10 shadow-xl">
+                          {REACTIONS.map((emoji) => (
+                            <button
+                              key={emoji}
+                              onClick={() => toggleReaction(emoji)}
+                              className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors text-base"
+                            >
+                              {emoji}
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    )}
                   </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Действия */}
+          {!editing && (
+            <footer className="flex flex-wrap items-center gap-x-1 gap-y-1 px-3 sm:px-4 py-2 border-t border-white/5 bg-black/5">
+              {user && !topic?.isLocked && !post.isDeleted && (
+                <>
+                  <ActionButton onClick={() => onReply?.(post)}>Ответить</ActionButton>
+                  <ActionButton onClick={() => onQuote?.(buildQuote(post.author?.name ?? '', post.body))}>
+                    Цитировать
+                  </ActionButton>
                 </>
               )}
+              {canEdit && !post.isDeleted && <ActionButton onClick={() => setEditing(true)}>Изменить</ActionButton>}
+              {canDelete && !post.isDeleted && (
+                <ActionButton
+                  danger
+                  onClick={() =>
+                    setConfirm({
+                      title: 'Удалить сообщение?',
+                      text: 'Сообщение будет скрыто. Модератор сможет его восстановить.',
+                      confirmLabel: 'Удалить',
+                      action: async () => {
+                        await api(`/forum/posts/${post.id}`, { method: 'DELETE' })
+                        onChanged?.()
+                      },
+                    })
+                  }
+                >
+                  Удалить
+                </ActionButton>
+              )}
+              {isModerator && post.isDeleted && (
+                <ActionButton
+                  onClick={() =>
+                    run(async () => {
+                      await api(`/forum/posts/${post.id}/restore`, { method: 'POST' })
+                      onChanged?.()
+                    })
+                  }
+                >
+                  Восстановить
+                </ActionButton>
+              )}
+              {user && !isOwn && !post.isDeleted && (
+                <ActionButton className="ml-auto" onClick={() => setReporting(true)}>
+                  Пожаловаться
+                </ActionButton>
+              )}
+            </footer>
+          )}
+
+          {!editing && error && (
+            <div className="px-4 pb-3">
+              <FormError error={error} />
             </div>
           )}
         </div>
-      )}
-
-      {/* Действия */}
-      {!editing && (
-        <footer className="flex flex-wrap items-center gap-x-1 gap-y-1 px-3 sm:px-4 py-2 border-t border-white/5 bg-black/5">
-          {user && !topic?.isLocked && !post.isDeleted && (
-            <>
-              <ActionButton onClick={() => onReply?.(post)}>Ответить</ActionButton>
-              <ActionButton onClick={() => onQuote?.(buildQuote(post.author?.name ?? '', post.body))}>
-                Цитировать
-              </ActionButton>
-            </>
-          )}
-          {canEdit && !post.isDeleted && <ActionButton onClick={() => setEditing(true)}>Изменить</ActionButton>}
-          {canDelete && !post.isDeleted && (
-            <ActionButton
-              danger
-              onClick={() =>
-                setConfirm({
-                  title: 'Удалить сообщение?',
-                  text: 'Сообщение будет скрыто. Модератор сможет его восстановить.',
-                  confirmLabel: 'Удалить',
-                  action: async () => {
-                    await api(`/forum/posts/${post.id}`, { method: 'DELETE' })
-                    onChanged?.()
-                  },
-                })
-              }
-            >
-              Удалить
-            </ActionButton>
-          )}
-          {isModerator && post.isDeleted && (
-            <ActionButton
-              onClick={() =>
-                run(async () => {
-                  await api(`/forum/posts/${post.id}/restore`, { method: 'POST' })
-                  onChanged?.()
-                })
-              }
-            >
-              Восстановить
-            </ActionButton>
-          )}
-          {user && !isOwn && !post.isDeleted && (
-            <ActionButton className="ml-auto" onClick={() => setReporting(true)}>
-              Пожаловаться
-            </ActionButton>
-          )}
-        </footer>
-      )}
-
-      {!editing && error && (
-        <div className="px-4 pb-3">
-          <FormError error={error} />
-        </div>
-      )}
+      </div>
 
       {confirm && (
         <ConfirmDialog
@@ -248,6 +257,86 @@ export default function PostCard({ post, topic, onQuote, onReply, onChanged, hig
 
       {reporting && <ReportDialog postId={post.id} onClose={() => setReporting(false)} />}
     </article>
+  )
+}
+
+/**
+ * Колонка автора: на десктопе — вертикальная панель слева (как в классических
+ * форумах), на телефоне сворачивается в одну строку над сообщением.
+ */
+function AuthorPane({ author }) {
+  if (!author) {
+    return (
+      <div className="sm:w-44 flex-shrink-0 sm:border-r border-b sm:border-b-0 border-white/5 px-4 py-3 text-sm text-text-light/40">
+        Аккаунт удалён
+      </div>
+    )
+  }
+
+  return (
+    <div className="sm:w-44 flex-shrink-0 sm:border-r border-b sm:border-b-0 border-white/5 bg-black/10">
+      {/* Мобильная строка */}
+      <div className="flex sm:hidden items-center gap-2.5 px-4 py-3">
+        <UserHead user={author} size={32} />
+        <div className="min-w-0">
+          <Link
+            to={`/u/${encodeURIComponent(author.name)}`}
+            className="font-mono text-sm font-semibold truncate hover:underline"
+            style={{ color: author.role.color }}
+          >
+            {author.name}
+          </Link>
+          <div className="mt-0.5"><RoleBadge role={author.role} /></div>
+        </div>
+      </div>
+
+      {/* Десктопная панель */}
+      <div className="hidden sm:flex flex-col items-center text-center px-3 py-4 gap-2">
+        <Link to={`/u/${encodeURIComponent(author.name)}`} className="hover:opacity-80 transition-opacity">
+          <img
+            src={author.skinUrl || avatarUrl(author.uuid, 256)}
+            alt={author.name}
+            width={96}
+            height={96}
+            loading="lazy"
+            className="w-24 h-24 rounded-xl bg-bg-section border border-white/10"
+            style={{ imageRendering: 'pixelated' }}
+          />
+        </Link>
+
+        <Link
+          to={`/u/${encodeURIComponent(author.name)}`}
+          className="font-mono text-sm font-semibold break-all hover:underline leading-tight"
+          style={{ color: author.role.color }}
+        >
+          {author.name}
+        </Link>
+
+        <span
+          className="w-full rounded-md px-2 py-1 text-[11px] font-medium leading-none"
+          style={{ color: author.role.color, background: `${author.role.color}22` }}
+        >
+          {author.role.title}
+        </span>
+
+        <dl className="w-full mt-1 space-y-0.5 text-[11px] text-text-light/40">
+          {author.postCount != null && (
+            <div className="flex justify-between gap-2">
+              <dt>Сообщений</dt>
+              <dd className="tabular-nums text-text-light/60">{author.postCount}</dd>
+            </div>
+          )}
+          {author.joinedAt && (
+            <div className="flex justify-between gap-2">
+              <dt>На форуме</dt>
+              <dd className="text-text-light/60" title={formatDateTime(author.joinedAt)}>
+                {new Date(author.joinedAt).toLocaleDateString('ru-RU', { month: 'short', year: 'numeric' })}
+              </dd>
+            </div>
+          )}
+        </dl>
+      </div>
+    </div>
   )
 }
 

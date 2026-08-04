@@ -8,12 +8,16 @@ export function author(row, prefix = 'a') {
     id: String(id),
     uuid: row[`${prefix}_uuid`],
     name: row[`${prefix}_name`],
+    skinUrl: row[`${prefix}_skin_url`] ?? null,
     role: {
       key: row[`${prefix}_role_key`],
       title: row[`${prefix}_role_title`],
       color: row[`${prefix}_role_color`],
       canModerate: row[`${prefix}_can_moderate`] ?? false,
     },
+    // Заполняется только там, где эти данные реально нужны (карточка сообщения).
+    joinedAt: row[`${prefix}_joined_at`] ?? null,
+    postCount: row[`${prefix}_post_count`] ?? null,
   }
 }
 
@@ -21,13 +25,24 @@ export function author(row, prefix = 'a') {
 export function authorFields(table, prefix = 'a', roleTable = null) {
   const r = roleTable ?? `${prefix}r`
   return `${table}.id AS ${prefix}_id, ${table}.mc_uuid AS ${prefix}_uuid, ${table}.name AS ${prefix}_name,
+          ${table}.skin_url AS ${prefix}_skin_url,
           ${table}.role_key AS ${prefix}_role_key, ${r}.title AS ${prefix}_role_title,
           ${r}.color AS ${prefix}_role_color, ${r}.can_moderate AS ${prefix}_can_moderate`
+}
+
+export function group(row) {
+  return {
+    id: String(row.id),
+    title: row.title,
+    position: row.position,
+    isVisible: row.is_visible,
+  }
 }
 
 export function category(row) {
   return {
     id: String(row.id),
+    groupId: row.group_id == null ? null : String(row.group_id),
     slug: row.slug,
     title: row.title,
     description: row.description,

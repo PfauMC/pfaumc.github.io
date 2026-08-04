@@ -44,6 +44,20 @@ function RuleItem({ item }) {
     )
   }
 
+  if (item.type === 'link') {
+    return (
+      <li className="flex items-start gap-2.5">
+        <span className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-accent mt-2" />
+        <span className="text-text-light text-sm leading-relaxed">
+          {item.text} —{' '}
+          <a href={item.href} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">
+            {item.label}
+          </a>
+        </span>
+      </li>
+    )
+  }
+
   if (item.type === 'example') {
     return (
       <li className="grid sm:grid-cols-2 gap-3">

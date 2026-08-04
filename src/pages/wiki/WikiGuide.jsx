@@ -112,6 +112,9 @@ function buildSteps(onCopyIP) {
             </li>
           ))}
         </ol>
+        <p className="mt-3 text-text-light/70 text-xs">
+          Зайти можно начиная с версии 1.21.11, но лучше играть на последней — {SERVER_VERSION}.
+        </p>
       </>
     ),
   },

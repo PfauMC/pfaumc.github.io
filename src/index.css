@@ -22,11 +22,17 @@
 }
 
 :root.light {
-  --c-bg-main:      240 246 255;
-  --c-bg-section:   229 237 252;
-  --c-bg-card:      255 255 255;
-  --c-text-light:   71 85 105;
+  /* Не белая, а светло-голубая/серая: фон страницы темнее карточек,
+     секции ещё темнее — та же логика глубины, что и в тёмной теме. */
+  --c-bg-main:      223 233 245;
+  --c-bg-section:   208 221 237;
+  --c-bg-card:      238 244 251;
+  --c-text-light:   45 58 78;
   --c-text-base:    15 23 42;
+  /* Тот же тон, что и фирменный #1DA5E8, но глубже: светлый акцент на светлом
+     фоне давал контраст 2.5 — ссылки и белый текст на кнопках не читались. */
+  --c-accent:       21 123 172;
+  --c-accent-dark:  15 96 136;
 }
 
 @layer base {
@@ -49,6 +55,11 @@
     color: #fff;
   }
 
+  :root.light ::selection {
+    background: rgba(29, 165, 232, 0.28);
+    color: rgb(15 23 42);
+  }
+
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { @apply bg-bg-main; }
   ::-webkit-scrollbar-thumb {
@@ -62,8 +73,15 @@
 
 /* ===== LIGHT MODE OVERRIDES ===== */
 /* Borders */
-:root.light .border-white\/5  { border-color: rgba(15,23,42,0.06); }
-:root.light .border-white\/10 { border-color: rgba(15,23,42,0.10); }
+:root.light .border-white\/5  { border-color: rgba(15,23,42,0.09); }
+:root.light .border-white\/10 { border-color: rgba(15,23,42,0.14); }
+
+/* Градиентный заголовок: светлые голубые на светлом фоне не читаются */
+:root.light .text-gradient {
+  background: linear-gradient(135deg, #12708F 0%, #1F97C9 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
 
 /* Grid bg - darker lines on light bg */
 :root.light .grid-bg {
@@ -74,7 +92,7 @@
 
 /* Scrollbar in light mode */
 :root.light ::-webkit-scrollbar-track {
-  background: rgb(240 246 255);
+  background: rgb(223 233 245);
 }
 
 @layer components {

@@ -24,11 +24,12 @@ export default function Modes() {
           <p className="text-accent font-mono text-sm font-semibold tracking-widest uppercase mb-3">Режимы</p>
           <h2 className="section-title">Выбери свой путь</h2>
           <p className="section-subtitle max-w-xl mx-auto">
-            Два режима — два стиля игры. Каждый режим — новое приключение.
+            Классическая ванила: строй, исследуй и выживай в честном мире.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
+        {/* Одна колонка, пока режим один — сетка на два не должна оставлять пустое место */}
+        <div className={`grid gap-6 lg:gap-8 ${modes.length > 1 ? 'md:grid-cols-2' : 'max-w-2xl mx-auto'}`}>
           {modes.map((mode, i) => (
             <ModeCard key={mode.id} mode={mode} visible={visible} delay={i * 150} />
           ))}

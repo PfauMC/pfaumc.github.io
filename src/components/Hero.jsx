@@ -40,8 +40,8 @@ export default function Hero() {
             </h1>
 
             <p className="text-text-light text-base sm:text-lg leading-relaxed mb-8 max-w-lg mx-auto lg:mx-0">
-              PfauMC — это Minecraft-сервер, где каждый находит свой стиль игры.
-              Ванила для тех, кто ценит классику, и Политическое выживание для тех, кто жаждет приключений.
+              PfauMC — это Minecraft-сервер для тех, кто ценит классику: чистая ванила,
+              защита построек и живое сообщество вокруг честной игры.
             </p>
 
             {/* Server IP */}

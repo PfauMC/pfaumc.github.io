@@ -18,7 +18,6 @@ const sections = [
 const rulesNav = [
   { label: 'Общие правила', icon: '⚖️', to: '/wiki/rules', children: generalRules },
   { label: 'Ванила', icon: '🌿', to: '/wiki/rules/vanilla', children: modeRules.vanilla },
-  { label: 'Политическое выживание', icon: '🔥', to: '/wiki/rules/political-survival', children: modeRules['political-survival'] },
 ]
 
 const mechanicsNav = [

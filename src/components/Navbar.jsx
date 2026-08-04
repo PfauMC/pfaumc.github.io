@@ -60,16 +60,16 @@ export default function Navbar() {
     { label: 'Статистика', to: '/stats' },
   ]
 
+  // backdrop-filter на шапке делает её containing block для fixed-потомков,
+  // а мобильное меню лежит внутри неё. Пока меню открыто, стекло снимаем —
+  // иначе меню схлопнется до высоты шапки.
+  const headerGlass = scrolled && !menuOpen
+
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-in-out ${
-        scrolled
-          ? 'py-3 backdrop-blur-xl shadow-[0_4px_30px_rgba(0,0,0,0.15)]'
-          : 'py-5 backdrop-blur-none'
-      }`}
-      style={{
-        background: scrolled ? 'rgba(var(--c-bg-main), 0.78)' : 'transparent',
-      }}
+        scrolled ? 'py-3' : 'py-5'
+      } ${headerGlass ? 'glass-strong shadow-[0_4px_30px_rgba(0,0,0,0.15)]' : 'bg-transparent'}`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
         {/* Logo */}
@@ -168,8 +168,8 @@ export default function Navbar() {
           menuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
       >
-        {/* Solid background */}
-        <div className="absolute inset-0" style={{ background: 'rgb(var(--c-bg-main))' }} />
+        {/* Стеклянная подложка меню */}
+        <div className="absolute inset-0 glass-strong" />
 
         {/* Content */}
         <div

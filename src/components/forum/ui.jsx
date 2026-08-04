@@ -199,7 +199,7 @@ export function Modal({ title, onClose, children, footer, wide = false }) {
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className={`relative w-full ${wide ? 'sm:max-w-2xl' : 'sm:max-w-md'} bg-bg-card border border-white/10 rounded-t-2xl sm:rounded-2xl shadow-2xl max-h-[92dvh] flex flex-col focus:outline-none`}
+        className={`relative w-full ${wide ? 'sm:max-w-2xl' : 'sm:max-w-md'} glass rounded-t-2xl sm:rounded-2xl max-h-[92dvh] flex flex-col focus:outline-none`}
       >
         <div className="flex items-center justify-between gap-4 px-5 py-4 border-b border-white/5">
           <h2 className="font-mono font-bold text-heading text-lg">{title}</h2>

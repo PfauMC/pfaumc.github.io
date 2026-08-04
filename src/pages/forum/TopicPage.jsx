@@ -334,7 +334,7 @@ function ModeratorMenu({ topic, onAction }) {
       {open && (
         <>
           <div className="fixed inset-0 z-30" onClick={() => setOpen(false)} aria-hidden="true" />
-          <div role="menu" className="absolute right-0 top-full mt-2 z-40 w-52 py-1 rounded-xl bg-bg-card border border-white/10 shadow-2xl overflow-hidden">
+          <div role="menu" className="absolute right-0 top-full mt-2 z-40 w-52 py-1 rounded-xl glass overflow-hidden">
             {item('Изменить заголовок', 'rename')}
             {item(topic.isPinned ? 'Открепить' : 'Закрепить', 'pin')}
             {item(topic.isLocked ? 'Открыть тему' : 'Закрыть тему', 'lock')}

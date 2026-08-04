@@ -167,7 +167,7 @@ export default function PostCard({ post, topic, onQuote, onReply, onChanged, hig
                     {pickerOpen && (
                       <>
                         <div className="fixed inset-0 z-10" onClick={() => setPickerOpen(false)} aria-hidden="true" />
-                        <div className="absolute bottom-full left-0 mb-2 z-20 flex gap-0.5 p-1 rounded-xl bg-bg-card border border-white/10 shadow-xl">
+                        <div className="absolute bottom-full left-0 mb-2 z-20 flex gap-0.5 p-1 rounded-xl glass">
                           {REACTIONS.map((emoji) => (
                             <button
                               key={emoji}

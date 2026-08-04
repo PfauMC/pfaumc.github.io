@@ -225,7 +225,7 @@ export default function OnlineChart({ current, previous, currentStart }) {
       {/* Всплывающая подсказка */}
       {hover != null && (hasCurrent || hasPrevious) && (
         <div
-          className="pointer-events-none absolute top-2 rounded-xl border border-white/10 bg-bg-card/95 backdrop-blur px-3 py-2 text-xs shadow-xl"
+          className="pointer-events-none absolute top-2 rounded-xl glass px-3 py-2 text-xs"
           style={{
             left: `${(xAt(hover) / W) * 100}%`,
             transform: `translateX(${hover > HOURS * 0.7 ? '-105%' : '5%'})`,

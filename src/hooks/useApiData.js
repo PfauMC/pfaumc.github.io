@@ -2,10 +2,10 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { api } from '../lib/forumApi'
 
 /**
- * Загрузка GET-эндпоинта форума с состояниями loading/error и повтором.
+ * Загрузка любого GET-эндпоинта /api/* с состояниями loading/error и повтором.
  * path === null — запрос не выполняется (например, пока не готов параметр).
  */
-export function useForumData(path, { skip = false } = {}) {
+export function useApiData(path, { skip = false } = {}) {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(!skip && Boolean(path))
   const [error, setError] = useState(null)

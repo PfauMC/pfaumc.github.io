@@ -1,183 +1,235 @@
-import { useServerStats } from '../hooks/useServerStats'
+import { useEffect } from 'react'
 import { useSEO } from '../hooks/useSEO'
+import { useApiData } from '../hooks/useApiData'
+import { usePlayersOnline } from '../hooks/usePlayersOnline'
+import OnlineChart from '../components/OnlineChart'
 import { SERVER_VERSION } from '../config'
 
+const REFRESH_MS = 120_000
+
 export default function StatsPage() {
-  useSEO('Онлайн сервера — PfauMC', 'Статистика сервера Minecraft сервера PfauMC в реальном времени.')
+  useSEO(
+    'Онлайн сервера — PfauMC',
+    'Статистика Minecraft сервера PfauMC: онлайн сейчас, график за эту и прошлую неделю, аптайм и средние показатели.'
+  )
 
-  const { stats, loading, lastUpdated, refresh } = useServerStats(60000)
+  const { data, loading, error, reload } = useApiData('/server/stats')
+  const { data: online } = usePlayersOnline()
 
-  const fmtTime = (d) => {
-    if (!d) return '—'
-    return d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-  }
+  // Ответ кэшируется на стороне сервера на 5 минут — чаще опрашивать нет смысла.
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (document.visibilityState === 'visible') reload()
+    }, REFRESH_MS)
+    return () => clearInterval(id)
+  }, [reload])
 
-  const fillPct = stats ? Math.round((stats.players / Math.max(stats.maxPlayers, 1)) * 100) : 0
+  const fillPct = data?.maxOnline ? Math.round((data.online / data.maxOnline) * 100) : 0
+  const players = online?.namesAvailable ? online.players : []
 
   return (
     <div className="min-h-screen pt-24 pb-16">
       <div className="max-w-5xl mx-auto px-4 sm:px-6">
-
-        {/* Header */}
-        <div className="mb-10">
-          <h1 className="font-mono text-3xl sm:text-4xl font-bold text-heading mb-2">
-            Статистика сервера
-          </h1>
+        <header className="mb-8">
+          <h1 className="font-mono text-3xl sm:text-4xl font-bold text-heading mb-2">Статистика сервера</h1>
           <p className="text-text-light text-base">
-            Данные обновляются автоматически раз в минуту
+            Онлайн, аптайм и история за две недели по данным мониторинга mcwatch.
           </p>
-        </div>
+        </header>
 
-        {/* Main status card */}
-        <div className="card mb-6 relative overflow-hidden">
-          <div className="absolute inset-0 bg-card-glow pointer-events-none" />
-          <div className="relative flex flex-col sm:flex-row sm:items-center gap-6">
-            {/* Status indicator */}
-            <div className="flex items-center gap-4">
-              {loading ? (
-                <div className="w-16 h-16 rounded-2xl bg-bg-section border border-white/10 flex items-center justify-center">
-                  <SpinIcon className="w-7 h-7 text-accent animate-spin" />
-                </div>
-              ) : (
-                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center border ${
-                  stats?.online
-                    ? 'bg-green-500/10 border-green-500/30'
-                    : 'bg-red-500/10 border-red-500/30'
-                }`}>
-                  {stats?.online ? (
-                    <CheckCircleIcon className="w-7 h-7 text-green-400" />
-                  ) : (
-                    <OfflineIcon className="w-7 h-7 text-red-400" />
-                  )}
-                </div>
-              )}
-              <div>
-                <div className={`font-mono text-xl font-bold ${
-                  loading ? 'text-text-light' : stats?.online ? 'text-green-400' : 'text-red-400'
-                }`}>
-                  {loading ? 'Загрузка...' : stats?.online ? 'Сервер онлайн' : 'Сервер недоступен'}
-                </div>
-                <div className="text-text-light/60 text-sm font-mono mt-0.5">play.pfaumc.online</div>
-              </div>
-            </div>
-
-            <div className="sm:ml-auto flex flex-col items-start sm:items-end gap-1">
-              <div className="text-text-light/50 text-xs">Последнее обновление</div>
-              <div className="font-mono text-sm text-text-light">{fmtTime(lastUpdated)}</div>
-              <button
-                onClick={refresh}
-                disabled={loading}
-                className="text-accent hover:text-accent/80 text-xs font-medium transition-colors disabled:opacity-40 flex items-center gap-1 mt-1"
-              >
-                <RefreshIcon className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-                Обновить
-              </button>
-            </div>
+        {error && !data ? (
+          <div className="card text-center py-10" role="alert">
+            <p className="text-text-light mb-4">Не удалось загрузить статистику сервера</p>
+            <button onClick={reload} className="btn-ghost text-sm py-2 px-4">Повторить</button>
           </div>
-        </div>
+        ) : (
+          <>
+            {/* Статус */}
+            <div className="card mb-4 relative overflow-hidden">
+              <div className="absolute inset-0 bg-card-glow pointer-events-none" />
+              <div className="relative flex flex-col sm:flex-row sm:items-center gap-5">
+                <div className="flex items-center gap-4 min-w-0">
+                  <div
+                    className={`w-16 h-16 rounded-2xl flex items-center justify-center border flex-shrink-0 ${
+                      loading && !data
+                        ? 'bg-bg-section border-white/10'
+                        : data?.isUp
+                          ? 'bg-green-500/10 border-green-500/30'
+                          : 'bg-red-500/10 border-red-500/30'
+                    }`}
+                  >
+                    {loading && !data ? (
+                      <SpinIcon className="w-7 h-7 text-accent animate-spin" />
+                    ) : data?.isUp ? (
+                      <CheckCircleIcon className="w-7 h-7 text-green-400" />
+                    ) : (
+                      <OfflineIcon className="w-7 h-7 text-red-400" />
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <div
+                      className={`font-mono text-xl font-bold ${
+                        loading && !data ? 'text-text-light' : data?.isUp ? 'text-green-400' : 'text-red-400'
+                      }`}
+                    >
+                      {loading && !data ? 'Загрузка…' : data?.isUp ? 'Сервер онлайн' : 'Сервер недоступен'}
+                    </div>
+                    <div className="text-text-light/60 text-sm font-mono mt-0.5 truncate">
+                      {data?.host ?? 'play.pfaumc.online'}
+                    </div>
+                    {data?.motd?.length > 0 && (
+                      <p className="text-text-light/40 text-xs mt-1.5">{data.motd.join(' · ')}</p>
+                    )}
+                  </div>
+                </div>
 
-        {/* Stats grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-          {/* Players */}
-          <div className="card col-span-1 sm:col-span-2">
-            <div className="text-text-light/50 text-xs font-mono uppercase tracking-widest mb-3">Игроков онлайн</div>
-            <div className="flex items-end gap-3 mb-4">
-              <div className="font-mono text-5xl font-bold text-heading">
-                {loading ? <span className="opacity-30">—</span> : stats?.players ?? 0}
-              </div>
-              <div className="font-mono text-2xl text-text-light/40 mb-1">
-                / {loading ? '—' : stats?.maxPlayers ?? 0}
+                <div className="sm:ml-auto flex flex-col items-start sm:items-end gap-1 flex-shrink-0">
+                  <div className="text-text-light/50 text-xs">Последняя проверка</div>
+                  <div className="font-mono text-sm text-text-light">{formatTime(data?.checkedAt)}</div>
+                  <button
+                    onClick={reload}
+                    disabled={loading}
+                    className="text-accent hover:text-accent/80 text-xs font-medium transition-colors disabled:opacity-40 flex items-center gap-1 mt-1"
+                  >
+                    <RefreshIcon className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+                    Обновить
+                  </button>
+                </div>
               </div>
             </div>
-            {/* Progress bar */}
-            <div className="w-full h-2 bg-bg-section rounded-full overflow-hidden">
-              <div
-                className="h-full rounded-full transition-all duration-700"
-                style={{
-                  width: loading ? '0%' : `${fillPct}%`,
-                  background: fillPct > 80
-                    ? 'linear-gradient(90deg, #f59e0b, #ef4444)'
-                    : 'linear-gradient(90deg, #1DA5E8, #7DD3F8)',
-                }}
+
+            {/* Онлайн и показатели */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+              <div className="card col-span-1 sm:col-span-2">
+                <div className="text-text-light/50 text-xs font-mono uppercase tracking-widest mb-3">Игроков онлайн</div>
+                <div className="flex items-end gap-3 mb-4">
+                  <div className="font-mono text-5xl font-bold text-heading tabular-nums">
+                    {data ? data.online : <span className="opacity-30">—</span>}
+                  </div>
+                  <div className="font-mono text-2xl text-text-light/40 mb-1 tabular-nums">
+                    / {data?.maxOnline ?? '—'}
+                  </div>
+                </div>
+
+                <div className="w-full h-2 bg-bg-section rounded-full overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-700"
+                    style={{
+                      width: `${Math.min(100, fillPct)}%`,
+                      background:
+                        fillPct > 80
+                          ? 'linear-gradient(90deg, #f59e0b, #ef4444)'
+                          : 'linear-gradient(90deg, #1DA5E8, #7DD3F8)',
+                    }}
+                  />
+                </div>
+                <div className="text-text-light/40 text-xs mt-1.5">{fillPct}% заполнен</div>
+
+                {players.length > 0 && (
+                  <div className="mt-4 pt-4 border-t border-white/5">
+                    <div className="text-text-light/50 text-xs font-mono uppercase tracking-widest mb-2">Кто в сети</div>
+                    <div className="flex flex-wrap gap-2">
+                      {players.slice(0, 24).map((p) => (
+                        <span
+                          key={p.uuid}
+                          className="inline-flex items-center gap-1.5 bg-bg-section border border-white/5 rounded-lg px-2.5 py-1 text-xs font-mono text-text-light"
+                        >
+                          <span className="w-1.5 h-1.5 rounded-full bg-green-400 flex-shrink-0" />
+                          {p.name}
+                        </span>
+                      ))}
+                      {players.length > 24 && (
+                        <span className="text-text-light/40 text-xs self-center">+{players.length - 24} ещё</span>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex flex-col gap-4">
+                <Metric
+                  label="Аптайм за 2 недели"
+                  value={data?.uptimePct != null ? `${data.uptimePct.toFixed(2)}%` : '—'}
+                  desc={data?.firstObservedAt ? `Наблюдение с ${formatDate(data.firstObservedAt)}` : null}
+                />
+                <Metric
+                  label="Средний онлайн"
+                  value={data?.avgDay != null ? Math.round(data.avgDay) : '—'}
+                  desc="за последние сутки"
+                />
+                <Metric
+                  label="Средний за неделю"
+                  value={data?.avgWeek != null ? Math.round(data.avgWeek) : '—'}
+                  desc={data?.peak ? `Пик ${data.peak.value} — ${formatDate(data.peak.at)}` : null}
+                />
+              </div>
+            </div>
+
+            {/* График */}
+            <div className="card mb-4">
+              <div className="flex flex-wrap items-baseline justify-between gap-2 mb-4">
+                <h2 className="font-mono text-lg font-bold text-heading">Онлайн по часам</h2>
+                <span className="text-text-light/40 text-xs">эта неделя против прошлой</span>
+              </div>
+
+              {loading && !data ? (
+                <div className="h-64 rounded-xl bg-bg-section animate-pulse" role="status" aria-label="Загрузка графика" />
+              ) : (
+                <OnlineChart
+                  current={data?.weeks?.current?.avg}
+                  previous={data?.weeks?.previous?.avg}
+                  currentStart={data?.weeks?.currentStart}
+                />
+              )}
+            </div>
+
+            {/* Информация о сервере */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <InfoCard icon="🧱" title="Версия" value={SERVER_VERSION} desc={data?.version ?? 'Java Edition'} />
+              <InfoCard icon="🌿" title="Режим" value="Ванила" desc="Честная игра и защита построек" />
+              <InfoCard
+                icon="🕐"
+                title="Режим работы"
+                value="24/7"
+                desc={data?.ip ? `IP ${data.ip}` : 'Сервер работает круглосуточно'}
               />
             </div>
-            <div className="text-text-light/40 text-xs mt-1.5">{fillPct}% заполнен</div>
 
-            {/* Player list */}
-            {stats?.playerList?.length > 0 && (
-              <div className="mt-4 pt-4 border-t border-white/5">
-                <div className="text-text-light/50 text-xs font-mono uppercase tracking-widest mb-2">Кто в сети</div>
-                <div className="flex flex-wrap gap-2">
-                  {stats.playerList.slice(0, 20).map(p => (
-                    <span
-                      key={p.uuid || p.name}
-                      className="inline-flex items-center gap-1.5 bg-bg-section border border-white/5 rounded-lg px-2.5 py-1 text-xs font-mono text-text-light"
-                    >
-                      <span className="w-1.5 h-1.5 rounded-full bg-green-400 flex-shrink-0" />
-                      {p.name}
-                    </span>
-                  ))}
-                  {stats.playerList.length > 20 && (
-                    <span className="text-text-light/40 text-xs self-center">+{stats.playerList.length - 20} ещё</span>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Info column */}
-          <div className="flex flex-col gap-4">
-            {/* Version */}
-            <div className="card flex-1">
-              <div className="text-text-light/50 text-xs font-mono uppercase tracking-widest mb-2">Версия</div>
-              <div className="font-mono text-2xl font-bold text-heading">{SERVER_VERSION}</div>
-              <div className="text-text-light/40 text-xs mt-1">Java Edition</div>
-            </div>
-
-            {/* Mode */}
-            <div className="card flex-1">
-              <div className="text-text-light/50 text-xs font-mono uppercase tracking-widest mb-2">Режимы</div>
-              <div className="flex flex-col gap-1.5">
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="w-2 h-2 rounded-full bg-green-400 flex-shrink-0" />
-                  <span className="text-heading font-medium">Ванила</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="w-2 h-2 rounded-full bg-orange-400 flex-shrink-0" />
-                  <span className="text-heading font-medium">Политическое выживание</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Server info cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <InfoCard
-            icon="🕐"
-            title="Режим работы"
-            value="24/7"
-            desc="Сервер работает круглосуточно"
-          />
-          <InfoCard
-            icon="💾"
-            title="Автосохранение"
-            value="Каждые 5 мин"
-            desc="Ваш прогресс в безопасности"
-          />
-          <InfoCard
-            icon="🛡️"
-            title="Античит"
-            value="Активен"
-            desc="Защита от читов и эксплойтов"
-          />
-        </div>
-
-        {/* Footer note */}
-        <div className="mt-8 text-center text-text-light/30 text-xs font-mono">
-          Данные предоставлены api.mcsrvstat.us · Обновляется каждые 60 секунд
-        </div>
+            <p className="mt-8 text-center text-text-light/30 text-xs font-mono">
+              Данные мониторинга{' '}
+              <a
+                href={data?.source ?? 'https://mcwatch.online/servers/pfaumc'}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-accent/60 hover:text-accent transition-colors"
+              >
+                mcwatch.online
+              </a>{' '}
+              · обновляется раз в 2 минуты
+            </p>
+          </>
+        )}
       </div>
+    </div>
+  )
+}
+
+function formatTime(iso) {
+  if (!iso) return '—'
+  return new Date(iso).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
+}
+
+function formatDate(iso) {
+  if (!iso) return '—'
+  return new Date(iso).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })
+}
+
+function Metric({ label, value, desc }) {
+  return (
+    <div className="card flex-1">
+      <div className="text-text-light/50 text-xs font-mono uppercase tracking-widest mb-2">{label}</div>
+      <div className="font-mono text-2xl font-bold text-heading tabular-nums">{value}</div>
+      {desc && <div className="text-text-light/40 text-xs mt-1">{desc}</div>}
     </div>
   )
 }
@@ -185,10 +237,10 @@ export default function StatsPage() {
 function InfoCard({ icon, title, value, desc }) {
   return (
     <div className="card text-center">
-      <div className="text-3xl mb-3">{icon}</div>
+      <div className="text-3xl mb-3" aria-hidden="true">{icon}</div>
       <div className="text-text-light/50 text-xs font-mono uppercase tracking-widest mb-1">{title}</div>
       <div className="font-mono text-lg font-bold text-heading mb-1">{value}</div>
-      <div className="text-text-light/50 text-xs">{desc}</div>
+      <div className="text-text-light/50 text-xs break-words">{desc}</div>
     </div>
   )
 }
@@ -206,8 +258,8 @@ function OfflineIcon({ className = '' }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
       <circle cx="12" cy="12" r="10" />
-      <line x1="8" y1="8" x2="16" y2="16" />
-      <line x1="16" y1="8" x2="8" y2="16" />
+      <line x1="15" y1="9" x2="9" y2="15" />
+      <line x1="9" y1="9" x2="15" y2="15" />
     </svg>
   )
 }
@@ -215,7 +267,7 @@ function OfflineIcon({ className = '' }) {
 function SpinIcon({ className = '' }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-      <path d="M21 12a9 9 0 11-6.219-8.56" />
+      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
     </svg>
   )
 }
@@ -224,7 +276,8 @@ function RefreshIcon({ className = '' }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
       <polyline points="23 4 23 10 17 10" />
-      <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+      <polyline points="1 20 1 14 7 14" />
+      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
     </svg>
   )
 }

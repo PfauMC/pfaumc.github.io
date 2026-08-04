@@ -1,17 +1,15 @@
 import { useState } from 'react'
-import { Link, useParams, useSearchParams, useNavigate } from 'react-router-dom'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { useSEO } from '../../hooks/useSEO'
-import { useForumData } from '../../hooks/useForumData'
+import { useApiData } from '../../hooks/useApiData'
 import { useForumAuth } from '../../context/ForumAuthContext'
-import { api } from '../../lib/forumApi'
 import {
   formatCount, formatSmartTime, COUNT_REPLIES, COUNT_VIEWS,
 } from '../../lib/forumFormat'
 import {
-  Breadcrumbs, UserHead, ListSkeleton, ErrorState, EmptyState, Pagination, Modal, FormError,
+  Breadcrumbs, UserHead, ListSkeleton, ErrorState, EmptyState, Pagination,
 } from '../../components/forum/ui'
-import { Field, inputClass } from './ForumHome'
-import Editor from '../../components/forum/Editor'
+import TopicForm from '../../components/forum/TopicForm'
 
 const SORTS = [
   { key: 'recent', label: 'По последнему ответу' },
@@ -29,8 +27,8 @@ export default function CategoryPage() {
   const page = Number.parseInt(params.get('page') ?? '1', 10) || 1
   const sort = SORTS.some((s) => s.key === params.get('sort')) ? params.get('sort') : 'recent'
 
-  const category = useForumData(`/forum/categories/${encodeURIComponent(slug)}`)
-  const topics = useForumData(`/forum/categories/${encodeURIComponent(slug)}/topics?page=${page}&sort=${sort}`)
+  const category = useApiData(`/forum/categories/${encodeURIComponent(slug)}`)
+  const topics = useApiData(`/forum/categories/${encodeURIComponent(slug)}/topics?page=${page}&sort=${sort}`)
 
   const info = category.data?.category
   useSEO(info ? `${info.title} — Форум PfauMC` : 'Форум PfauMC', info?.description || undefined)
@@ -200,61 +198,5 @@ function StatusIcon({ children, title }) {
     <span title={title} aria-label={title} className="text-xs flex-shrink-0">
       {children}
     </span>
-  )
-}
-
-export function TopicForm({ categoryId, onClose, onCreated }) {
-  const [title, setTitle] = useState('')
-  const [body, setBody] = useState('')
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState(null)
-  const navigate = useNavigate()
-
-  const submit = async () => {
-    setBusy(true)
-    setError(null)
-    try {
-      const data = await api('/forum/topics', { method: 'POST', body: { categoryId, title, body } })
-      onCreated?.()
-      navigate(`/forum/t/${data.topicId}`)
-    } catch (e) {
-      setError(e.message)
-      setBusy(false)
-    }
-  }
-
-  return (
-    <Modal title="Новая тема" onClose={onClose} wide>
-      <div className="space-y-4">
-        <Field label="Заголовок темы">
-          <input
-            value={title}
-            onChange={(e) => setTitle(e.target.value.slice(0, 140))}
-            maxLength={140}
-            autoFocus
-            className={inputClass}
-          />
-        </Field>
-
-        <div>
-          <span className="block text-sm text-text-light/70 mb-1.5">Первое сообщение</span>
-          <Editor
-            value={body}
-            onChange={setBody}
-            onSubmit={submit}
-            onCancel={onClose}
-            submitLabel="Создать тему"
-            busy={busy}
-            error={null}
-            placeholder="О чём тема?"
-          />
-        </div>
-
-        <FormError error={error} />
-        {title.trim().length > 0 && title.trim().length < 3 && (
-          <FormError error="Заголовок: минимум 3 символа" />
-        )}
-      </div>
-    </Modal>
   )
 }

@@ -35,10 +35,14 @@ export default function Fireflies({ count = 28 }) {
     const draw = () => {
       ctx.clearRect(0, 0, W, H)
 
-      const hue = isDark ? 175 : 45
-      const lightness = isDark ? 70 : 55
-      const maxAlpha = isDark ? 0.85 : 0.55
-      const glowSize = isDark ? 7 : 5
+      // В тёмной теме — бирюзовые огоньки на blend screen.
+      // В светлой — голубые, под акцент сайта (#1DA5E8 ≈ 200°); blend multiply,
+      // поэтому и свечение, и ядро должны быть тёмными, иначе их не видно.
+      const hue = isDark ? 175 : 200
+      const lightness = isDark ? 70 : 52
+      const coreLightness = isDark ? 90 : 44
+      const maxAlpha = isDark ? 0.85 : 0.5
+      const glowSize = isDark ? 7 : 6
 
       fireflies.forEach(f => {
         f.wanderAngle += f.wanderSpeed
@@ -67,7 +71,7 @@ export default function Fireflies({ count = 28 }) {
 
         ctx.beginPath()
         ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2)
-        ctx.fillStyle = `hsla(${hue}, 100%, 90%, ${Math.min(f.alpha * 1.4, 1)})`
+        ctx.fillStyle = `hsla(${hue}, 100%, ${coreLightness}%, ${Math.min(f.alpha * 1.4, 1)})`
         ctx.fill()
       })
 
@@ -86,7 +90,7 @@ export default function Fireflies({ count = 28 }) {
     <canvas
       ref={canvasRef}
       className="fixed inset-0 pointer-events-none"
-      style={{ zIndex: 1, mixBlendMode: isDark ? 'screen' : 'multiply', opacity: isDark ? 0.8 : 0.4 }}
+      style={{ zIndex: 1, mixBlendMode: isDark ? 'screen' : 'multiply', opacity: isDark ? 0.8 : 0.5 }}
     />
   )
 }

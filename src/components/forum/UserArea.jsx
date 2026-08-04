@@ -120,7 +120,7 @@ function NotificationsBell() {
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} aria-hidden="true" />
-          <div className="fixed sm:absolute left-2 right-2 sm:left-auto sm:right-0 top-16 sm:top-full sm:mt-2 z-50 sm:w-[22rem] rounded-2xl bg-bg-card border border-white/10 shadow-2xl overflow-hidden">
+          <div className="fixed sm:absolute left-2 right-2 sm:left-auto sm:right-0 top-16 sm:top-full sm:mt-2 z-50 sm:w-[22rem] rounded-2xl glass overflow-hidden">
             <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-white/5">
               <span className="font-mono font-semibold text-heading text-sm">Уведомления</span>
               {unreadCount > 0 && (
@@ -221,7 +221,7 @@ function UserMenu() {
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} aria-hidden="true" />
-          <div role="menu" className="absolute right-0 top-full mt-2 z-50 w-56 rounded-2xl bg-bg-card border border-white/10 shadow-2xl overflow-hidden">
+          <div role="menu" className="absolute right-0 top-full mt-2 z-50 w-56 rounded-2xl glass overflow-hidden">
             <div className="px-4 py-3 border-b border-white/5">
               <p className="font-mono font-semibold text-heading text-sm truncate">{user.name}</p>
               <div className="mt-1"><RoleBadge role={user.role} /></div>

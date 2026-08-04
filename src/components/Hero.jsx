@@ -40,8 +40,8 @@ export default function Hero() {
             </h1>
 
             <p className="text-text-light text-base sm:text-lg leading-relaxed mb-8 max-w-lg mx-auto lg:mx-0">
-              PfauMC — это Minecraft-сервер, где каждый находит свой стиль игры.
-              Ванила для тех, кто ценит классику, и Политическое выживание для тех, кто жаждет приключений.
+              PfauMC — это Minecraft-сервер для тех, кто ценит классику: чистая ванила,
+              защита построек и живое сообщество вокруг честной игры.
             </p>
 
             {/* Server IP */}
@@ -50,7 +50,7 @@ export default function Hero() {
               <button
                 onClick={() => copy(SERVER_IP)}
                 aria-label={`Скопировать IP-адрес сервера ${SERVER_IP}`}
-                className="group flex items-center gap-3 bg-bg-card border border-white/10 hover:border-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 rounded-xl px-5 py-3.5 transition-all duration-200 hover:bg-accent/5 w-full sm:w-auto"
+                className="group flex items-center gap-3 glass hover:border-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 rounded-xl px-5 py-3.5 transition-all duration-200 w-full sm:w-auto"
               >
                 <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse flex-shrink-0" />
                 <span className="font-mono text-base sm:text-lg font-semibold text-heading">{SERVER_IP}</span>

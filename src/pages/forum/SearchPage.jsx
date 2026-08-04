@@ -1,11 +1,10 @@
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useSEO } from '../../hooks/useSEO'
-import { useForumData } from '../../hooks/useForumData'
+import { useApiData } from '../../hooks/useApiData'
 import { formatSmartTime } from '../../lib/forumFormat'
-import { Breadcrumbs, UserHead, RoleBadge, ListSkeleton, ErrorState, EmptyState, Pagination } from '../../components/forum/ui'
+import { Breadcrumbs, UserHead, RoleBadge, ListSkeleton, ErrorState, EmptyState, Pagination, inputClass } from '../../components/forum/ui'
 import ForumSearchBar from '../../components/forum/ForumSearchBar'
-import { inputClass } from './ForumHome'
 
 export default function SearchPage() {
   useSEO('Поиск по форуму — PfauMC', 'Поиск по темам и сообщениям форума PfauMC.')
@@ -16,8 +15,8 @@ export default function SearchPage() {
     Boolean(params.get('categoryId') || params.get('author') || params.get('from') || params.get('to'))
   )
 
-  const categories = useForumData('/forum/categories')
-  const search = useForumData(query.trim().length >= 2 ? `/forum/search?${params.toString()}` : null)
+  const categories = useApiData('/forum/categories')
+  const search = useApiData(query.trim().length >= 2 ? `/forum/search?${params.toString()}` : null)
 
   const setParam = (key, value) => {
     const next = new URLSearchParams(params)

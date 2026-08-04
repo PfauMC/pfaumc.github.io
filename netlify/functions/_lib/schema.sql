@@ -73,9 +73,24 @@ CREATE TABLE IF NOT EXISTS forum_sessions (
 
 CREATE INDEX IF NOT EXISTS forum_sessions_user_idx ON forum_sessions (user_id, revoked_at);
 
+-- ===== Разделы =====
+-- Верхний уровень главной страницы форума: заголовок, под ним категории.
+CREATE TABLE IF NOT EXISTS forum_groups (
+  id         bigserial PRIMARY KEY,
+  title      text NOT NULL,
+  position   integer NOT NULL DEFAULT 0,
+  is_visible boolean NOT NULL DEFAULT true,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  deleted_at timestamptz
+);
+
+CREATE INDEX IF NOT EXISTS forum_groups_position_idx ON forum_groups (position, id);
+
 -- ===== Категории =====
 CREATE TABLE IF NOT EXISTS forum_categories (
   id          bigserial PRIMARY KEY,
+  group_id    bigint REFERENCES forum_groups(id) ON DELETE SET NULL,
   slug        text NOT NULL UNIQUE,
   title       text NOT NULL,
   description text NOT NULL DEFAULT '',
@@ -89,7 +104,11 @@ CREATE TABLE IF NOT EXISTS forum_categories (
   deleted_by  bigint REFERENCES forum_users(id)
 );
 
+-- Для баз, созданных до появления разделов.
+ALTER TABLE forum_categories ADD COLUMN IF NOT EXISTS group_id bigint REFERENCES forum_groups(id) ON DELETE SET NULL;
+
 CREATE INDEX IF NOT EXISTS forum_categories_position_idx ON forum_categories (position, id);
+CREATE INDEX IF NOT EXISTS forum_categories_group_idx ON forum_categories (group_id, position, id);
 
 -- ===== Темы =====
 CREATE TABLE IF NOT EXISTS forum_topics (

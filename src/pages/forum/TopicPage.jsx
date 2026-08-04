@@ -1,14 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useSEO } from '../../hooks/useSEO'
-import { useForumData } from '../../hooks/useForumData'
+import { useApiData } from '../../hooks/useApiData'
 import { useForumAuth } from '../../context/ForumAuthContext'
 import { api } from '../../lib/forumApi'
 import { formatCount, formatSmartTime, COUNT_REPLIES, COUNT_VIEWS } from '../../lib/forumFormat'
 import {
-  Breadcrumbs, ListSkeleton, ErrorState, Pagination, LoginNotice, Modal, ConfirmDialog, FormError, RoleBadge, UserHead,
+  Breadcrumbs, ListSkeleton, ErrorState, Pagination, LoginNotice, Modal, ConfirmDialog, FormError, RoleBadge, UserHead, Field, inputClass,
 } from '../../components/forum/ui'
-import { Field, inputClass } from './ForumHome'
 import Editor from '../../components/forum/Editor'
 import PostCard from '../../components/forum/PostCard'
 
@@ -25,8 +24,8 @@ export default function TopicPage() {
     Number.parseInt(params.get('page') ?? '', 10) ||
     (Number.isFinite(targetPost) ? Math.max(1, Math.ceil(targetPost / PAGE_SIZE)) : 1)
 
-  const topic = useForumData(`/forum/topics/${id}`)
-  const posts = useForumData(`/forum/topics/${id}/posts?page=${page}`)
+  const topic = useApiData(`/forum/topics/${id}`)
+  const posts = useApiData(`/forum/topics/${id}/posts?page=${page}`)
 
   const [draft, setDraft] = useState('')
   const [replyTo, setReplyTo] = useState(null)
@@ -125,33 +124,34 @@ export default function TopicPage() {
 
   return (
     <PageShell>
-      <Breadcrumbs
-        items={[
-          { label: 'Форум', to: '/forum' },
-          { label: info?.categoryTitle ?? '…', to: info ? `/forum/c/${info.categorySlug}` : undefined },
-          { label: info?.title ?? 'Тема' },
-        ]}
-      />
+      {/* Шапка темы — баннер */}
+      <header className="relative overflow-hidden rounded-2xl border border-white/5 bg-bg-card mb-4">
+        <div className="absolute inset-0 grid-bg opacity-70 pointer-events-none" aria-hidden="true" />
+        <div className="absolute inset-0 bg-card-glow pointer-events-none" aria-hidden="true" />
 
-      {/* Шапка темы */}
-      <header className="card mb-5">
-        <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="relative px-5 py-6 sm:px-7 sm:py-7 flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2 mb-1.5">
+            <div className="flex flex-wrap items-center gap-2 mb-2 empty:hidden">
               {info?.isPinned && <Badge>📌 Закреплена</Badge>}
               {info?.isLocked && <Badge>🔒 Закрыта</Badge>}
               {info?.isDeleted && <Badge danger>🗑️ Удалена</Badge>}
             </div>
-            <h1 className="font-mono text-xl sm:text-2xl font-bold text-heading break-words">
+            <h1 className="font-mono text-xl sm:text-3xl font-bold text-heading break-words leading-tight">
               {info?.title ?? 'Загрузка…'}
             </h1>
             {info && (
-              <div className="flex flex-wrap items-center gap-2 mt-3 text-sm text-text-light/60">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 mt-3 text-sm text-text-light/60">
                 <UserHead user={info.author} size={24} />
-                <span className="text-heading/90">{info.author?.name}</span>
+                <Link
+                  to={`/u/${encodeURIComponent(info.author?.name ?? '')}`}
+                  className="font-mono font-semibold hover:underline"
+                  style={{ color: info.author?.role?.color }}
+                >
+                  {info.author?.name}
+                </Link>
                 <RoleBadge role={info.author?.role} />
-                <span>· {formatSmartTime(info.createdAt)}</span>
-                <span className="tabular-nums">
+                <span className="text-text-light/40">· {formatSmartTime(info.createdAt)}</span>
+                <span className="tabular-nums text-text-light/40">
                   · {formatCount(info.replyCount, COUNT_REPLIES)} · {formatCount(info.views, COUNT_VIEWS)}
                 </span>
               </div>
@@ -166,6 +166,24 @@ export default function TopicPage() {
           )}
         </div>
       </header>
+
+      <Breadcrumbs
+        items={[
+          { label: 'Форум', to: '/forum' },
+          { label: info?.categoryTitle ?? '…', to: info ? `/forum/c/${info.categorySlug}` : undefined },
+          { label: info?.title ?? 'Тема' },
+        ]}
+      />
+
+      {posts.data && (
+        <Pagination
+          page={posts.data.page}
+          total={posts.data.total}
+          pageSize={posts.data.pageSize}
+          onChange={setPage}
+          className="mb-4 justify-start"
+        />
+      )}
 
       {/* Сообщения */}
       {posts.loading && !posts.data ? (
@@ -316,7 +334,7 @@ function ModeratorMenu({ topic, onAction }) {
       {open && (
         <>
           <div className="fixed inset-0 z-30" onClick={() => setOpen(false)} aria-hidden="true" />
-          <div role="menu" className="absolute right-0 top-full mt-2 z-40 w-52 py-1 rounded-xl bg-bg-card border border-white/10 shadow-2xl overflow-hidden">
+          <div role="menu" className="absolute right-0 top-full mt-2 z-40 w-52 py-1 rounded-xl glass overflow-hidden">
             {item('Изменить заголовок', 'rename')}
             {item(topic.isPinned ? 'Открепить' : 'Закрепить', 'pin')}
             {item(topic.isLocked ? 'Открыть тему' : 'Закрыть тему', 'lock')}
@@ -334,7 +352,7 @@ function ModeratorDialog({ action, topic, onClose, onDone, onDeleted }) {
   const [categoryId, setCategoryId] = useState(topic.categoryId)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(null)
-  const categories = useForumData(action === 'move' ? '/forum/categories' : null)
+  const categories = useApiData(action === 'move' ? '/forum/categories' : null)
 
   const call = async (fn) => {
     setBusy(true)

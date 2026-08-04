@@ -119,7 +119,7 @@ export function EmptyState({ icon = '🗒️', title, text, action }) {
 }
 
 /* ===== Пагинация ===== */
-export function Pagination({ page, total, pageSize, onChange }) {
+export function Pagination({ page, total, pageSize, onChange, className = 'mt-6 justify-center' }) {
   const pages = Math.max(1, Math.ceil(total / pageSize))
   if (pages <= 1) return null
 
@@ -129,7 +129,7 @@ export function Pagination({ page, total, pageSize, onChange }) {
   const btn = 'min-w-9 h-9 px-2 flex items-center justify-center rounded-lg text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60'
 
   return (
-    <nav className="flex flex-wrap items-center justify-center gap-1.5 mt-6" aria-label="Пагинация">
+    <nav className={`flex flex-wrap items-center gap-1.5 ${className}`} aria-label="Пагинация">
       <button
         onClick={() => onChange(page - 1)}
         disabled={page <= 1}
@@ -199,7 +199,7 @@ export function Modal({ title, onClose, children, footer, wide = false }) {
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className={`relative w-full ${wide ? 'sm:max-w-2xl' : 'sm:max-w-md'} bg-bg-card border border-white/10 rounded-t-2xl sm:rounded-2xl shadow-2xl max-h-[92dvh] flex flex-col focus:outline-none`}
+        className={`relative w-full ${wide ? 'sm:max-w-2xl' : 'sm:max-w-md'} glass rounded-t-2xl sm:rounded-2xl max-h-[92dvh] flex flex-col focus:outline-none`}
       >
         <div className="flex items-center justify-between gap-4 px-5 py-4 border-b border-white/5">
           <h2 className="font-mono font-bold text-heading text-lg">{title}</h2>
@@ -262,6 +262,35 @@ export function LoginNotice({ text = 'Чтобы писать на форуме,
         </div>
       </div>
     </div>
+  )
+}
+
+/* ===== Поля форм ===== */
+export const inputClass =
+  'w-full bg-bg-section border border-white/10 rounded-xl px-3 py-2 text-sm text-heading placeholder-text-light/30 focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/30 transition-colors'
+
+export function Field({ label, children }) {
+  return (
+    <label className="block">
+      <span className="block text-sm text-text-light/70 mb-1.5">{label}</span>
+      {children}
+    </label>
+  )
+}
+
+export function Toggle({ checked, onChange, label }) {
+  return (
+    <label className="flex items-center gap-3 cursor-pointer select-none">
+      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="sr-only peer" />
+      <span
+        className={`relative w-10 h-6 rounded-full transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-accent/60 flex-shrink-0 ${
+          checked ? 'bg-accent' : 'bg-white/10'
+        }`}
+      >
+        <span className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${checked ? 'left-5' : 'left-1'}`} />
+      </span>
+      <span className="text-sm text-text-light">{label}</span>
+    </label>
   )
 }
 

@@ -6,7 +6,6 @@ import { useSEO } from '../../hooks/useSEO'
 const TABS = [
   { id: 'general', label: 'Общие правила', icon: '⚖️', scope: 'Общее правило для всех режимов' },
   { id: 'vanilla', label: 'Ванила', icon: '🌿', scope: 'Относится только к Ваниле' },
-  { id: 'political-survival', label: 'Политическое выживание', icon: '🔥', scope: 'Относится только к Политическому выживанию' },
 ]
 
 function ScopeBadge({ text }) {
@@ -110,7 +109,7 @@ function RuleSection({ id, category, icon, items }) {
 }
 
 export default function WikiRules() {
-  useSEO('Правила сервера — PfauMC Wiki', 'Общие правила и правила режимов Ванила и Политическое выживание на Minecraft сервере PfauMC.')
+  useSEO('Правила сервера — PfauMC Wiki', 'Общие правила и правила режима Ванила на Minecraft сервере PfauMC.')
 
   const { tab: tabParam } = useParams()
   const { hash } = useLocation()

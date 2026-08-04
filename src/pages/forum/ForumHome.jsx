@@ -1,43 +1,49 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useSEO } from '../../hooks/useSEO'
-import { useForumData } from '../../hooks/useForumData'
+import { useApiData } from '../../hooks/useApiData'
 import { useForumAuth } from '../../context/ForumAuthContext'
 import { api } from '../../lib/forumApi'
-import { formatCount, formatSmartTime, COUNT_TOPICS, COUNT_MESSAGES } from '../../lib/forumFormat'
-import { UserHead, ListSkeleton, ErrorState, EmptyState, ConfirmDialog, Modal, FormError } from '../../components/forum/ui'
+import { formatSmartTime } from '../../lib/forumFormat'
+import {
+  UserHead, ListSkeleton, ErrorState, EmptyState, ConfirmDialog, Modal, FormError, Field, Toggle, inputClass,
+} from '../../components/forum/ui'
 import ForumSearchBar from '../../components/forum/ForumSearchBar'
+import TopicForm from '../../components/forum/TopicForm'
 
 export default function ForumHome() {
   useSEO('Форум — PfauMC', 'Форум сервера PfauMC: обсуждения, вопросы, новости и общение игроков.')
 
   const { isModerator } = useForumAuth()
-  const { data, loading, error, reload } = useForumData('/forum/categories')
-  const [editing, setEditing] = useState(null)
+  const { data, loading, error, reload } = useApiData('/forum/categories')
+
+  const [creatingTopic, setCreatingTopic] = useState(false)
+  const [editingCategory, setEditingCategory] = useState(null)
+  const [editingGroup, setEditingGroup] = useState(null)
   const [confirm, setConfirm] = useState(null)
   const [busy, setBusy] = useState(false)
   const [actionError, setActionError] = useState(null)
+  const [collapsed, setCollapsed] = useState(() => new Set())
 
+  const groups = data?.groups ?? []
   const categories = data?.categories ?? []
 
-  const move = async (index, direction) => {
-    const next = [...categories]
-    const target = index + direction
-    if (target < 0 || target >= next.length) return
-    ;[next[index], next[target]] = [next[target], next[index]]
+  /** Разделы с вложенными категориями + «Прочее» для категорий без раздела. */
+  const sections = useMemo(() => {
+    const byGroup = groups.map((group) => ({
+      group,
+      categories: categories.filter((c) => c.groupId === group.id),
+    }))
+    const ungrouped = categories.filter((c) => !c.groupId || !groups.some((g) => g.id === c.groupId))
+    if (ungrouped.length) byGroup.push({ group: null, categories: ungrouped })
+    return byGroup
+  }, [groups, categories])
+
+  const run = async (fn) => {
+    setBusy(true)
     setActionError(null)
     try {
-      await api('/forum/categories/reorder', { method: 'POST', body: { ids: next.map((c) => c.id) } })
-      reload()
-    } catch (e) {
-      setActionError(e.message)
-    }
-  }
-
-  const removeCategory = async (category) => {
-    setBusy(true)
-    try {
-      await api(`/forum/categories/${category.id}`, { method: 'DELETE' })
+      await fn()
       setConfirm(null)
       reload()
     } catch (e) {
@@ -46,6 +52,33 @@ export default function ForumHome() {
       setBusy(false)
     }
   }
+
+  /** Позиции категорий глобальные, поэтому пересобираем весь порядок целиком. */
+  const moveCategory = (sectionIndex, index, direction) => {
+    const next = sections.map((s) => [...s.categories])
+    const list = next[sectionIndex]
+    const target = index + direction
+    if (target < 0 || target >= list.length) return
+    ;[list[index], list[target]] = [list[target], list[index]]
+    return run(() =>
+      api('/forum/categories/reorder', { method: 'POST', body: { ids: next.flat().map((c) => c.id) } })
+    )
+  }
+
+  const moveGroup = (index, direction) => {
+    const next = [...groups]
+    const target = index + direction
+    if (target < 0 || target >= next.length) return
+    ;[next[index], next[target]] = [next[target], next[index]]
+    return run(() => api('/forum/groups/reorder', { method: 'POST', body: { ids: next.map((g) => g.id) } }))
+  }
+
+  const toggleCollapse = (key) =>
+    setCollapsed((prev) => {
+      const next = new Set(prev)
+      next.has(key) ? next.delete(key) : next.add(key)
+      return next
+    })
 
   return (
     <div className="min-h-screen pt-24 pb-16">
@@ -61,9 +94,15 @@ export default function ForumHome() {
 
         {isModerator && (
           <div className="flex flex-wrap gap-2 mb-6">
-            <button onClick={() => setEditing({})} className="btn-primary text-sm py-2 px-4">
-              + Категория
+            <button
+              onClick={() => setCreatingTopic(true)}
+              disabled={categories.length === 0}
+              className="btn-primary text-sm py-2 px-4 disabled:opacity-40 disabled:pointer-events-none"
+            >
+              + Тема
             </button>
+            <button onClick={() => setEditingGroup({})} className="btn-ghost text-sm py-2 px-4">+ Раздел</button>
+            <button onClick={() => setEditingCategory({})} className="btn-ghost text-sm py-2 px-4">+ Категория</button>
             <Link to="/forum/reports" className="btn-ghost text-sm py-2 px-4">Жалобы</Link>
             <Link to="/forum/trash" className="btn-ghost text-sm py-2 px-4">Корзина</Link>
             <Link to="/forum/log" className="btn-ghost text-sm py-2 px-4">Журнал</Link>
@@ -73,48 +112,120 @@ export default function ForumHome() {
         <FormError error={actionError} />
 
         {loading && !data ? (
-          <ListSkeleton rows={4} />
+          <ListSkeleton rows={5} />
         ) : error ? (
-          <ErrorState message="Не удалось загрузить категории форума" onRetry={reload} />
-        ) : categories.length === 0 ? (
+          <ErrorState message="Не удалось загрузить форум" onRetry={reload} />
+        ) : categories.length === 0 && groups.length === 0 ? (
           <EmptyState
             icon="📭"
-            title="Категорий пока нет"
+            title="Форум пока пуст"
             text={
               isModerator
-                ? 'Создайте первую категорию — она сразу появится на этой странице.'
-                : 'Модераторы ещё не создали ни одной категории. Загляните позже.'
+                ? 'Создайте раздел, а внутри него — категории. Они сразу появятся на этой странице.'
+                : 'Модераторы ещё не создали ни одного раздела. Загляните позже.'
             }
-            action={isModerator ? <button onClick={() => setEditing({})} className="btn-primary text-sm py-2 px-4">Создать категорию</button> : null}
+            action={
+              isModerator ? (
+                <button onClick={() => setEditingGroup({})} className="btn-primary text-sm py-2 px-4">
+                  Создать раздел
+                </button>
+              ) : null
+            }
           />
         ) : (
-          <div className="space-y-3">
-            {categories.map((category, i) => (
-              <CategoryRow
-                key={category.id}
-                category={category}
-                isModerator={isModerator}
-                onEdit={() => setEditing(category)}
-                onDelete={() =>
-                  setConfirm({
-                    title: 'Удалить категорию?',
-                    text: `«${category.title}» вместе с темами скроется с форума. Восстановить можно в «Корзине».`,
-                    action: () => removeCategory(category),
-                  })
-                }
-                onMoveUp={i > 0 ? () => move(i, -1) : null}
-                onMoveDown={i < categories.length - 1 ? () => move(i, 1) : null}
-              />
-            ))}
+          <div className="space-y-5">
+            {sections.map((section, sectionIndex) => {
+              const key = section.group?.id ?? 'ungrouped'
+              const isCollapsed = collapsed.has(key)
+              return (
+                <section
+                  key={key}
+                  className="rounded-2xl border border-white/5 bg-bg-card overflow-hidden"
+                >
+                  {(section.group || sections.length > 1) && (
+                    <SectionHeader
+                      group={section.group}
+                      collapsed={isCollapsed}
+                      onToggle={() => toggleCollapse(key)}
+                      isModerator={isModerator}
+                      onEdit={section.group ? () => setEditingGroup(section.group) : null}
+                      onAddCategory={() => setEditingCategory({ groupId: section.group?.id ?? '' })}
+                      onDelete={
+                        section.group
+                          ? () =>
+                              setConfirm({
+                                title: 'Удалить раздел?',
+                                text: `«${section.group.title}» исчезнет с главной. Категории внутри сохранятся и переедут в «Прочее».`,
+                                action: () => api(`/forum/groups/${section.group.id}`, { method: 'DELETE' }),
+                              })
+                          : null
+                      }
+                      onMoveUp={section.group && sectionIndex > 0 ? () => moveGroup(sectionIndex, -1) : null}
+                      onMoveDown={
+                        section.group && sectionIndex < groups.length - 1 ? () => moveGroup(sectionIndex, 1) : null
+                      }
+                    />
+                  )}
+
+                  {!isCollapsed && (
+                    <div className="divide-y divide-white/5">
+                      {section.categories.length === 0 ? (
+                        <p className="px-4 sm:px-5 py-6 text-sm text-text-light/40">
+                          В разделе пока нет категорий.
+                        </p>
+                      ) : (
+                        section.categories.map((category, i) => (
+                          <CategoryRow
+                            key={category.id}
+                            category={category}
+                            isModerator={isModerator}
+                            onEdit={() => setEditingCategory(category)}
+                            onDelete={() =>
+                              setConfirm({
+                                title: 'Удалить категорию?',
+                                text: `«${category.title}» вместе с темами скроется с форума. Восстановить можно в «Корзине».`,
+                                action: () => api(`/forum/categories/${category.id}`, { method: 'DELETE' }),
+                              })
+                            }
+                            onMoveUp={i > 0 ? () => moveCategory(sectionIndex, i, -1) : null}
+                            onMoveDown={
+                              i < section.categories.length - 1 ? () => moveCategory(sectionIndex, i, 1) : null
+                            }
+                          />
+                        ))
+                      )}
+                    </div>
+                  )}
+                </section>
+              )
+            })}
           </div>
         )}
       </div>
 
-      {editing && (
+      {creatingTopic && (
+        <TopicForm
+          categories={categories}
+          onClose={() => setCreatingTopic(false)}
+          onCreated={() => setCreatingTopic(false)}
+        />
+      )}
+
+      {editingCategory && (
         <CategoryForm
-          category={editing.id ? editing : null}
-          onClose={() => setEditing(null)}
-          onSaved={() => { setEditing(null); reload() }}
+          category={editingCategory.id ? editingCategory : null}
+          defaultGroupId={editingCategory.groupId ?? ''}
+          groups={groups}
+          onClose={() => setEditingCategory(null)}
+          onSaved={() => { setEditingCategory(null); reload() }}
+        />
+      )}
+
+      {editingGroup && (
+        <GroupForm
+          group={editingGroup.id ? editingGroup : null}
+          onClose={() => setEditingGroup(null)}
+          onSaved={() => { setEditingGroup(null); reload() }}
         />
       )}
 
@@ -125,27 +236,61 @@ export default function ForumHome() {
           confirmLabel="Удалить"
           busy={busy}
           onClose={() => setConfirm(null)}
-          onConfirm={confirm.action}
+          onConfirm={() => run(confirm.action)}
         />
       )}
     </div>
   )
 }
 
+function SectionHeader({ group, collapsed, onToggle, isModerator, onEdit, onDelete, onAddCategory, onMoveUp, onMoveDown }) {
+  return (
+    <div className="flex items-center gap-2 px-4 sm:px-5 py-3 bg-bg-section border-b border-white/5">
+      <h2 className="font-mono font-bold text-heading text-sm sm:text-base truncate">
+        {group?.title ?? 'Прочее'}
+      </h2>
+      {group && !group.isVisible && (
+        <span className="inline-flex items-center rounded-md bg-white/5 px-1.5 py-0.5 text-[11px] text-text-light/60 leading-none flex-shrink-0">
+          скрыт
+        </span>
+      )}
+
+      {isModerator && (
+        <div className="flex items-center gap-0.5 ml-auto flex-shrink-0">
+          <IconAction onClick={onMoveUp} label="Раздел выше">↑</IconAction>
+          <IconAction onClick={onMoveDown} label="Раздел ниже">↓</IconAction>
+          <IconAction onClick={onAddCategory} label="Добавить категорию">+</IconAction>
+          {onEdit && <IconAction onClick={onEdit} label="Изменить раздел">✎</IconAction>}
+          {onDelete && <IconAction onClick={onDelete} label="Удалить раздел" danger>✕</IconAction>}
+        </div>
+      )}
+
+      <button
+        onClick={onToggle}
+        aria-expanded={!collapsed}
+        aria-label={collapsed ? 'Развернуть раздел' : 'Свернуть раздел'}
+        className={`w-7 h-7 flex items-center justify-center rounded-lg text-text-light/50 hover:text-accent hover:bg-white/5 transition-colors flex-shrink-0 ${
+          isModerator ? '' : 'ml-auto'
+        }`}
+      >
+        <span className={`transition-transform duration-200 ${collapsed ? '' : 'rotate-180'}`}>⌄</span>
+      </button>
+    </div>
+  )
+}
+
 function CategoryRow({ category, isModerator, onEdit, onDelete, onMoveUp, onMoveDown }) {
   return (
-    <div
-      className={`card p-0 overflow-hidden group hover:border-accent/25 ${
-        !category.isVisible ? 'opacity-60 border-dashed' : ''
-      }`}
-    >
-      <div className="flex flex-col sm:flex-row">
+    <div className={`group ${!category.isVisible ? 'opacity-60' : ''}`}>
+      <div className="flex flex-col sm:flex-row sm:items-center">
         <Link
           to={`/forum/c/${category.slug}`}
-          className="flex-1 min-w-0 flex items-start gap-3.5 p-4 sm:p-5 hover:bg-accent/[0.03] transition-colors"
+          className="flex-1 min-w-0 flex items-start gap-3.5 px-4 sm:px-5 py-4 hover:bg-accent/[0.03] transition-colors"
         >
           <span
-            className="flex-shrink-0 w-11 h-11 rounded-xl bg-accent/10 flex items-center justify-center text-xl"
+            className={`flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center text-xl transition-colors ${
+              category.hasUnread ? 'bg-accent/15' : 'bg-white/5'
+            }`}
             aria-hidden="true"
           >
             {category.icon}
@@ -153,9 +298,9 @@ function CategoryRow({ category, isModerator, onEdit, onDelete, onMoveUp, onMove
 
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <h2 className="font-mono font-semibold text-heading group-hover:text-accent transition-colors">
+              <h3 className="font-semibold text-heading group-hover:text-accent transition-colors">
                 {category.title}
-              </h2>
+              </h3>
               {category.hasUnread && (
                 <span className="inline-flex items-center gap-1 text-[11px] text-accent font-medium">
                   <span className="w-1.5 h-1.5 rounded-full bg-accent" />
@@ -166,21 +311,22 @@ function CategoryRow({ category, isModerator, onEdit, onDelete, onMoveUp, onMove
               {!category.isActive && <Tag>только чтение</Tag>}
             </div>
             {category.description && (
-              <p className="text-text-light/70 text-sm mt-1 leading-relaxed">{category.description}</p>
+              <p className="text-text-light/60 text-sm mt-0.5 leading-relaxed">{category.description}</p>
             )}
-            <p className="text-text-light/40 text-xs mt-2 sm:hidden">
-              {formatCount(category.topicCount, COUNT_TOPICS)} · {formatCount(category.postCount, COUNT_MESSAGES)}
+            <p className="text-text-light/40 text-xs mt-1.5 sm:hidden tabular-nums">
+              Темы: {category.topicCount} · Сообщения: {category.postCount}
             </p>
-          </div>
-
-          <div className="hidden sm:flex flex-col items-end gap-0.5 text-xs text-text-light/50 flex-shrink-0 tabular-nums">
-            <span>{formatCount(category.topicCount, COUNT_TOPICS)}</span>
-            <span>{formatCount(category.postCount, COUNT_MESSAGES)}</span>
           </div>
         </Link>
 
+        {/* Счётчики */}
+        <div className="hidden sm:flex items-center gap-6 px-4 flex-shrink-0">
+          <Stat label="Темы" value={category.topicCount} />
+          <Stat label="Сообщения" value={category.postCount} />
+        </div>
+
         {/* Последнее сообщение */}
-        <div className="sm:w-56 flex-shrink-0 border-t sm:border-t-0 sm:border-l border-white/5 p-4 sm:p-5">
+        <div className="sm:w-52 flex-shrink-0 px-4 sm:px-5 pb-4 sm:py-4 sm:border-l border-white/5">
           {category.lastPost ? (
             <Link
               to={`/forum/t/${category.lastPost.topicId}?post=${category.lastPost.postNumber}`}
@@ -192,7 +338,7 @@ function CategoryRow({ category, isModerator, onEdit, onDelete, onMoveUp, onMove
                   {category.lastPost.topicTitle}
                 </p>
                 <p className="text-[11px] text-text-light/50 truncate">
-                  {category.lastPost.author?.name} · {formatSmartTime(category.lastPost.createdAt)}
+                  {formatSmartTime(category.lastPost.createdAt)} · {category.lastPost.author?.name}
                 </p>
               </div>
             </Link>
@@ -203,17 +349,32 @@ function CategoryRow({ category, isModerator, onEdit, onDelete, onMoveUp, onMove
       </div>
 
       {isModerator && (
-        <div className="flex items-center gap-1 px-3 py-2 border-t border-white/5 bg-black/5">
+        <div className="flex items-center gap-1 px-3 sm:px-4 pb-2">
           <IconAction onClick={onMoveUp} label="Выше">↑</IconAction>
           <IconAction onClick={onMoveDown} label="Ниже">↓</IconAction>
-          <button onClick={onEdit} className="ml-auto px-2.5 py-1.5 rounded-lg text-xs text-text-light/60 hover:text-accent hover:bg-white/5 transition-colors">
+          <button
+            onClick={onEdit}
+            className="ml-auto px-2.5 py-1 rounded-lg text-xs text-text-light/50 hover:text-accent hover:bg-white/5 transition-colors"
+          >
             Изменить
           </button>
-          <button onClick={onDelete} className="px-2.5 py-1.5 rounded-lg text-xs text-text-light/60 hover:text-red-400 hover:bg-red-500/10 transition-colors">
+          <button
+            onClick={onDelete}
+            className="px-2.5 py-1 rounded-lg text-xs text-text-light/50 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+          >
             Удалить
           </button>
         </div>
       )}
+    </div>
+  )
+}
+
+function Stat({ label, value }) {
+  return (
+    <div className="text-center min-w-[4.5rem]">
+      <div className="text-[11px] text-text-light/40 uppercase tracking-wide">{label}</div>
+      <div className="text-heading font-semibold tabular-nums">{value}</div>
     </div>
   )
 }
@@ -226,25 +387,83 @@ function Tag({ children }) {
   )
 }
 
-function IconAction({ children, onClick, label }) {
+function IconAction({ children, onClick, label, danger }) {
   return (
     <button
       onClick={onClick ?? undefined}
       disabled={!onClick}
       aria-label={label}
       title={label}
-      className="w-7 h-7 flex items-center justify-center rounded-lg text-text-light/50 hover:text-accent hover:bg-white/5 disabled:opacity-25 disabled:pointer-events-none transition-colors"
+      className={`w-7 h-7 flex items-center justify-center rounded-lg text-text-light/50 hover:bg-white/5 disabled:opacity-25 disabled:pointer-events-none transition-colors ${
+        danger ? 'hover:text-red-400' : 'hover:text-accent'
+      }`}
     >
       {children}
     </button>
   )
 }
 
-export function CategoryForm({ category, onClose, onSaved }) {
+/* ===== Формы ===== */
+
+export function GroupForm({ group, onClose, onSaved }) {
+  const [title, setTitle] = useState(group?.title ?? '')
+  const [isVisible, setIsVisible] = useState(group?.isVisible ?? true)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState(null)
+
+  const submit = async () => {
+    setBusy(true)
+    setError(null)
+    try {
+      const body = { title, isVisible }
+      if (group) await api(`/forum/groups/${group.id}`, { method: 'PATCH', body })
+      else await api('/forum/groups', { method: 'POST', body })
+      onSaved()
+    } catch (e) {
+      setError(e.message)
+      setBusy(false)
+    }
+  }
+
+  return (
+    <Modal
+      title={group ? 'Изменить раздел' : 'Новый раздел'}
+      onClose={onClose}
+      footer={
+        <>
+          <button onClick={onClose} className="btn-ghost text-sm py-2 px-4" disabled={busy}>Отмена</button>
+          <button onClick={submit} className="btn-primary text-sm py-2 px-4" disabled={busy || title.trim().length < 3}>
+            {busy ? 'Сохраняем…' : 'Сохранить'}
+          </button>
+        </>
+      }
+    >
+      <div className="space-y-4">
+        <Field label="Название раздела">
+          <input
+            value={title}
+            onChange={(e) => setTitle(e.target.value.slice(0, 140))}
+            placeholder="Например, «Общий раздел»"
+            autoFocus
+            className={inputClass}
+          />
+        </Field>
+        <Toggle checked={isVisible} onChange={setIsVisible} label="Виден игрокам" />
+        <p className="text-xs text-text-light/50">
+          Раздел — это заголовок на главной форума. Категории внутри него настраиваются отдельно.
+        </p>
+        <FormError error={error} />
+      </div>
+    </Modal>
+  )
+}
+
+export function CategoryForm({ category, groups = [], defaultGroupId = '', onClose, onSaved }) {
   const [form, setForm] = useState({
     title: category?.title ?? '',
     description: category?.description ?? '',
     icon: category?.icon ?? '💬',
+    groupId: category?.groupId ?? defaultGroupId ?? '',
     isVisible: category?.isVisible ?? true,
     isActive: category?.isActive ?? true,
   })
@@ -257,8 +476,9 @@ export function CategoryForm({ category, onClose, onSaved }) {
     setBusy(true)
     setError(null)
     try {
-      if (category) await api(`/forum/categories/${category.id}`, { method: 'PATCH', body: form })
-      else await api('/forum/categories', { method: 'POST', body: form })
+      const body = { ...form, groupId: form.groupId || null }
+      if (category) await api(`/forum/categories/${category.id}`, { method: 'PATCH', body })
+      else await api('/forum/categories', { method: 'POST', body })
       onSaved()
     } catch (e) {
       setError(e.message)
@@ -290,6 +510,15 @@ export function CategoryForm({ category, onClose, onSaved }) {
           />
         </Field>
 
+        <Field label="Раздел">
+          <select value={form.groupId} onChange={(e) => set({ groupId: e.target.value })} className={inputClass}>
+            <option value="">Без раздела («Прочее»)</option>
+            {groups.map((g) => (
+              <option key={g.id} value={g.id}>{g.title}</option>
+            ))}
+          </select>
+        </Field>
+
         <Field label="Описание">
           <textarea
             value={form.description}
@@ -315,40 +544,3 @@ export function CategoryForm({ category, onClose, onSaved }) {
     </Modal>
   )
 }
-
-const inputClass =
-  'w-full bg-bg-section border border-white/10 rounded-xl px-3 py-2 text-sm text-heading placeholder-text-light/30 focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/30 transition-colors'
-
-export function Field({ label, children }) {
-  return (
-    <label className="block">
-      <span className="block text-sm text-text-light/70 mb-1.5">{label}</span>
-      {children}
-    </label>
-  )
-}
-
-export function Toggle({ checked, onChange, label }) {
-  return (
-    <label className="flex items-center gap-3 cursor-pointer select-none">
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-        className="sr-only peer"
-      />
-      <span
-        className={`relative w-10 h-6 rounded-full transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-accent/60 flex-shrink-0 ${
-          checked ? 'bg-accent' : 'bg-white/10'
-        }`}
-      >
-        <span
-          className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${checked ? 'left-5' : 'left-1'}`}
-        />
-      </span>
-      <span className="text-sm text-text-light">{label}</span>
-    </label>
-  )
-}
-
-export { inputClass }

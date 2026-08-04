@@ -24,6 +24,15 @@ export default handle(async (req) => {
   const is = (...parts) =>
     seg.length === parts.length && parts.every((p, i) => (p === '*' ? true : p === seg[i]))
 
+  // ---- Разделы ----
+  if (is('groups') && method === 'POST') return categories.createGroup(req, ctx, body)
+  if (is('groups', 'reorder') && method === 'POST') return categories.reorderGroups(req, ctx, body)
+  if (is('groups', '*')) {
+    const id = requireId(at(1), 'id')
+    if (method === 'PATCH') return categories.updateGroup(req, ctx, id, body)
+    if (method === 'DELETE') return categories.removeGroup(req, ctx, id)
+  }
+
   // ---- Категории ----
   if (is('categories')) {
     if (method === 'GET') return categories.list(req, ctx)

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useSEO } from '../../hooks/useSEO'
-import { useForumData } from '../../hooks/useForumData'
+import { useApiData } from '../../hooks/useApiData'
 import { useForumAuth } from '../../context/ForumAuthContext'
 import { api } from '../../lib/forumApi'
 import { formatSmartTime, REPORT_REASON_LABELS, MOD_ACTION_LABELS } from '../../lib/forumFormat'
@@ -35,7 +35,7 @@ export function ReportsPage() {
   const [status, setStatus] = useState('open')
   const [page, setPage] = useState(1)
   const { isModerator } = useForumAuth()
-  const { data, loading, error, reload } = useForumData(
+  const { data, loading, error, reload } = useApiData(
     isModerator ? `/forum/reports?status=${status}&page=${page}` : null
   )
   const [busyId, setBusyId] = useState(null)
@@ -162,7 +162,7 @@ export function ModLogPage() {
   useSEO('Журнал модерации — Форум PfauMC')
   const { isModerator } = useForumAuth()
   const [page, setPage] = useState(1)
-  const { data, loading, error, reload } = useForumData(isModerator ? `/forum/moderation-log?page=${page}` : null)
+  const { data, loading, error, reload } = useApiData(isModerator ? `/forum/moderation-log?page=${page}` : null)
 
   return (
     <ModShell title="Журнал модерации" crumb="Журнал">
@@ -205,8 +205,8 @@ export function ModLogPage() {
 export function TrashPage() {
   useSEO('Корзина — Форум PfauMC')
   const { isModerator } = useForumAuth()
-  const categories = useForumData(isModerator ? '/forum/categories/deleted' : null)
-  const topics = useForumData(isModerator ? '/forum/topics/deleted' : null)
+  const categories = useApiData(isModerator ? '/forum/categories/deleted' : null)
+  const topics = useApiData(isModerator ? '/forum/topics/deleted' : null)
   const [busy, setBusy] = useState(null)
   const [error, setError] = useState(null)
 

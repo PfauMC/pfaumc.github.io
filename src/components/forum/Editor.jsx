@@ -22,6 +22,9 @@ export default function Editor({
   submitLabel = 'Отправить',
   placeholder = 'Ваш ответ…',
   busy = false,
+  // Блокирует отправку по внешней причине (например, не заполнен заголовок темы)
+  // — в отличие от busy, не показывает «Отправка…».
+  disabled = false,
   error = null,
   autoFocus = false,
   compact = false,
@@ -62,7 +65,7 @@ export default function Editor({
   }
 
   const tooLong = value.length > MAX_LENGTH
-  const canSubmit = value.trim().length >= 2 && !tooLong && !busy
+  const canSubmit = value.trim().length >= 2 && !tooLong && !busy && !disabled
 
   return (
     <div className="rounded-2xl border border-white/10 bg-bg-card overflow-hidden focus-within:border-accent/40 transition-colors">

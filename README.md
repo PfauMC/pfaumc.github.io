@@ -88,6 +88,11 @@ UPDATE forum_users SET role_key = 'moderator' WHERE name_lower = 'ник';
 
 ## Деплой
 
-Автоматический через Netlify при пуше в `main` (`netlify.toml`: `npm run build`,
-публикация `dist/`). Форуму нужна привязанная Netlify DB и переменные окружения
-из таблицы выше.
+> **Важно.** Сейчас `pfaumc.io` отдаётся с GitHub Pages, где серверная часть
+> не выполняется: все `/api/*` отвечают 404, поэтому форум, статистика, список
+> игроков и донаты не работают. Порядок переезда на Netlify —
+> [`docs/deploy-netlify.md`](docs/deploy-netlify.md).
+
+После переезда — автоматический деплой при пуше в `main` (`netlify.toml`:
+`npm run build`, публикация `dist/`, функции из `netlify/functions/`). Форуму
+нужна привязанная Netlify DB и переменные окружения из таблицы выше.

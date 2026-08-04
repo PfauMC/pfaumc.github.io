@@ -8,3 +8,6 @@ dist
 # Local Netlify folder
 .netlify
 deno.lock
+
+# Локальная демо-база форума (scripts/dev-server.mjs)
+.dev-db

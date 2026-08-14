@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useSEO } from '../hooks/useSEO'
 import { useApiData } from '../hooks/useApiData'
 import { usePlayersOnline } from '../hooks/usePlayersOnline'
+import { gameApi } from '../lib/gameApi'
 import OnlineChart from '../components/OnlineChart'
 import { SERVER_VERSION } from '../config'
 
@@ -14,9 +15,9 @@ export default function StatsPage() {
   )
 
   // Кто именно в сети — из игрового бэкенда: это наши сессии, точные до игрока.
-  // График, аптайм, слоты и версия — из mcwatch: свой сборщик истории онлайна
-  // ради этого держать незачем.
-  const { data: monitor, loading, error, reload } = useApiData('/server/stats')
+  // График, аптайм, слоты и версия — оттуда же, но это сквозной прокси mcwatch:
+  // свою историю онлайна бэкенд не собирает, а сам mcwatch не отдаёт CORS.
+  const { data: monitor, loading, error, reload } = useApiData('/monitor', { fetcher: gameApi })
   const { data: online, refresh: refreshOnline } = usePlayersOnline()
 
   // Ответ кэшируется на стороне сервера на 5 минут — чаще опрашивать нет смысла.
@@ -31,12 +32,12 @@ export default function StatsPage() {
   }, [reload, refreshOnline])
 
   const onlineCount = online?.count ?? 0
-  const maxOnline = monitor?.maxOnline ?? null
+  const maxOnline = monitor?.max_online ?? null
   const fillPct = maxOnline ? Math.round((onlineCount / maxOnline) * 100) : 0
   const players = online?.players ?? []
   // Игровой API отвечает за присутствие, а не за доступность сервера. Если
   // мониторинг недоступен, судим по факту: есть игроки — значит поднят.
-  const isUp = monitor ? monitor.isUp : onlineCount > 0 ? true : null
+  const isUp = monitor ? monitor.is_up : onlineCount > 0 ? true : null
 
   return (
     <div className="min-h-screen pt-24 pb-16">
@@ -96,7 +97,7 @@ export default function StatsPage() {
 
                 <div className="sm:ml-auto flex flex-col items-start sm:items-end gap-1 flex-shrink-0">
                   <div className="text-text-light/50 text-xs">Последняя проверка</div>
-                  <div className="font-mono text-sm text-text-light">{formatTime(monitor?.checkedAt)}</div>
+                  <div className="font-mono text-sm text-text-light">{formatTime(monitor?.checked_at)}</div>
                   <button
                     onClick={reload}
                     disabled={loading}
@@ -162,17 +163,17 @@ export default function StatsPage() {
               <div className="flex flex-col gap-4">
                 <Metric
                   label="Аптайм за 2 недели"
-                  value={monitor?.uptimePct != null ? `${monitor.uptimePct.toFixed(2)}%` : '—'}
-                  desc={monitor?.firstObservedAt ? `Наблюдение с ${formatDate(monitor.firstObservedAt)}` : 'Внешний мониторинг'}
+                  value={monitor?.uptime_pct != null ? `${monitor.uptime_pct.toFixed(2)}%` : '—'}
+                  desc={monitor?.first_observed_at ? `Наблюдение с ${formatDate(monitor.first_observed_at)}` : 'Внешний мониторинг'}
                 />
                 <Metric
                   label="Средний онлайн"
-                  value={monitor?.avgDay != null ? Math.round(monitor.avgDay) : '—'}
+                  value={monitor?.avg_day != null ? Math.round(monitor.avg_day) : '—'}
                   desc="за последние сутки"
                 />
                 <Metric
                   label="Средний за неделю"
-                  value={monitor?.avgWeek != null ? Math.round(monitor.avgWeek) : '—'}
+                  value={monitor?.avg_week != null ? Math.round(monitor.avg_week) : '—'}
                   desc={monitor?.peak ? `Пик ${monitor.peak.value} — ${formatDate(monitor.peak.at)}` : null}
                 />
               </div>
@@ -191,7 +192,7 @@ export default function StatsPage() {
                 <OnlineChart
                   current={monitor?.weeks?.current?.avg}
                   previous={monitor?.weeks?.previous?.avg}
-                  currentStart={monitor?.weeks?.currentStart}
+                  currentStart={monitor?.weeks?.current_start}
                 />
               )}
             </div>

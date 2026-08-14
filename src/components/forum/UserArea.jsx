@@ -43,7 +43,7 @@ function LoginHelpModal({ onClose }) {
         <Step n={1}>Зайдите на сервер PfauMC в Minecraft.</Step>
         <Step n={2}>
           Введите в чат команду{' '}
-          <code className="px-1.5 py-0.5 rounded bg-black/20 font-mono text-accent">/login</code>.
+          <code className="px-1.5 py-0.5 rounded bg-black/20 font-mono text-accent">/auth</code>.
         </Step>
         <Step n={3}>Откройте одноразовую ссылку, которую пришлёт сервер.</Step>
         <Step n={4}>Подтвердите вход — при желании включите «Запомнить меня».</Step>

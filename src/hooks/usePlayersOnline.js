@@ -17,7 +17,7 @@ export function usePlayersOnline(autoRefreshMs = 30000) {
 
   const fetchOnline = useCallback(() => {
     setError(false)
-    return gameApi('/server/online')
+    return gameApi('/players/online')
       .then((json) => {
         setData({
           online: true,
@@ -26,10 +26,10 @@ export function usePlayersOnline(autoRefreshMs = 30000) {
           players: (json.players ?? [])
             .filter((p) => p.name)
             .map((p) => ({
-              uuid: p.gamerId,
+              uuid: p.uuid,
               name: p.name,
               role: roleLabel(p.role),
-              since: p.sinceAt,
+              since: p.session_started_at,
             })),
         })
       })

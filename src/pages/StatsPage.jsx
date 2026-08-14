@@ -1,9 +1,7 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect } from 'react'
 import { useSEO } from '../hooks/useSEO'
 import { useApiData } from '../hooks/useApiData'
 import { usePlayersOnline } from '../hooks/usePlayersOnline'
-import { gameApi } from '../lib/gameApi'
-import { splitIntoWeeks } from '../lib/weekSeries'
 import OnlineChart from '../components/OnlineChart'
 import { SERVER_VERSION } from '../config'
 
@@ -15,14 +13,11 @@ export default function StatsPage() {
     'Статистика Minecraft сервера PfauMC: онлайн сейчас, график за эту и прошлую неделю, аптайм и средние показатели.'
   )
 
-  // Онлайн и график — из игрового бэкенда: это наши собственные данные, точные
-  // до сессии. Слоты, версия, MOTD и аптайм приходят из внешнего мониторинга и
-  // необязательны: без них страница просто беднее, но не ломается.
-  const { data: game, loading, error, reload } = useApiData('/server/history?days=14', { fetcher: gameApi })
+  // Кто именно в сети — из игрового бэкенда: это наши сессии, точные до игрока.
+  // График, аптайм, слоты и версия — из mcwatch: свой сборщик истории онлайна
+  // ради этого держать незачем.
+  const { data: monitor, loading, error, reload } = useApiData('/server/stats')
   const { data: online, refresh: refreshOnline } = usePlayersOnline()
-  const { data: monitor } = useApiData('/server/stats')
-
-  const weeks = useMemo(() => splitIntoWeeks(game?.points), [game])
 
   // Ответ кэшируется на стороне сервера на 5 минут — чаще опрашивать нет смысла.
   useEffect(() => {
@@ -49,13 +44,13 @@ export default function StatsPage() {
         <header className="mb-8">
           <h1 className="font-mono text-3xl sm:text-4xl font-bold text-heading mb-2">Статистика сервера</h1>
           <p className="text-text-light text-base">
-            Онлайн и история — по нашим игровым сессиям. Аптайм и слоты — из внешнего мониторинга.
+            Кто в сети — по нашим игровым сессиям. График, аптайм и слоты — по данным мониторинга mcwatch.
           </p>
         </header>
 
-        {error && !game ? (
+        {error && !monitor ? (
           <div className="card text-center py-10" role="alert">
-            <p className="text-text-light mb-4">Не удалось загрузить статистику: игровой сервер не ответил</p>
+            <p className="text-text-light mb-4">Не удалось загрузить статистику сервера</p>
             <button onClick={reload} className="btn-ghost text-sm py-2 px-4">Повторить</button>
           </div>
         ) : (
@@ -67,14 +62,14 @@ export default function StatsPage() {
                 <div className="flex items-center gap-4 min-w-0">
                   <div
                     className={`w-16 h-16 rounded-2xl flex items-center justify-center border flex-shrink-0 ${
-                      loading && !game
+                      loading && !monitor
                         ? 'bg-bg-section border-white/10'
                         : isUp
                           ? 'bg-green-500/10 border-green-500/30'
                           : 'bg-red-500/10 border-red-500/30'
                     }`}
                   >
-                    {loading && !game ? (
+                    {loading && !monitor ? (
                       <SpinIcon className="w-7 h-7 text-accent animate-spin" />
                     ) : isUp ? (
                       <CheckCircleIcon className="w-7 h-7 text-green-400" />
@@ -85,10 +80,10 @@ export default function StatsPage() {
                   <div className="min-w-0">
                     <div
                       className={`font-mono text-xl font-bold ${
-                        loading && !game ? 'text-text-light' : isUp ? 'text-green-400' : 'text-red-400'
+                        loading && !monitor ? 'text-text-light' : isUp ? 'text-green-400' : 'text-red-400'
                       }`}
                     >
-                      {loading && !game ? 'Загрузка…' : isUp ? 'Сервер онлайн' : 'Сервер недоступен'}
+                      {loading && !monitor ? 'Загрузка…' : isUp ? 'Сервер онлайн' : 'Сервер недоступен'}
                     </div>
                     <div className="text-text-light/60 text-sm font-mono mt-0.5 truncate">
                       {monitor?.host ?? 'play.pfaumc.online'}
@@ -101,7 +96,7 @@ export default function StatsPage() {
 
                 <div className="sm:ml-auto flex flex-col items-start sm:items-end gap-1 flex-shrink-0">
                   <div className="text-text-light/50 text-xs">Последняя проверка</div>
-                  <div className="font-mono text-sm text-text-light">{formatTime(monitor?.checkedAt ?? game?.to)}</div>
+                  <div className="font-mono text-sm text-text-light">{formatTime(monitor?.checkedAt)}</div>
                   <button
                     onClick={reload}
                     disabled={loading}
@@ -171,14 +166,14 @@ export default function StatsPage() {
                   desc={monitor?.firstObservedAt ? `Наблюдение с ${formatDate(monitor.firstObservedAt)}` : 'Внешний мониторинг'}
                 />
                 <Metric
-                  label="Пик за 2 недели"
-                  value={game?.peak ?? '—'}
-                  desc="максимум одновременно"
+                  label="Средний онлайн"
+                  value={monitor?.avgDay != null ? Math.round(monitor.avgDay) : '—'}
+                  desc="за последние сутки"
                 />
                 <Metric
-                  label="Уникальных игроков"
-                  value={game?.uniquePlayers ?? '—'}
-                  desc="за две недели"
+                  label="Средний за неделю"
+                  value={monitor?.avgWeek != null ? Math.round(monitor.avgWeek) : '—'}
+                  desc={monitor?.peak ? `Пик ${monitor.peak.value} — ${formatDate(monitor.peak.at)}` : null}
                 />
               </div>
             </div>
@@ -190,13 +185,13 @@ export default function StatsPage() {
                 <span className="text-text-light/40 text-xs">эта неделя против прошлой</span>
               </div>
 
-              {loading && !game ? (
+              {loading && !monitor ? (
                 <div className="h-64 rounded-xl bg-bg-section animate-pulse" role="status" aria-label="Загрузка графика" />
               ) : (
                 <OnlineChart
-                  current={weeks.current}
-                  previous={weeks.previous}
-                  currentStart={weeks.currentStart}
+                  current={monitor?.weeks?.current?.avg}
+                  previous={monitor?.weeks?.previous?.avg}
+                  currentStart={monitor?.weeks?.currentStart}
                 />
               )}
             </div>
@@ -214,7 +209,7 @@ export default function StatsPage() {
             </div>
 
             <p className="mt-8 text-center text-text-light/30 text-xs font-mono">
-              Онлайн и история — игровой бэкенд PfauMC. Аптайм и слоты —{' '}
+              Кто в сети — игровой бэкенд PfauMC. История и аптайм —{' '}
               <a
                 href={monitor?.source ?? 'https://mcwatch.online/servers/pfaumc'}
                 target="_blank"

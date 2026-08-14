@@ -13,19 +13,30 @@ export default function StatsPage() {
     'Статистика Minecraft сервера PfauMC: онлайн сейчас, график за эту и прошлую неделю, аптайм и средние показатели.'
   )
 
-  const { data, loading, error, reload } = useApiData('/server/stats')
-  const { data: online } = usePlayersOnline()
+  // Кто именно в сети — из игрового бэкенда: это наши сессии, точные до игрока.
+  // График, аптайм, слоты и версия — из mcwatch: свой сборщик истории онлайна
+  // ради этого держать незачем.
+  const { data: monitor, loading, error, reload } = useApiData('/server/stats')
+  const { data: online, refresh: refreshOnline } = usePlayersOnline()
 
   // Ответ кэшируется на стороне сервера на 5 минут — чаще опрашивать нет смысла.
   useEffect(() => {
     const id = setInterval(() => {
-      if (document.visibilityState === 'visible') reload()
+      if (document.visibilityState === 'visible') {
+        reload()
+        refreshOnline()
+      }
     }, REFRESH_MS)
     return () => clearInterval(id)
-  }, [reload])
+  }, [reload, refreshOnline])
 
-  const fillPct = data?.maxOnline ? Math.round((data.online / data.maxOnline) * 100) : 0
-  const players = online?.namesAvailable ? online.players : []
+  const onlineCount = online?.count ?? 0
+  const maxOnline = monitor?.maxOnline ?? null
+  const fillPct = maxOnline ? Math.round((onlineCount / maxOnline) * 100) : 0
+  const players = online?.players ?? []
+  // Игровой API отвечает за присутствие, а не за доступность сервера. Если
+  // мониторинг недоступен, судим по факту: есть игроки — значит поднят.
+  const isUp = monitor ? monitor.isUp : onlineCount > 0 ? true : null
 
   return (
     <div className="min-h-screen pt-24 pb-16">
@@ -33,11 +44,11 @@ export default function StatsPage() {
         <header className="mb-8">
           <h1 className="font-mono text-3xl sm:text-4xl font-bold text-heading mb-2">Статистика сервера</h1>
           <p className="text-text-light text-base">
-            Онлайн, аптайм и история за две недели по данным мониторинга mcwatch.
+            Кто в сети — по нашим игровым сессиям. График, аптайм и слоты — по данным мониторинга mcwatch.
           </p>
         </header>
 
-        {error && !data ? (
+        {error && !monitor ? (
           <div className="card text-center py-10" role="alert">
             <p className="text-text-light mb-4">Не удалось загрузить статистику сервера</p>
             <button onClick={reload} className="btn-ghost text-sm py-2 px-4">Повторить</button>
@@ -51,16 +62,16 @@ export default function StatsPage() {
                 <div className="flex items-center gap-4 min-w-0">
                   <div
                     className={`w-16 h-16 rounded-2xl flex items-center justify-center border flex-shrink-0 ${
-                      loading && !data
+                      loading && !monitor
                         ? 'bg-bg-section border-white/10'
-                        : data?.isUp
+                        : isUp
                           ? 'bg-green-500/10 border-green-500/30'
                           : 'bg-red-500/10 border-red-500/30'
                     }`}
                   >
-                    {loading && !data ? (
+                    {loading && !monitor ? (
                       <SpinIcon className="w-7 h-7 text-accent animate-spin" />
-                    ) : data?.isUp ? (
+                    ) : isUp ? (
                       <CheckCircleIcon className="w-7 h-7 text-green-400" />
                     ) : (
                       <OfflineIcon className="w-7 h-7 text-red-400" />
@@ -69,23 +80,23 @@ export default function StatsPage() {
                   <div className="min-w-0">
                     <div
                       className={`font-mono text-xl font-bold ${
-                        loading && !data ? 'text-text-light' : data?.isUp ? 'text-green-400' : 'text-red-400'
+                        loading && !monitor ? 'text-text-light' : isUp ? 'text-green-400' : 'text-red-400'
                       }`}
                     >
-                      {loading && !data ? 'Загрузка…' : data?.isUp ? 'Сервер онлайн' : 'Сервер недоступен'}
+                      {loading && !monitor ? 'Загрузка…' : isUp ? 'Сервер онлайн' : 'Сервер недоступен'}
                     </div>
                     <div className="text-text-light/60 text-sm font-mono mt-0.5 truncate">
-                      {data?.host ?? 'play.pfaumc.online'}
+                      {monitor?.host ?? 'play.pfaumc.online'}
                     </div>
-                    {data?.motd?.length > 0 && (
-                      <p className="text-text-light/40 text-xs mt-1.5">{data.motd.join(' · ')}</p>
+                    {monitor?.motd?.length > 0 && (
+                      <p className="text-text-light/40 text-xs mt-1.5">{monitor.motd.join(' · ')}</p>
                     )}
                   </div>
                 </div>
 
                 <div className="sm:ml-auto flex flex-col items-start sm:items-end gap-1 flex-shrink-0">
                   <div className="text-text-light/50 text-xs">Последняя проверка</div>
-                  <div className="font-mono text-sm text-text-light">{formatTime(data?.checkedAt)}</div>
+                  <div className="font-mono text-sm text-text-light">{formatTime(monitor?.checkedAt)}</div>
                   <button
                     onClick={reload}
                     disabled={loading}
@@ -104,13 +115,14 @@ export default function StatsPage() {
                 <div className="text-text-light/50 text-xs font-mono uppercase tracking-widest mb-3">Игроков онлайн</div>
                 <div className="flex items-end gap-3 mb-4">
                   <div className="font-mono text-5xl font-bold text-heading tabular-nums">
-                    {data ? data.online : <span className="opacity-30">—</span>}
+                    {online ? onlineCount : <span className="opacity-30">—</span>}
                   </div>
-                  <div className="font-mono text-2xl text-text-light/40 mb-1 tabular-nums">
-                    / {data?.maxOnline ?? '—'}
-                  </div>
+                  {maxOnline && (
+                    <div className="font-mono text-2xl text-text-light/40 mb-1 tabular-nums">/ {maxOnline}</div>
+                  )}
                 </div>
 
+                {maxOnline > 0 && (<>
                 <div className="w-full h-2 bg-bg-section rounded-full overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all duration-700"
@@ -124,6 +136,7 @@ export default function StatsPage() {
                   />
                 </div>
                 <div className="text-text-light/40 text-xs mt-1.5">{fillPct}% заполнен</div>
+                </>)}
 
                 {players.length > 0 && (
                   <div className="mt-4 pt-4 border-t border-white/5">
@@ -149,18 +162,18 @@ export default function StatsPage() {
               <div className="flex flex-col gap-4">
                 <Metric
                   label="Аптайм за 2 недели"
-                  value={data?.uptimePct != null ? `${data.uptimePct.toFixed(2)}%` : '—'}
-                  desc={data?.firstObservedAt ? `Наблюдение с ${formatDate(data.firstObservedAt)}` : null}
+                  value={monitor?.uptimePct != null ? `${monitor.uptimePct.toFixed(2)}%` : '—'}
+                  desc={monitor?.firstObservedAt ? `Наблюдение с ${formatDate(monitor.firstObservedAt)}` : 'Внешний мониторинг'}
                 />
                 <Metric
                   label="Средний онлайн"
-                  value={data?.avgDay != null ? Math.round(data.avgDay) : '—'}
+                  value={monitor?.avgDay != null ? Math.round(monitor.avgDay) : '—'}
                   desc="за последние сутки"
                 />
                 <Metric
                   label="Средний за неделю"
-                  value={data?.avgWeek != null ? Math.round(data.avgWeek) : '—'}
-                  desc={data?.peak ? `Пик ${data.peak.value} — ${formatDate(data.peak.at)}` : null}
+                  value={monitor?.avgWeek != null ? Math.round(monitor.avgWeek) : '—'}
+                  desc={monitor?.peak ? `Пик ${monitor.peak.value} — ${formatDate(monitor.peak.at)}` : null}
                 />
               </div>
             </div>
@@ -172,33 +185,33 @@ export default function StatsPage() {
                 <span className="text-text-light/40 text-xs">эта неделя против прошлой</span>
               </div>
 
-              {loading && !data ? (
+              {loading && !monitor ? (
                 <div className="h-64 rounded-xl bg-bg-section animate-pulse" role="status" aria-label="Загрузка графика" />
               ) : (
                 <OnlineChart
-                  current={data?.weeks?.current?.avg}
-                  previous={data?.weeks?.previous?.avg}
-                  currentStart={data?.weeks?.currentStart}
+                  current={monitor?.weeks?.current?.avg}
+                  previous={monitor?.weeks?.previous?.avg}
+                  currentStart={monitor?.weeks?.currentStart}
                 />
               )}
             </div>
 
             {/* Информация о сервере */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <InfoCard icon="🧱" title="Версия" value={SERVER_VERSION} desc={data?.version ?? 'Java Edition'} />
+              <InfoCard icon="🧱" title="Версия" value={SERVER_VERSION} desc={monitor?.version ?? 'Java Edition'} />
               <InfoCard icon="🌿" title="Режим" value="Ванила" desc="Честная игра и защита построек" />
               <InfoCard
                 icon="🕐"
                 title="Режим работы"
                 value="24/7"
-                desc={data?.ip ? `IP ${data.ip}` : 'Сервер работает круглосуточно'}
+                desc={monitor?.ip ? `IP ${monitor.ip}` : 'Сервер работает круглосуточно'}
               />
             </div>
 
             <p className="mt-8 text-center text-text-light/30 text-xs font-mono">
-              Данные мониторинга{' '}
+              Кто в сети — игровой бэкенд PfauMC. История и аптайм —{' '}
               <a
-                href={data?.source ?? 'https://mcwatch.online/servers/pfaumc'}
+                href={monitor?.source ?? 'https://mcwatch.online/servers/pfaumc'}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-accent/60 hover:text-accent transition-colors"

@@ -5,7 +5,7 @@ import { api } from '../lib/forumApi'
  * Загрузка любого GET-эндпоинта /api/* с состояниями loading/error и повтором.
  * path === null — запрос не выполняется (например, пока не готов параметр).
  */
-export function useApiData(path, { skip = false } = {}) {
+export function useApiData(path, { skip = false, fetcher = api } = {}) {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(!skip && Boolean(path))
   const [error, setError] = useState(null)
@@ -25,7 +25,7 @@ export function useApiData(path, { skip = false } = {}) {
     setLoading(true)
     setError(null)
 
-    api(path, { signal: controller.signal })
+    fetcher(path, { signal: controller.signal })
       .then((result) => {
         if (!controller.signal.aborted) setData(result)
       })
@@ -37,7 +37,7 @@ export function useApiData(path, { skip = false } = {}) {
       })
 
     return () => controller.abort()
-  }, [path, skip, nonce])
+  }, [path, skip, nonce, fetcher])
 
   useEffect(() => () => abortRef.current?.abort(), [])
 

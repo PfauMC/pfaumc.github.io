@@ -27,11 +27,12 @@ export default function PlayerCard({ player }) {
         <div className="font-mono text-sm font-semibold text-heading group-hover:text-accent transition-colors truncate">
           {name}
         </div>
-        <div className="text-text-light/50 text-xs truncate">{role}</div>
+        {role && <div className="text-text-light/50 text-xs truncate">{role}</div>}
       </div>
 
       <div className="flex-shrink-0 text-right">
-        {online ? (
+        {/* online === undefined — результат поиска: статус неизвестен, молчим. */}
+        {online === undefined ? null : online ? (
           <span className="inline-flex items-center gap-1.5 text-green-400 text-xs font-medium">
             <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
             В сети

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { gameApi } from '../lib/gameApi'
 
 const DEBOUNCE_MS = 350
 
@@ -17,12 +18,12 @@ export function usePlayerSearch(query) {
     setLoading(true)
     setError(false)
 
-    fetch(`/api/players/search?q=${encodeURIComponent(trimmed)}`, { signal: controller.signal })
-      .then((r) => {
-        if (!r.ok) throw new Error('bad response')
-        return r.json()
-      })
-      .then((json) => setResults(json.results ?? []))
+    gameApi(`/players/search?q=${encodeURIComponent(trimmed)}`, { signal: controller.signal })
+      .then((json) =>
+        setResults(
+          (json.results ?? []).map((r) => ({ uuid: r.uuid, name: r.name }))
+        )
+      )
       .catch((e) => {
         if (e.name !== 'AbortError') setError(true)
       })

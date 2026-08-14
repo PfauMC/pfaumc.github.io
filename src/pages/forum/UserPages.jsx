@@ -201,7 +201,7 @@ export function ForumSettingsPage() {
               <h2 className="font-mono font-semibold text-heading">Безопасность</h2>
               <p className="text-sm text-text-light/70">
                 Завершите все сессии, если входили с чужого устройства. После этого понадобится новый{' '}
-                <code className="px-1.5 py-0.5 rounded bg-black/20 font-mono text-accent">/login</code>.
+                <code className="px-1.5 py-0.5 rounded bg-black/20 font-mono text-accent">/auth</code>.
               </p>
               <button
                 onClick={() => setConfirmLogoutAll(true)}

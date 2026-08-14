@@ -58,7 +58,7 @@ export default function AuthGamePage() {
               <h1 className="font-mono text-xl font-bold text-heading mb-2">Ссылка неполная</h1>
               <p className="text-text-light/70 text-sm mb-5">
                 В адресе нет токена входа. Зайдите на сервер и введите{' '}
-                <code className="px-1.5 py-0.5 rounded bg-black/20 font-mono text-accent">/login</code>.
+                <code className="px-1.5 py-0.5 rounded bg-black/20 font-mono text-accent">/auth</code>.
               </p>
               <Link to="/forum" className="btn-ghost text-sm py-2.5 px-5 inline-flex">На форум</Link>
             </>

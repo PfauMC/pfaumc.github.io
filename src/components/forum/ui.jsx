@@ -256,7 +256,7 @@ export function LoginNotice({ text = 'Чтобы писать на форуме,
           <p className="text-heading font-medium mb-1">Нужна авторизация</p>
           <p className="text-text-light/80 text-sm leading-relaxed">
             {text} Зайдите на сервер и введите команду{' '}
-            <code className="px-1.5 py-0.5 rounded bg-black/20 font-mono text-accent">/login</code> — бот пришлёт
+            <code className="px-1.5 py-0.5 rounded bg-black/20 font-mono text-accent">/auth</code> — бот пришлёт
             одноразовую ссылку для входа.
           </p>
         </div>

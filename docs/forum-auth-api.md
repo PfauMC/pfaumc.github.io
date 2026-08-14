@@ -7,18 +7,21 @@
 ## Схема
 
 ```
-Игрок в игре           Плагин                       Сайт
-    │                    │                            │
-    │  /login            │                            │
-    ├───────────────────►│  POST /api/auth/login-token│
-    │                    ├───────────────────────────►│  создаёт одноразовый токен
-    │                    │◄───────────────────────────┤  { url, token, expiresIn }
-    │◄───────────────────┤  кликабельная ссылка в чат │
-    │                                                 │
-    │  открывает ссылку в браузере ──────────────────►│  /auth/game?token=…
-    │                                                 │  POST /api/auth/game
-    │                                                 │  токен сгорает, ставится сессия
+Игрок в игре           Плагин                            Бэкенд
+    │                    │                                 │
+    │  /login            │                                 │
+    ├───────────────────►│  POST /internal/forum/login-token│
+    │                    ├────────────────────────────────►│  создаёт одноразовый токен
+    │                    │◄────────────────────────────────┤  { url, token, expires_in }
+    │◄───────────────────┤  кликабельная ссылка в чат      │
+    │                                                      │
+    │  открывает ссылку в браузере ───────────────────────►│  pfaumc.io/auth/game?token=…
+    │                                                      │  POST /api/v1/forum/auth/game
+    │                                                      │  токен сгорает, ставится сессия
 ```
+
+> Форум живёт в `pfaumc-backend` (тот же сервис, что и авторизация в игре). Раньше это
+> API было на сайте — сайт стал статикой, серверный код переехал сюда.
 
 Токен проверяется **только на сервере**. В клиентском коде сайта нет ни
 секретов, ни логики проверки.
@@ -28,22 +31,26 @@
 ## 1. Выдача одноразового токена
 
 ```
-POST https://pfaumc.io/api/auth/login-token
-Authorization: Bearer <FORUM_PLUGIN_SECRET>
+POST <внутренний адрес бэкенда>/internal/forum/login-token
+x-internal-auth: <INTERNAL_API_SECRET>
 Content-Type: application/json
 
 {
   "uuid": "069a79f4-44e9-4726-a5be-fca90e38aaf5",
   "name": "Steve",
-  "skinUrl": "https://…"          // необязательно
+  "skin_url": "https://…"         // необязательно
 }
 ```
 
-| Поле      | Тип    | Обязательно | Формат                                              |
-|-----------|--------|-------------|-----------------------------------------------------|
-| `uuid`    | string | да          | UUID с дефисами, регистр любой                       |
-| `name`    | string | да          | `[A-Za-z0-9_]{1,16}` — актуальный ник                |
-| `skinUrl` | string | нет         | абсолютный `https://`-URL головы/скина               |
+Ручка живёт на внутреннем слушателе рядом с остальным `/internal/*`, поэтому
+отдельного секрета для форума больше нет — плагин использует тот же
+`INTERNAL_API_SECRET`, что и для сессий и наказаний.
+
+| Поле       | Тип    | Обязательно | Формат                                              |
+|------------|--------|-------------|-----------------------------------------------------|
+| `uuid`     | string | да          | UUID с дефисами, регистр любой                       |
+| `name`     | string | да          | `[A-Za-z0-9_]{1,16}` — актуальный ник                |
+| `skin_url` | string | нет         | абсолютный `https://`-URL головы/скина               |
 
 `uuid` — это **UUID аккаунта Mojang** (для оффлайн-режима — стабильный
 оффлайн-UUID сервера). Он и есть первичный ключ аккаунта на форуме.
@@ -54,8 +61,8 @@ Content-Type: application/json
 {
   "url": "https://pfaumc.io/auth/game?token=q0Xk…",
   "token": "q0Xk…",
-  "expiresIn": 300,
-  "expiresAt": "2026-08-04T12:34:56.789Z"
+  "expires_in": 300,
+  "expires_at": "2026-08-04T12:34:56.789Z"
 }
 ```
 
@@ -66,7 +73,7 @@ Content-Type: application/json
 
 * случайные 32 байта, `base64url` (≈43 символа);
 * в базе хранится **только SHA-256** от токена;
-* время жизни — `FORUM_LOGIN_TOKEN_TTL_SEC` (по умолчанию **300 секунд**);
+* время жизни — **300 секунд**;
 * **одноразовый**: гасится атомарным `UPDATE … WHERE used_at IS NULL` —
   повторное использование невозможно даже при гонке запросов;
 * жёстко привязан к переданному UUID.
@@ -76,9 +83,9 @@ Content-Type: application/json
 | Код   | `code`           | Когда                                                       |
 |-------|------------------|-------------------------------------------------------------|
 | `400` | `bad_request`    | некорректный `uuid` или `name`                              |
-| `401` | `unauthorized`   | нет заголовка `Authorization` или неверный секрет           |
+| `401` | —                | нет заголовка `x-internal-auth` или неверный секрет         |
 | `429` | `rate_limited`   | больше 5 запросов для одного UUID за минуту                 |
-| `503` | `not_configured` | на сайте не задан `FORUM_PLUGIN_SECRET`                     |
+| `503` | —                | на бэкенде не задан `INTERNAL_API_SECRET`                   |
 | `500` | `internal`       | внутренняя ошибка                                           |
 
 Тело ошибки всегда: `{ "error": "текст для игрока", "code": "…" }`.
@@ -91,7 +98,7 @@ Content-Type: application/json
 ## 2. Обмен токена на сессию (делает сайт, плагину не нужен)
 
 ```
-POST /api/auth/game
+POST https://auth.pfaumc.io/api/v1/forum/auth/game
 { "token": "…", "remember": true }
 ```
 
@@ -101,29 +108,18 @@ POST /api/auth/game
 
 ---
 
-## Переменные окружения сайта
+## Настройки
 
-| Переменная                    | Обязательна | По умолчанию | Назначение                                              |
-|-------------------------------|-------------|--------------|---------------------------------------------------------|
-| `NETLIFY_DATABASE_URL`        | да          | —            | Postgres (Netlify DB / Neon). Создаётся `netlify db init`|
-| `FORUM_PLUGIN_SECRET`         | да          | —            | общий секрет для `POST /api/auth/login-token`            |
-| `FORUM_SITE_URL`              | нет         | `URL` Netlify → `https://pfaumc.io` | база для ссылки входа            |
-| `FORUM_LOGIN_TOKEN_TTL_SEC`   | нет         | `300`        | время жизни одноразового токена, сек                     |
-| `FORUM_SESSION_DAYS`          | нет         | `30`         | срок «Запомнить меня», дней                              |
-| `FORUM_POST_COOLDOWN_SEC`     | нет         | `15`         | минимальная пауза между сообщениями одного игрока        |
-
-Секрет генерируется чем угодно криптостойким, например:
-
-```bash
-node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
-netlify env:set FORUM_PLUGIN_SECRET "<значение>"
-```
+Отдельных переменных у форума нет: он использует базу и `INTERNAL_API_SECRET`
+бэкенда. Значения зашиты в коде (`src/web/forum.rs`), потому что домен и сервер
+у нас одни: ссылка входа ведёт на `https://pfaumc.io`, токен живёт 300 секунд,
+«запомнить меня» — 30 дней (иначе 12 часов), пауза между сообщениями — 15 секунд.
 
 ---
 
 ## Роли
 
-Роль хранится в таблице `forum_roles` и назначается в `forum_users.role_key`:
+Роль хранится в таблице `forum.roles` и назначается в `forum.users.role_key`:
 
 | `role_key`  | Название       | Права                                        |
 |-------------|----------------|----------------------------------------------|
@@ -134,13 +130,13 @@ netlify env:set FORUM_PLUGIN_SECRET "<значение>"
 Выдать модератора:
 
 ```sql
-UPDATE forum_users SET role_key = 'moderator' WHERE name_lower = 'ник_в_нижнем_регистре';
+UPDATE forum.users SET role_key = 'moderator' WHERE name_lower = 'ник_в_нижнем_регистре';
 ```
 
 Заблокировать игрока:
 
 ```sql
-UPDATE forum_users SET is_banned = true, ban_reason = 'причина' WHERE name_lower = 'ник';
+UPDATE forum.users SET is_banned = true, ban_reason = 'причина' WHERE name_lower = 'ник';
 ```
 
 Забаненный остаётся читателем форума, но не может писать, реагировать и
@@ -154,14 +150,14 @@ UPDATE forum_users SET is_banned = true, ban_reason = 'причина' WHERE nam
 var body = """
     {"uuid":"%s","name":"%s"}""".formatted(player.getUniqueId(), player.getName());
 
-var request = HttpRequest.newBuilder(URI.create("https://pfaumc.io/api/auth/login-token"))
-    .header("Authorization", "Bearer " + secret)
+var request = HttpRequest.newBuilder(URI.create(backendInternalUrl + "/internal/forum/login-token"))
+    .header("x-internal-auth", secret)
     .header("Content-Type", "application/json")
     .timeout(Duration.ofSeconds(10))
     .POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8))
     .build();
 
-// Ответ: {"url": "...", "expiresIn": 300}
+// Ответ: {"url": "...", "expires_in": 300}
 // Отправить player.sendMessage(...) со ссылкой url.
 ```
 

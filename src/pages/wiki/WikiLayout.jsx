@@ -1,6 +1,6 @@
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useEffect, useRef, useState } from 'react'
-import { generalRules, modeRules } from '../../data/rulesData'
+import { generalRules, modeRules, roleRules } from '../../data/rulesData'
 import { mechanicsSections } from './WikiMechanics'
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard'
 import CopyToast from '../../components/CopyToast'
@@ -18,6 +18,7 @@ const sections = [
 const rulesNav = [
   { label: 'Общие правила', icon: '⚖️', to: '/wiki/rules', children: generalRules },
   { label: 'Ванила', icon: '🌿', to: '/wiki/rules/vanilla', children: modeRules.vanilla },
+  { label: 'Роли', icon: '👑', to: '/wiki/rules/roles', children: roleRules },
 ]
 
 const mechanicsNav = [

@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
-import { generalRules, modeRules } from '../../data/rulesData'
+import { generalRules, modeRules, roleRules } from '../../data/rulesData'
 import { useSEO } from '../../hooks/useSEO'
 
 const TABS = [
   { id: 'general', label: 'Общие правила', icon: '⚖️', scope: 'Общее правило для всех режимов' },
   { id: 'vanilla', label: 'Ванила', icon: '🌿', scope: 'Относится только к Ваниле' },
+  { id: 'roles', label: 'Роли', icon: '👑', scope: 'Персонал и государственные должности' },
 ]
 
 function ScopeBadge({ text }) {
@@ -115,7 +116,7 @@ export default function WikiRules() {
   const { hash } = useLocation()
   const tab = TABS.some((t) => t.id === tabParam) ? tabParam : 'general'
 
-  const rules = tab === 'general' ? generalRules : modeRules[tab]
+  const rules = tab === 'general' ? generalRules : tab === 'roles' ? roleRules : modeRules[tab]
   const activeTab = TABS.find((t) => t.id === tab)
 
   useEffect(() => {
@@ -141,9 +142,10 @@ export default function WikiRules() {
       <div className="mb-6 p-4 bg-orange-500/8 border border-orange-500/20 rounded-xl text-sm text-text-light flex gap-3">
         <span className="text-orange-400 text-xl flex-shrink-0">⚠️</span>
         <div>
-          <span className="text-orange-400 font-bold">Важно: </span>
-          Решения администрации окончательны. За нарушения — временный или постоянный бан.
-          Донат не защищает от блокировки.
+          <span className="text-orange-400 font-bold">Главное: </span>
+          Обычные споры игроки решают сами — разговором, возвратом вещей или компенсацией.
+          Хелпер нужен, когда договориться не вышло или произошло серьёзное нарушение.
+          За серьёзные нарушения — временный или постоянный бан, донат от него не защищает.
         </div>
       </div>
 
@@ -180,8 +182,8 @@ export default function WikiRules() {
 
       {/* Report */}
       <div className="mt-6 p-4 bg-accent/8 border border-accent/20 rounded-xl text-sm text-text-light">
-        <span className="text-accent font-bold">Увидели нарушение? </span>
-        Сообщите в{' '}
+        <span className="text-accent font-bold">Не смогли договориться? </span>
+        Сообщите о нарушении в{' '}
         <a href="https://discord.gg/BPmxWwdChY" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">
           Discord
         </a>{' '}

@@ -10,13 +10,20 @@ export function ForumAuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [accounts, setAccounts] = useState([])
   const [unreadCount, setUnreadCount] = useState(0)
+  const [canViewMultiacc, setCanViewMultiacc] = useState(false)
   const [loading, setLoading] = useState(true)
   const mounted = useRef(true)
   // Растёт при каждой смене активного аккаунта: ответ /auth/me, улетевший до
   // переключения, приходит после него и иначе вернул бы прежний аккаунт.
   const epoch = useRef(0)
 
-  useEffect(() => () => { mounted.current = false }, [])
+  // Флаг поднимается на каждом монтировании, а не только на первом: StrictMode в дев-режиме
+  // проходит цикл mount → unmount → mount, и без этого ref навсегда оставался бы false,
+  // а все ответы /auth/me отбрасывались бы как «пришли после размонтирования».
+  useEffect(() => {
+    mounted.current = true
+    return () => { mounted.current = false }
+  }, [])
 
   const refresh = useCallback(async () => {
     // Гостю запрос не нужен: CSRF-cookie ставится и снимается вместе с
@@ -25,6 +32,7 @@ export function ForumAuthProvider({ children }) {
       if (mounted.current) {
         setUser(null)
         setUnreadCount(0)
+        setCanViewMultiacc(false)
         setLoading(false)
       }
       return null
@@ -35,9 +43,13 @@ export function ForumAuthProvider({ children }) {
       if (!mounted.current || started !== epoch.current) return data
       setUser(data.user)
       setUnreadCount(data.unreadCount ?? 0)
+      setCanViewMultiacc(Boolean(data.canViewMultiacc))
       return data
     } catch {
-      if (mounted.current && started === epoch.current) setUser(null)
+      if (mounted.current && started === epoch.current) {
+        setUser(null)
+        setCanViewMultiacc(false)
+      }
       return null
     } finally {
       if (mounted.current) setLoading(false)
@@ -116,6 +128,7 @@ export function ForumAuthProvider({ children }) {
       loading,
       unreadCount,
       setUnreadCount,
+      canViewMultiacc,
       setUser,
       refresh,
       logout,
@@ -125,7 +138,7 @@ export function ForumAuthProvider({ children }) {
       activeAccount: accounts.find((a) => a.isActive) ?? user,
       switchAccount,
     }),
-    [user, loading, unreadCount, refresh, logout, logoutEverywhere, accounts, switchAccount]
+    [user, loading, unreadCount, canViewMultiacc, refresh, logout, logoutEverywhere, accounts, switchAccount]
   )
 
   return <ForumAuthContext.Provider value={value}>{children}</ForumAuthContext.Provider>

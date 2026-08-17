@@ -133,15 +133,14 @@ const LINK_ERRORS = {
   internal: 'Что-то пошло не так. Попробуйте позже.',
 }
 
-// ponytail: списка уже привязанных сервисов бэкенд не отдаёт, поэтому кнопки не знают своего
-// состояния. Повторная привязка того же аккаунта идемпотентна, так что нажать лишний раз не
-// вредно; когда появится эндпоинт со списком привязок — показать здесь отметки.
 function ProviderLinks() {
   const [params] = useSearchParams()
   const [busy, setBusy] = useState(null)
   const [error, setError] = useState(null)
   const linked = params.get('linked')
   const linkError = params.get('link_error')
+  const { data, loading } = useApiData('/auth/identities')
+  const identities = data?.identities ?? []
 
   const start = async (key) => {
     setBusy(key)
@@ -171,18 +170,45 @@ function ProviderLinks() {
       {linkError && (
         <p className="text-sm text-red-400">{LINK_ERRORS[linkError] ?? 'Не удалось привязать аккаунт.'}</p>
       )}
+      {!loading && identities.length > 0 && (
+        <ul className="space-y-1.5">
+          {identities.map((it, i) => {
+            const meta = PROVIDERS.find((p) => p.key === it.provider)
+            return (
+              <li
+                key={`${it.provider}-${i}`}
+                className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-black/20 text-sm"
+              >
+                <ProviderIcon
+                  provider={it.provider}
+                  className="w-4 h-4 flex-shrink-0"
+                  style={{ color: meta?.color }}
+                />
+                <span className="text-heading">{meta?.label ?? it.provider}</span>
+                {it.label && <span className="text-text-light/60 truncate">{it.label}</span>}
+                <span className="ml-auto text-xs text-green-400 flex-shrink-0">привязан</span>
+              </li>
+            )
+          })}
+        </ul>
+      )}
       <div className="grid gap-2 sm:grid-cols-2">
-        {PROVIDERS.map((p) => (
-          <button
-            key={p.key}
-            onClick={() => start(p.key)}
-            disabled={busy !== null}
-            className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl border border-white/10 bg-bg-section text-sm font-medium text-heading hover:border-accent/40 hover:bg-white/5 transition-colors disabled:opacity-50"
-          >
-            <ProviderIcon provider={p.key} className="w-5 h-5 flex-shrink-0" style={{ color: p.color }} />
-            {busy === p.key ? 'Открываем…' : `Привязать ${p.label}`}
-          </button>
-        ))}
+        {PROVIDERS.map((p) => {
+          // Несколько аккаунтов одного сервиса разрешены, поэтому кнопка не пропадает
+          // после привязки -- только меняет подпись.
+          const has = identities.some((it) => it.provider === p.key)
+          return (
+            <button
+              key={p.key}
+              onClick={() => start(p.key)}
+              disabled={busy !== null}
+              className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl border border-white/10 bg-bg-section text-sm font-medium text-heading hover:border-accent/40 hover:bg-white/5 transition-colors disabled:opacity-50"
+            >
+              <ProviderIcon provider={p.key} className="w-5 h-5 flex-shrink-0" style={{ color: p.color }} />
+              {busy === p.key ? 'Открываем…' : has ? `Привязать ещё ${p.label}` : `Привязать ${p.label}`}
+            </button>
+          )
+        })}
       </div>
       <FormError error={error} />
     </section>

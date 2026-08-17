@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useSEO } from '../../hooks/useSEO'
 import { useApiData } from '../../hooks/useApiData'
 import { useForumAuth } from '../../context/ForumAuthContext'
@@ -122,6 +122,84 @@ export function SubscriptionsPage() {
 }
 
 /* ===== Настройки ===== */
+
+const LINK_PROVIDERS = [
+  { key: 'google', label: 'Google', color: '#EA4335' },
+  { key: 'yandex', label: 'Яндекс', color: '#FC3F1D' },
+  { key: 'discord', label: 'Discord', color: '#5865F2' },
+  { key: 'telegram', label: 'Telegram', color: '#29B6F6' },
+]
+
+const LINK_ERRORS = {
+  already_linked_elsewhere: 'К этому игроку уже привязан другой аккаунт этого сервиса.',
+  limit_reached: 'На этот аккаунт сервиса уже привязано максимум игроков.',
+  denied: 'Вход в сервис не подтверждён.',
+  session: 'Сессия истекла. Войдите заново и повторите.',
+  provider_error: 'Сервис не ответил. Попробуйте позже.',
+  provider_unavailable: 'Привязка через этот сервис сейчас недоступна.',
+  internal: 'Что-то пошло не так. Попробуйте позже.',
+}
+
+// ponytail: списка уже привязанных сервисов бэкенд не отдаёт, поэтому кнопки не знают своего
+// состояния. Повторная привязка того же аккаунта идемпотентна, так что нажать лишний раз не
+// вредно; когда появится эндпоинт со списком привязок — показать здесь отметки.
+function ProviderLinks() {
+  const [params] = useSearchParams()
+  const [busy, setBusy] = useState(null)
+  const [error, setError] = useState(null)
+  const linked = params.get('linked')
+  const linkError = params.get('link_error')
+
+  const start = async (key) => {
+    setBusy(key)
+    setError(null)
+    try {
+      const { url } = await api(`/auth/link/${key}/start`, { method: 'POST' })
+      // Привязка кончается редиректом обратно на эту страницу, значит это переход, а не fetch.
+      window.location.href = url
+    } catch (e) {
+      setError(e.message)
+      setBusy(null)
+    }
+  }
+
+  return (
+    <section className="card space-y-3">
+      <h2 className="font-mono font-semibold text-heading">Внешние аккаунты</h2>
+      <p className="text-sm text-text-light/70">
+        Привяжите сервис, чтобы входить на форум без{' '}
+        <code className="px-1.5 py-0.5 rounded bg-black/20 font-mono text-accent">/auth</code> в игре.
+      </p>
+      {linked && (
+        <p className="text-sm text-green-400">
+          {LINK_PROVIDERS.find((p) => p.key === linked)?.label ?? linked} привязан.
+        </p>
+      )}
+      {linkError && (
+        <p className="text-sm text-red-400">{LINK_ERRORS[linkError] ?? 'Не удалось привязать аккаунт.'}</p>
+      )}
+      <div className="grid gap-2 sm:grid-cols-2">
+        {LINK_PROVIDERS.map((p) => (
+          <button
+            key={p.key}
+            onClick={() => start(p.key)}
+            disabled={busy !== null}
+            className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl border border-white/10 bg-bg-section text-sm font-medium text-heading hover:border-accent/40 hover:bg-white/5 transition-colors disabled:opacity-50"
+          >
+            <span
+              className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+              style={{ backgroundColor: p.color }}
+              aria-hidden="true"
+            />
+            {busy === p.key ? 'Открываем…' : `Привязать ${p.label}`}
+          </button>
+        ))}
+      </div>
+      <FormError error={error} />
+    </section>
+  )
+}
+
 export function ForumSettingsPage() {
   useSEO('Настройки — Форум PfauMC')
   const { user, setUser, logoutEverywhere } = useForumAuth()
@@ -196,6 +274,8 @@ export function ForumSettingsPage() {
               <p className="text-sm text-text-light/70">Список тем, на которые вы подписаны, — на отдельной странице.</p>
               <Link to="/forum/subscriptions" className="btn-ghost text-sm py-2 px-4 inline-flex">Открыть подписки</Link>
             </section>
+
+            <ProviderLinks />
 
             <section className="card space-y-3">
               <h2 className="font-mono font-semibold text-heading">Безопасность</h2>

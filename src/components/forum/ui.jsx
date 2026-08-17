@@ -247,7 +247,7 @@ export function ConfirmDialog({ title, text, confirmLabel = 'Подтверди�
 }
 
 /* ===== Плашка «нужен вход» ===== */
-export function LoginNotice({ text = 'Чтобы писать на форуме, авторизуйтесь через Minecraft-сервер.' }) {
+export function LoginNotice({ text = 'Чтобы писать на форуме, нужно войти.' }) {
   return (
     <div className="card border-accent/20 bg-accent/5">
       <div className="flex items-start gap-3">
@@ -255,9 +255,8 @@ export function LoginNotice({ text = 'Чтобы писать на форуме,
         <div className="min-w-0">
           <p className="text-heading font-medium mb-1">Нужна авторизация</p>
           <p className="text-text-light/80 text-sm leading-relaxed">
-            {text} Зайдите на сервер и введите команду{' '}
-            <code className="px-1.5 py-0.5 rounded bg-black/20 font-mono text-accent">/auth</code> — бот пришлёт
-            одноразовую ссылку для входа.
+            {text} Нажмите «Войти» в шапке — через привычный аккаунт или командой{' '}
+            <code className="px-1.5 py-0.5 rounded bg-black/20 font-mono text-accent">/auth</code> в игре.
           </p>
         </div>
       </div>

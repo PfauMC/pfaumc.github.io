@@ -24,6 +24,7 @@ import CategoryPage from './pages/forum/CategoryPage'
 import TopicPage from './pages/forum/TopicPage'
 import SearchPage from './pages/forum/SearchPage'
 import AuthGamePage from './pages/forum/AuthGamePage'
+import AuthFailedPage from './pages/forum/AuthFailedPage'
 import { MyPostsPage, SubscriptionsPage, ForumSettingsPage } from './pages/forum/UserPages'
 import { ReportsPage, ModLogPage, TrashPage } from './pages/forum/ModPages'
 import { useScrollToHash } from './hooks/useScrollToHash'
@@ -92,6 +93,7 @@ export default function App() {
             <Route path="/forum/trash" element={<TrashPage />} />
             <Route path="/forum/log" element={<ModLogPage />} />
             <Route path="/auth/game" element={<AuthGamePage />} />
+            <Route path="/auth/failed" element={<AuthFailedPage />} />
             <Route path="/:modeId" element={<ModePage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>

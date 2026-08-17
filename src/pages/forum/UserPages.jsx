@@ -8,6 +8,7 @@ import { formatSmartTime } from '../../lib/forumFormat'
 import {
   Breadcrumbs, ListSkeleton, ErrorState, EmptyState, Pagination, LoginNotice, ConfirmDialog, FormError, UserHead, RoleBadge, Toggle,
 } from '../../components/forum/ui'
+import { PROVIDERS, ProviderIcon } from '../../components/forum/providers'
 
 function Shell({ title, children, crumb }) {
   return (
@@ -123,13 +124,6 @@ export function SubscriptionsPage() {
 
 /* ===== Настройки ===== */
 
-const LINK_PROVIDERS = [
-  { key: 'google', label: 'Google', color: '#EA4335' },
-  { key: 'yandex', label: 'Яндекс', color: '#FC3F1D' },
-  { key: 'discord', label: 'Discord', color: '#5865F2' },
-  { key: 'telegram', label: 'Telegram', color: '#29B6F6' },
-]
-
 const LINK_ERRORS = {
   already_linked_elsewhere: 'К этому игроку уже привязан другой аккаунт этого сервиса.',
   limit_reached: 'На этот аккаунт сервиса уже привязано максимум игроков.',
@@ -172,25 +166,21 @@ function ProviderLinks() {
       </p>
       {linked && (
         <p className="text-sm text-green-400">
-          {LINK_PROVIDERS.find((p) => p.key === linked)?.label ?? linked} привязан.
+          {PROVIDERS.find((p) => p.key === linked)?.label ?? linked} привязан.
         </p>
       )}
       {linkError && (
         <p className="text-sm text-red-400">{LINK_ERRORS[linkError] ?? 'Не удалось привязать аккаунт.'}</p>
       )}
       <div className="grid gap-2 sm:grid-cols-2">
-        {LINK_PROVIDERS.map((p) => (
+        {PROVIDERS.map((p) => (
           <button
             key={p.key}
             onClick={() => start(p.key)}
             disabled={busy !== null}
             className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl border border-white/10 bg-bg-section text-sm font-medium text-heading hover:border-accent/40 hover:bg-white/5 transition-colors disabled:opacity-50"
           >
-            <span
-              className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-              style={{ backgroundColor: p.color }}
-              aria-hidden="true"
-            />
+            <ProviderIcon provider={p.key} className="w-5 h-5 flex-shrink-0" style={{ color: p.color }} />
             {busy === p.key ? 'Открываем…' : `Привязать ${p.label}`}
           </button>
         ))}

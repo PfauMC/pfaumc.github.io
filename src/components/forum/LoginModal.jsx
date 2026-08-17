@@ -1,12 +1,6 @@
 import { GAME_API_BASE } from '../../lib/gameApi'
+import { PROVIDERS, ProviderIcon } from './providers'
 import { Modal } from './ui'
-
-const PROVIDERS = [
-  { key: 'google', label: 'Google', color: '#EA4335' },
-  { key: 'yandex', label: 'Яндекс', color: '#FC3F1D' },
-  { key: 'discord', label: 'Discord', color: '#5865F2' },
-  { key: 'telegram', label: 'Telegram', color: '#29B6F6' },
-]
 
 function startUrl(provider, next) {
   return `${GAME_API_BASE}/api/v1/forum/auth/providers/${provider}/start?next=${encodeURIComponent(next)}`
@@ -35,11 +29,7 @@ export default function LoginModal({ onClose, next }) {
             href={startUrl(p.key, target)}
             className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl border border-white/10 bg-bg-section text-sm font-medium text-heading hover:border-accent/40 hover:bg-white/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60"
           >
-            <span
-              className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-              style={{ backgroundColor: p.color }}
-              aria-hidden="true"
-            />
+            <ProviderIcon provider={p.key} className="w-5 h-5 flex-shrink-0" style={{ color: p.color }} />
             {p.label}
           </a>
         ))}

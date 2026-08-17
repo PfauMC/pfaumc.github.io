@@ -3,7 +3,8 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useForumAuth } from '../../context/ForumAuthContext'
 import { api } from '../../lib/forumApi'
 import { formatSmartTime } from '../../lib/forumFormat'
-import { UserHead, RoleBadge, Modal } from './ui'
+import { UserHead, RoleBadge } from './ui'
+import LoginModal from './LoginModal'
 
 /** Правый верхний угол: уведомления + голова скина. */
 export default function UserArea({ compact = false }) {
@@ -23,7 +24,7 @@ export default function UserArea({ compact = false }) {
         >
           Войти
         </button>
-        {loginOpen && <LoginHelpModal onClose={() => setLoginOpen(false)} />}
+        {loginOpen && <LoginModal onClose={() => setLoginOpen(false)} />}
       </>
     )
   }
@@ -33,36 +34,6 @@ export default function UserArea({ compact = false }) {
       <NotificationsBell />
       <UserMenu />
     </div>
-  )
-}
-
-function LoginHelpModal({ onClose }) {
-  return (
-    <Modal title="Вход через Minecraft" onClose={onClose}>
-      <ol className="space-y-3 text-sm text-text-light leading-relaxed">
-        <Step n={1}>Зайдите на сервер PfauMC в Minecraft.</Step>
-        <Step n={2}>
-          Введите в чат команду{' '}
-          <code className="px-1.5 py-0.5 rounded bg-black/20 font-mono text-accent">/auth</code>.
-        </Step>
-        <Step n={3}>Откройте одноразовую ссылку, которую пришлёт сервер.</Step>
-        <Step n={4}>Подтвердите вход — при желании включите «Запомнить меня».</Step>
-      </ol>
-      <p className="text-xs text-text-light/50 mt-4">
-        Пароль и почта не нужны: аккаунт форума привязан к вашему Minecraft-профилю.
-      </p>
-    </Modal>
-  )
-}
-
-function Step({ n, children }) {
-  return (
-    <li className="flex gap-3">
-      <span className="flex-shrink-0 w-6 h-6 rounded-lg bg-accent/15 text-accent text-xs font-bold flex items-center justify-center">
-        {n}
-      </span>
-      <span className="min-w-0">{children}</span>
-    </li>
   )
 }
 
@@ -189,8 +160,10 @@ function notificationText(item) {
 
 /* ===== Меню пользователя ===== */
 function UserMenu() {
-  const { user, logout } = useForumAuth()
+  const { user, logout, accounts, switchAccount } = useForumAuth()
   const [open, setOpen] = useState(false)
+  const [switching, setSwitching] = useState(null)
+  const [switchError, setSwitchError] = useState(false)
   const ref = useRef(null)
 
   useEffect(() => {
@@ -205,6 +178,19 @@ function UserMenu() {
     { label: 'Мои ответы', to: '/forum/my-posts' },
     { label: 'Подписки', to: '/forum/subscriptions' },
   ]
+
+  const onSwitch = async (uuid) => {
+    setSwitching(uuid)
+    setSwitchError(false)
+    try {
+      await switchAccount(uuid)
+      setOpen(false)
+    } catch {
+      setSwitchError(true)
+    } finally {
+      setSwitching(null)
+    }
+  }
 
   return (
     <div className="relative" ref={ref}>
@@ -226,6 +212,35 @@ function UserMenu() {
               <p className="font-mono font-semibold text-heading text-sm truncate">{user.name}</p>
               <div className="mt-1"><RoleBadge role={user.role} /></div>
             </div>
+
+            {accounts.length > 1 && (
+              <div className="py-1 border-b border-white/5">
+                {accounts.map((acc) => (
+                  <button
+                    key={acc.uuid}
+                    onClick={() => onSwitch(acc.uuid)}
+                    disabled={acc.isActive || switching !== null}
+                    aria-current={acc.isActive ? 'true' : undefined}
+                    aria-label={acc.isActive ? `${acc.name} — текущий аккаунт` : `Переключиться на ${acc.name}`}
+                    className="w-full flex items-center gap-2.5 px-4 py-2 text-left transition-colors enabled:hover:bg-white/5 disabled:cursor-default disabled:opacity-100"
+                  >
+                    <UserHead user={acc} size={24} link={false} />
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-sm text-text-light truncate">{acc.name}</span>
+                      <RoleBadge role={acc.role} className="mt-0.5" />
+                    </span>
+                    {acc.isActive ? (
+                      <span className="w-2 h-2 rounded-full bg-accent flex-shrink-0" aria-hidden="true" />
+                    ) : switching === acc.uuid ? (
+                      <span className="w-2 h-2 rounded-full bg-accent/50 animate-pulse flex-shrink-0" aria-hidden="true" />
+                    ) : null}
+                  </button>
+                ))}
+                {switchError && (
+                  <p className="px-4 py-1.5 text-xs text-red-400">Не удалось переключить аккаунт</p>
+                )}
+              </div>
+            )}
 
             {items.map((item) => (
               <Link

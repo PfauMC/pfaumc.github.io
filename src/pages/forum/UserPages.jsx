@@ -125,6 +125,7 @@ export function SubscriptionsPage() {
 /* ===== Настройки ===== */
 
 const LINK_ERRORS = {
+  provider_taken: 'К этому игроку уже привязан другой аккаунт этого сервиса.',
   limit_reached: 'На этот аккаунт сервиса уже привязано максимум игроков.',
   denied: 'Вход в сервис не подтверждён.',
   session: 'Сессия истекла. Войдите заново и повторите.',
@@ -161,6 +162,7 @@ function ProviderLinks() {
       <p className="text-sm text-text-light/70">
         Привяжите сервис, чтобы входить на форум без{' '}
         <code className="px-1.5 py-0.5 rounded bg-black/20 font-mono text-accent">/auth</code> в игре.
+        На каждый сервис по одной привязке; одним аккаунтом сервиса можно владеть несколькими игроками.
       </p>
       {linked && (
         <p className="text-sm text-green-400">
@@ -192,12 +194,10 @@ function ProviderLinks() {
           })}
         </ul>
       )}
-      <div className="grid gap-2 sm:grid-cols-2">
-        {PROVIDERS.map((p) => {
-          // Несколько аккаунтов одного сервиса разрешены, поэтому кнопка не пропадает
-          // после привязки -- только меняет подпись.
-          const has = identities.some((it) => it.provider === p.key)
-          return (
+      {/* На каждый сервис по одной привязке, поэтому привязанные из выбора уходят. */}
+      {!loading && (
+        <div className="grid gap-2 sm:grid-cols-2">
+          {PROVIDERS.filter((p) => !identities.some((it) => it.provider === p.key)).map((p) => (
             <button
               key={p.key}
               onClick={() => start(p.key)}
@@ -205,11 +205,16 @@ function ProviderLinks() {
               className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl border border-white/10 bg-bg-section text-sm font-medium text-heading hover:border-accent/40 hover:bg-white/5 transition-colors disabled:opacity-50"
             >
               <ProviderIcon provider={p.key} className="w-5 h-5 flex-shrink-0" style={{ color: p.color }} />
-              {busy === p.key ? 'Открываем…' : has ? `Привязать ещё ${p.label}` : `Привязать ${p.label}`}
+              {busy === p.key ? 'Открываем…' : `Привязать ${p.label}`}
             </button>
-          )
-        })}
-      </div>
+          ))}
+        </div>
+      )}
+      {!loading && identities.length > 0 && (
+        <p className="text-xs text-text-light/50">
+          На каждый сервис по одной привязке. Чтобы сменить привязанный аккаунт, напишите администрации.
+        </p>
+      )}
       <FormError error={error} />
     </section>
   )

@@ -4,6 +4,7 @@ import { useSEO } from '../hooks/useSEO'
 import { usePlayerProfile } from '../hooks/usePlayerProfile'
 import { avatarUrl, formatExactDateTime, formatPlaytime, formatRelativeTime } from '../utils/playerFormat'
 import ActivityHeatmap from '../components/ActivityHeatmap'
+import MultiaccLink from '../components/MultiaccLink'
 
 export default function PlayerProfilePage() {
   const { nickname } = useParams()
@@ -67,6 +68,8 @@ export default function PlayerProfilePage() {
               </span>
               <StatusBadge online={profile.online} lastSeen={profile.lastSeen} />
             </div>
+
+            <MultiaccLink nick={profile.name} />
           </div>
         </div>
 

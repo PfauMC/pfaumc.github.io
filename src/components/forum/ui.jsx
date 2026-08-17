@@ -175,7 +175,11 @@ export function Pagination({ page, total, pageSize, onChange, className = 'mt-6 
 }
 
 /* ===== Модальное окно ===== */
+// Ширины перечислены строками: tailwind вырезает классы, собранные на лету.
+const MODAL_WIDTHS = { default: 'sm:max-w-md', wide: 'sm:max-w-2xl', graph: 'sm:max-w-6xl' }
+
 export function Modal({ title, onClose, children, footer, wide = false }) {
+  const width = MODAL_WIDTHS[wide === true ? 'wide' : wide || 'default'] ?? MODAL_WIDTHS.default
   const panelRef = useRef(null)
 
   useEffect(() => {
@@ -199,7 +203,7 @@ export function Modal({ title, onClose, children, footer, wide = false }) {
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className={`relative w-full ${wide ? 'sm:max-w-2xl' : 'sm:max-w-md'} glass rounded-t-2xl sm:rounded-2xl max-h-[92dvh] flex flex-col focus:outline-none`}
+        className={`relative w-full ${width} glass rounded-t-2xl sm:rounded-2xl max-h-[92dvh] flex flex-col focus:outline-none`}
       >
         <div className="flex items-center justify-between gap-4 px-5 py-4 border-b border-white/5">
           <h2 className="font-mono font-bold text-heading text-lg">{title}</h2>

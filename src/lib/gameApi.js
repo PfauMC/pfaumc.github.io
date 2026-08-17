@@ -17,10 +17,19 @@ export class GameApiError extends Error {
   }
 }
 
-export async function gameApi(path, { signal } = {}) {
+/**
+ * `withSession` прикладывает куку сайта: почти всё здесь анонимно, но граф связей
+ * узнаёт смотрящего именно по ней. Кука живёт на .pfaumc.io, а запрос уходит на
+ * поддомен, поэтому без include она не поедет.
+ */
+export async function gameApi(path, { signal, withSession = false } = {}) {
   let res
   try {
-    res = await fetch(`${BASE}/api/v1${path}`, { signal, headers: { Accept: 'application/json' } })
+    res = await fetch(`${BASE}/api/v1${path}`, {
+      signal,
+      headers: { Accept: 'application/json' },
+      credentials: withSession ? 'include' : 'same-origin',
+    })
   } catch (e) {
     if (e.name === 'AbortError') throw e
     throw new GameApiError('Нет связи с игровым сервером', 0)

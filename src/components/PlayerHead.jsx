@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { usePlayerMeta } from '../hooks/usePlayerMeta'
-import { avatarUrl } from '../utils/playerFormat'
+import { defaultSkinUrl } from '../utils/playerFormat'
 
 /**
  * Голова из полного скина: лицо лежит в (8,8), шляпа — в (40,8), обе 8×8.
@@ -11,8 +11,9 @@ import { avatarUrl } from '../utils/playerFormat'
  * высота растянула бы их вдвое. Ширина у обоих форматов 64, поэтому масштаб,
  * заданный только по ширине, верен для любого из них.
  *
- * Без скина откатываемся на mc-heads: хранилище скинов наполняется по мере
- * входов игроков, и пока оно неполное, буква-заглушка выглядела бы поломкой.
+ * Без скина берём заготовку, которую клиент выбрал бы этому UUID сам. Она лежит у
+ * нас и рисуется тем же кодом, что настоящий скин, поэтому чужие сервисы для голов
+ * нам не нужны и UUID игроков наружу не уходят.
  *
  * Если скин не передали, но известен игрок — добираем его профилем: в списках
  * игроков скина уже нет. `hydrate={false}` отключает добор там, где профиль уже
@@ -20,23 +21,9 @@ import { avatarUrl } from '../utils/playerFormat'
  */
 export default function PlayerHead({ skin, uuid, name, size = 40, hydrate = true, className = '' }) {
   const hydrated = usePlayerMeta(hydrate && !skin ? uuid : null)
-  const url = skin?.url ?? hydrated?.skin?.url
+  const url = skin?.url ?? hydrated?.skin?.url ?? defaultSkinUrl(uuid)
   const hat = useHatLayer(url)
   const box = { width: size, height: size, imageRendering: 'pixelated' }
-
-  if (!url) {
-    return (
-      <img
-        src={avatarUrl(uuid, size * 2)}
-        alt={name}
-        width={size}
-        height={size}
-        loading="lazy"
-        className={`bg-bg-section ${className}`}
-        style={box}
-      />
-    )
-  }
 
   return (
     <div

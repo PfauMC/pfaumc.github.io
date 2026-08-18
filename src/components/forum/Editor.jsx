@@ -1,7 +1,7 @@
 import { useId, useRef, useState } from 'react'
 import { renderMarkup } from '../../lib/markup'
 import { FormError } from './ui'
-import { ColorPopup, GradientPopup } from './FormatPopups'
+import { ColorPopup } from './FormatPopups'
 import EmojiPicker from './EmojiPicker'
 
 const MAX_LENGTH = 10000
@@ -42,7 +42,7 @@ export default function Editor({
   onSaveDraft = null,
 }) {
   const [preview, setPreview] = useState(false)
-  const [openPopup, setOpenPopup] = useState(null) // 'heading' | 'size' | 'color' | 'gradient' | 'emoji' | 'more' | null
+  const [openPopup, setOpenPopup] = useState(null) // 'heading' | 'size' | 'color' | 'emoji' | 'more' | null
   const textareaRef = useRef(null)
   const id = useId()
 
@@ -189,24 +189,18 @@ export default function Editor({
         </ToolButton>
 
         <PopupTrigger
-          title="Цвет текста"
+          title="Цвет и градиент текста"
           isOpen={openPopup === 'color'}
           onToggle={() => togglePopup('color')}
           disabled={toolsDisabled}
           swatch
         >
-          <ColorPopup onApply={(hex) => { closePopup(); applyWrap(`<color:${hex}>`, '</color>') }} onClose={closePopup} />
-        </PopupTrigger>
-
-        <PopupTrigger
-          label="Градиент"
-          title="Градиент текста"
-          isOpen={openPopup === 'gradient'}
-          onToggle={() => togglePopup('gradient')}
-          disabled={toolsDisabled}
-        >
-          <GradientPopup
-            onApply={({ from, to }) => { closePopup(); applyWrap(`<gradient:${from}:${to}>`, '</gradient>') }}
+          <ColorPopup
+            onApply={(result) => {
+              closePopup()
+              if (result.type === 'gradient') applyWrap(`<gradient:${result.from}:${result.to}>`, '</gradient>')
+              else applyWrap(`<color:${result.hex}>`, '</color>')
+            }}
             onClose={closePopup}
           />
         </PopupTrigger>

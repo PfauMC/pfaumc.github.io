@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
-// Попапы «Цвет» и «Градиент» панели редактора. Значения уходят в MiniMessage-теги
+// Попап «Цвет» панели редактора, с подвкладкой «Градиент» — одна кнопка в
+// тулбаре вместо двух. Значения уходят в MiniMessage-теги
 // <color:#hex>…</color> и <gradient:#hex:#hex>…</gradient> — см. src/lib/markup.jsx.
 // HEX проверяется тем же regex, что и на бэкенде (validate_markup_tokens в
 // pfaumc-backend), так что мимо валидного формата в стиль ничего не попадёт ни
@@ -89,65 +90,69 @@ function PresetRow({ onPick }) {
   )
 }
 
-export function ColorPopup({ onApply, onClose }) {
-  const [hex, setHex] = useState('#1DA5E8')
-
+function TabButton({ active, onClick, children }) {
   return (
-    <div role="dialog" aria-label="Цвет текста" className={popupShellClass}>
-      <p className="text-xs text-text-light/50 mb-2">Цвет текста</p>
-      <HexField value={hex} onChange={setHex} label="Цвет" />
-      <PresetRow onPick={setHex} />
-      <div className="flex items-center justify-between gap-2 mt-3 pt-2.5 border-t border-white/5">
-        <span
-          className="text-sm font-medium truncate"
-          style={{ color: HEX_RE.test(hex) ? hex : undefined }}
-        >
-          Пример текста
-        </span>
-        <div className="flex gap-1.5 flex-shrink-0">
-          <button type="button" onClick={onClose} className="btn-ghost text-xs py-1.5 px-2.5">
-            Отмена
-          </button>
-          <button
-            type="button"
-            disabled={!HEX_RE.test(hex)}
-            onClick={() => onApply(hex)}
-            className="btn-primary text-xs py-1.5 px-3 disabled:opacity-40 disabled:pointer-events-none"
-          >
-            Применить
-          </button>
-        </div>
-      </div>
-    </div>
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex-1 px-2 py-1 rounded-md text-xs font-medium transition-colors ${
+        active ? 'bg-white/10 text-accent' : 'text-text-light/60 hover:text-text-light'
+      }`}
+    >
+      {children}
+    </button>
   )
 }
 
-export function GradientPopup({ onApply, onClose }) {
+/**
+ * Цвет и градиент — один попап с подвкладками: два отдельных тега
+ * (<color:#hex>/<gradient:#a:#b>) делили один и тот же смысл «цвет текста»,
+ * а как две кнопки в тулбаре не помещались по ширине на мобильных.
+ * onApply получает { type: 'color', hex } или { type: 'gradient', from, to }.
+ */
+export function ColorPopup({ onApply, onClose }) {
+  const [tab, setTab] = useState('color') // 'color' | 'gradient'
+  const [hex, setHex] = useState('#1DA5E8')
   const [from, setFrom] = useState('#1DA5E8')
   const [to, setTo] = useState('#EC4899')
 
-  const valid = HEX_RE.test(from) && HEX_RE.test(to)
-  const gradientStyle = valid
-    ? {
-        backgroundImage: `linear-gradient(90deg, ${from}, ${to})`,
-        WebkitBackgroundClip: 'text',
-        backgroundClip: 'text',
-        color: 'transparent',
-        WebkitTextFillColor: 'transparent',
-      }
-    : undefined
+  const isGradient = tab === 'gradient'
+  const valid = isGradient ? HEX_RE.test(from) && HEX_RE.test(to) : HEX_RE.test(hex)
+  const previewStyle = isGradient
+    ? valid
+      ? {
+          backgroundImage: `linear-gradient(90deg, ${from}, ${to})`,
+          WebkitBackgroundClip: 'text',
+          backgroundClip: 'text',
+          color: 'transparent',
+          WebkitTextFillColor: 'transparent',
+        }
+      : undefined
+    : valid
+      ? { color: hex }
+      : undefined
 
   return (
-    <div role="dialog" aria-label="Градиент текста" className={popupShellClass}>
-      <p className="text-xs text-text-light/50 mb-2">Градиент текста</p>
-
-      <div className="space-y-2">
-        <HexField value={from} onChange={setFrom} label="Первый цвет" />
-        <HexField value={to} onChange={setTo} label="Второй цвет" />
+    <div role="dialog" aria-label="Цвет текста" className={popupShellClass}>
+      <div className="flex gap-1 mb-2.5 p-0.5 rounded-lg bg-black/20">
+        <TabButton active={!isGradient} onClick={() => setTab('color')}>Цвет</TabButton>
+        <TabButton active={isGradient} onClick={() => setTab('gradient')}>Градиент</TabButton>
       </div>
 
+      {isGradient ? (
+        <div className="space-y-2">
+          <HexField value={from} onChange={setFrom} label="Первый цвет" />
+          <HexField value={to} onChange={setTo} label="Второй цвет" />
+        </div>
+      ) : (
+        <>
+          <HexField value={hex} onChange={setHex} label="Цвет" />
+          <PresetRow onPick={setHex} />
+        </>
+      )}
+
       <div className="flex items-center justify-between gap-2 mt-3 pt-2.5 border-t border-white/5">
-        <span className="text-sm font-bold truncate" style={gradientStyle}>
+        <span className={`text-sm truncate ${isGradient ? 'font-bold' : 'font-medium'}`} style={previewStyle}>
           Пример текста
         </span>
         <div className="flex gap-1.5 flex-shrink-0">
@@ -157,7 +162,7 @@ export function GradientPopup({ onApply, onClose }) {
           <button
             type="button"
             disabled={!valid}
-            onClick={() => onApply({ from, to })}
+            onClick={() => onApply(isGradient ? { type: 'gradient', from, to } : { type: 'color', hex })}
             className="btn-primary text-xs py-1.5 px-3 disabled:opacity-40 disabled:pointer-events-none"
           >
             Применить

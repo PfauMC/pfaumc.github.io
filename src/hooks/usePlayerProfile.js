@@ -59,9 +59,10 @@ export function usePlayerProfile(nickname) {
     setError(false)
     setRaw(null)
 
-    gameApi(`/players/${encodeURIComponent(nickname)}`)
-      .then((json) => {
-        if (!cancelled) setRaw(json)
+    const key = encodeURIComponent(nickname)
+    Promise.all([gameApi(`/players/${key}`), gameApi(`/players/${key}/stats`)])
+      .then(([player, stats]) => {
+        if (!cancelled) setRaw({ player, stats })
       })
       .catch((e) => {
         if (cancelled) return
@@ -77,20 +78,22 @@ export function usePlayerProfile(nickname) {
 
   const profile = useMemo(() => {
     if (!raw) return null
+    const { player, stats } = raw
     // API отдаёт секунды, интерфейс считает в минутах — переводим на границе.
-    const activity = (raw.activity ?? []).map((d) => ({
+    const activity = (stats.activity ?? []).map((d) => ({
       date: d.date,
       minutes: Math.round(d.seconds / 60),
     }))
-    const allTimeMin = Math.round((raw.playtime?.online_seconds ?? 0) / 60)
+    const allTimeMin = Math.round((stats.playtime?.online_seconds ?? 0) / 60)
 
     return {
-      uuid: raw.uuid,
-      name: raw.name ?? nickname,
-      role: roleLabel(raw.role),
-      online: raw.is_online,
-      lastSeen: raw.last_seen_at,
-      firstSeen: raw.first_seen_at,
+      id: player.id,
+      name: player.name ?? nickname,
+      role: roleLabel(player.pfaumc?.role),
+      skin: player.pfaumc?.skin ?? null,
+      online: stats.online,
+      lastSeen: stats.last_seen_at,
+      firstSeen: player.pfaumc?.first_seen_at,
       playtime: summarize(activity, allTimeMin),
       activity: densify(activity),
       integrations: null,

@@ -2,8 +2,9 @@ import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useSEO } from '../hooks/useSEO'
 import { usePlayerProfile } from '../hooks/usePlayerProfile'
-import { avatarUrl, formatExactDateTime, formatPlaytime, formatRelativeTime } from '../utils/playerFormat'
+import { formatExactDateTime, formatPlaytime, formatRelativeTime } from '../utils/playerFormat'
 import ActivityHeatmap from '../components/ActivityHeatmap'
+import PlayerHead from '../components/PlayerHead'
 import MultiaccLink from '../components/MultiaccLink'
 
 export default function PlayerProfilePage() {
@@ -51,12 +52,12 @@ export default function PlayerProfilePage() {
 
         {/* Header card */}
         <div className="card flex flex-col sm:flex-row items-center sm:items-start gap-5 mb-6">
-          <img
-            src={avatarUrl(profile.uuid, 160)}
-            alt={profile.name}
-            width={96}
-            height={96}
-            className="w-24 h-24 rounded-2xl bg-bg-section flex-shrink-0"
+          <PlayerHead
+            skin={profile.skin}
+            uuid={profile.id}
+            name={profile.name}
+            size={96}
+            className="rounded-2xl flex-shrink-0"
           />
 
           <div className="flex-1 min-w-0 text-center sm:text-left">

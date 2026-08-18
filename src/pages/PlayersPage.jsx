@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { useSEO } from '../hooks/useSEO'
 import { usePlayersOnline } from '../hooks/usePlayersOnline'
 import { usePlayerSearch } from '../hooks/usePlayerSearch'
@@ -12,21 +12,19 @@ export default function PlayersPage() {
   const trimmedQuery = query.trim()
   const isSearching = trimmedQuery.length > 0
 
-  const { data: online, loading: onlineLoading, error: onlineError, refresh: refreshOnline } = usePlayersOnline()
+  const { data: onlinePlayers, loading: onlineLoading, error: onlineError, refresh: refreshOnline } = usePlayersOnline()
   const { results, loading: searchLoading, error: searchError, retry: retrySearch } = usePlayerSearch(query)
 
-  const onlineCount = online?.count ?? 0
+  const onlineCount = onlinePlayers?.length ?? 0
 
-  const showList = isSearching ? results : online?.players ?? []
+  const showList = isSearching ? results : onlinePlayers ?? []
   const listLoading = isSearching ? searchLoading : onlineLoading
   const listError = isSearching ? searchError : onlineError
   const retry = isSearching ? retrySearch : refreshOnline
 
-  const emptyMessage = useMemo(() => {
-    if (isSearching) return 'Игроки с таким никнеймом не найдены'
-    if (online && !online.namesAvailable) return 'Список игроков временно недоступен'
-    return 'Сейчас на сервере никого нет'
-  }, [isSearching, online])
+  const emptyMessage = isSearching
+    ? 'Игроки с таким никнеймом не найдены'
+    : 'Сейчас на сервере никого нет'
 
   return (
     <div className="min-h-screen pt-24 pb-16">
@@ -35,7 +33,7 @@ export default function PlayersPage() {
         <div className="mb-8">
           <h1 className="font-mono text-3xl sm:text-4xl font-bold text-heading mb-2">Игроки</h1>
           <p className="text-text-light text-base">
-            {onlineLoading && !online ? 'Загрузка...' : `Сейчас на сервере: ${formatOnlineCount(onlineCount)}`}
+            {onlineLoading && !onlinePlayers ? 'Загрузка...' : `Сейчас на сервере: ${formatOnlineCount(onlineCount)}`}
           </p>
         </div>
 
@@ -90,7 +88,7 @@ export default function PlayersPage() {
           </div>
         ) : (
           <div className="grid sm:grid-cols-2 gap-3">
-            {showList.map((p) => <PlayerCard key={p.uuid} player={p} />)}
+            {showList.map((p) => <PlayerCard key={p.id} player={p} />)}
           </div>
         )}
       </div>

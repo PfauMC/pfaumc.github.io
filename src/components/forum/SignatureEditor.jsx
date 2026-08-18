@@ -85,7 +85,6 @@ export default function SignatureEditor({ value, onChange }) {
         </ToolButton>
 
         <PopupTrigger
-          label="Цвет"
           title="Цвет текста"
           isOpen={openPopup === 'color'}
           onToggle={() => togglePopup('color')}
@@ -171,13 +170,14 @@ function PopupTrigger({ label, title, isOpen, onToggle, disabled, swatch, childr
       <button
         type="button"
         title={title}
+        aria-label={label ? undefined : title}
         aria-haspopup="dialog"
         aria-expanded={isOpen}
         disabled={disabled}
         onClick={onToggle}
-        className={`h-8 px-2 flex-shrink-0 flex items-center gap-1 rounded-lg text-xs font-medium transition-colors disabled:opacity-30 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 ${
-          isOpen ? 'text-accent bg-accent/10' : 'text-text-light/70 hover:text-accent hover:bg-white/5'
-        }`}
+        className={`h-8 flex-shrink-0 flex items-center gap-1 rounded-lg text-xs font-medium transition-colors disabled:opacity-30 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 ${
+          label ? 'px-2' : 'w-8 justify-center'
+        } ${isOpen ? 'text-accent bg-accent/10' : 'text-text-light/70 hover:text-accent hover:bg-white/5'}`}
       >
         {swatch && <span className="w-3 h-3 rounded-full bg-gradient-to-br from-accent to-pink-400" aria-hidden="true" />}
         {label}

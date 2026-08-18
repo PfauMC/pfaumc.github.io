@@ -88,6 +88,7 @@ export function usePlayerProfile(nickname) {
       uuid: raw.uuid,
       name: raw.name ?? nickname,
       role: roleLabel(raw.role),
+      skin: raw.skin,
       online: raw.is_online,
       lastSeen: raw.last_seen_at,
       firstSeen: raw.first_seen_at,

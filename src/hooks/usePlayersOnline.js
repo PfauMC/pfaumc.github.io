@@ -29,6 +29,7 @@ export function usePlayersOnline(autoRefreshMs = 30000) {
               uuid: p.uuid,
               name: p.name,
               role: roleLabel(p.role),
+              skin: p.skin,
               since: p.session_started_at,
             })),
         })

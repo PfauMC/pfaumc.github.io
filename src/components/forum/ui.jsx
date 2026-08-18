@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { avatarUrl } from '../../utils/playerFormat'
+import PlayerHead from '../PlayerHead'
 
 /* ===== Голова скина ===== */
 export function UserHead({ user, size = 40, className = '', link = true }) {
@@ -16,22 +16,14 @@ export function UserHead({ user, size = 40, className = '', link = true }) {
     )
   }
 
-  const img = (
-    <img
-      src={user.skinUrl || avatarUrl(user.uuid, size * 2)}
-      alt={user.name}
-      width={size}
-      height={size}
-      loading="lazy"
-      className={`rounded-lg bg-bg-section object-cover ${className}`}
-      style={{ width: size, height: size, imageRendering: 'pixelated' }}
-    />
+  const head = (
+    <PlayerHead skin={user.skin} uuid={user.uuid} name={user.name} size={size} className={`rounded-lg ${className}`} />
   )
 
-  if (!link) return img
+  if (!link) return head
   return (
     <Link to={`/u/${encodeURIComponent(user.name)}`} className="flex-shrink-0 hover:opacity-80 transition-opacity">
-      {img}
+      {head}
     </Link>
   )
 }

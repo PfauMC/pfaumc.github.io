@@ -4,7 +4,7 @@ import { api } from '../../lib/forumApi'
 import { renderMarkup, buildQuote } from '../../lib/markup'
 import { formatSmartTime, formatDateTime, REACTIONS, REPORT_REASON_LABELS } from '../../lib/forumFormat'
 import { useForumAuth } from '../../context/ForumAuthContext'
-import { avatarUrl } from '../../utils/playerFormat'
+import PlayerHead from '../PlayerHead'
 import Editor from './Editor'
 import { UserHead, RoleBadge, Modal, ConfirmDialog, FormError } from './ui'
 
@@ -293,14 +293,12 @@ function AuthorPane({ author }) {
       {/* Десктопная панель */}
       <div className="hidden sm:flex flex-col items-center text-center px-3 py-4 gap-2">
         <Link to={`/u/${encodeURIComponent(author.name)}`} className="hover:opacity-80 transition-opacity">
-          <img
-            src={author.skinUrl || avatarUrl(author.uuid, 256)}
-            alt={author.name}
-            width={96}
-            height={96}
-            loading="lazy"
-            className="w-24 h-24 rounded-xl bg-bg-section border border-white/10"
-            style={{ imageRendering: 'pixelated' }}
+          <PlayerHead
+            skin={author.skin}
+            uuid={author.uuid}
+            name={author.name}
+            size={96}
+            className="rounded-xl border border-white/10"
           />
         </Link>
 

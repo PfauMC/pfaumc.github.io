@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom'
-import { avatarUrl, formatRelativeTime } from '../utils/playerFormat'
+import { formatRelativeTime } from '../utils/playerFormat'
+import PlayerHead from './PlayerHead'
 
 export default function PlayerCard({ player }) {
-  const { uuid, name, role, online, lastSeen } = player
+  const { uuid, name, role, online, lastSeen, skin } = player
 
   return (
     <Link
@@ -10,14 +11,7 @@ export default function PlayerCard({ player }) {
       className="card group flex items-center gap-3 hover:border-accent/30 hover:bg-accent/5 transition-all duration-200 p-4"
     >
       <div className="relative flex-shrink-0">
-        <img
-          src={avatarUrl(uuid, 80)}
-          alt={name}
-          width={40}
-          height={40}
-          className="w-10 h-10 rounded-lg bg-bg-section"
-          loading="lazy"
-        />
+        <PlayerHead skin={skin} uuid={uuid} name={name} size={40} className="rounded-lg" />
         {online && (
           <span className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full bg-green-400 border-2 border-bg-card" />
         )}

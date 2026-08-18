@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { avatarUrl } from '../../utils/playerFormat'
+import PlayerHead from '../PlayerHead'
 
 /* ===== Голова скина ===== */
 export function UserHead({ user, size = 40, className = '', link = true }) {
@@ -16,22 +16,14 @@ export function UserHead({ user, size = 40, className = '', link = true }) {
     )
   }
 
-  const img = (
-    <img
-      src={user.skinUrl || avatarUrl(user.uuid, size * 2)}
-      alt={user.name}
-      width={size}
-      height={size}
-      loading="lazy"
-      className={`rounded-lg bg-bg-section object-cover ${className}`}
-      style={{ width: size, height: size, imageRendering: 'pixelated' }}
-    />
+  const head = (
+    <PlayerHead skin={user.skin} uuid={user.uuid} name={user.name} size={size} className={`rounded-lg ${className}`} />
   )
 
-  if (!link) return img
+  if (!link) return head
   return (
     <Link to={`/u/${encodeURIComponent(user.name)}`} className="flex-shrink-0 hover:opacity-80 transition-opacity">
-      {img}
+      {head}
     </Link>
   )
 }
@@ -175,7 +167,11 @@ export function Pagination({ page, total, pageSize, onChange, className = 'mt-6 
 }
 
 /* ===== Модальное окно ===== */
+// Ширины перечислены строками: tailwind вырезает классы, собранные на лету.
+const MODAL_WIDTHS = { default: 'sm:max-w-md', wide: 'sm:max-w-2xl', graph: 'sm:max-w-6xl' }
+
 export function Modal({ title, onClose, children, footer, wide = false }) {
+  const width = MODAL_WIDTHS[wide === true ? 'wide' : wide || 'default'] ?? MODAL_WIDTHS.default
   const panelRef = useRef(null)
 
   useEffect(() => {
@@ -199,7 +195,7 @@ export function Modal({ title, onClose, children, footer, wide = false }) {
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className={`relative w-full ${wide ? 'sm:max-w-2xl' : 'sm:max-w-md'} glass rounded-t-2xl sm:rounded-2xl max-h-[92dvh] flex flex-col focus:outline-none`}
+        className={`relative w-full ${width} glass rounded-t-2xl sm:rounded-2xl max-h-[92dvh] flex flex-col focus:outline-none`}
       >
         <div className="flex items-center justify-between gap-4 px-5 py-4 border-b border-white/5">
           <h2 className="font-mono font-bold text-heading text-lg">{title}</h2>
@@ -247,7 +243,7 @@ export function ConfirmDialog({ title, text, confirmLabel = 'Подтверди�
 }
 
 /* ===== Плашка «нужен вход» ===== */
-export function LoginNotice({ text = 'Чтобы писать на форуме, авторизуйтесь через Minecraft-сервер.' }) {
+export function LoginNotice({ text = 'Чтобы писать на форуме, нужно войти.' }) {
   return (
     <div className="card border-accent/20 bg-accent/5">
       <div className="flex items-start gap-3">
@@ -255,9 +251,8 @@ export function LoginNotice({ text = 'Чтобы писать на форуме,
         <div className="min-w-0">
           <p className="text-heading font-medium mb-1">Нужна авторизация</p>
           <p className="text-text-light/80 text-sm leading-relaxed">
-            {text} Зайдите на сервер и введите команду{' '}
-            <code className="px-1.5 py-0.5 rounded bg-black/20 font-mono text-accent">/auth</code> — бот пришлёт
-            одноразовую ссылку для входа.
+            {text} Нажмите «Войти» в шапке — через привычный аккаунт или командой{' '}
+            <code className="px-1.5 py-0.5 rounded bg-black/20 font-mono text-accent">/auth</code> в игре.
           </p>
         </div>
       </div>

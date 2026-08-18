@@ -17,7 +17,12 @@ export class GameApiError extends Error {
   }
 }
 
-export async function gameApi(path, { signal } = {}) {
+/**
+ * `withSession` прикладывает куку сайта: почти всё здесь анонимно, но граф связей
+ * узнаёт смотрящего именно по ней. Кука живёт на .pfaumc.io, а запрос уходит на
+ * поддомен, поэтому без include она не поедет.
+ */
+export async function gameApi(path, { signal, withSession = false } = {}) {
   let res
   try {
     // no-store: у /monitor стоит max-age=300, иначе перезагрузка страницы
@@ -26,6 +31,7 @@ export async function gameApi(path, { signal } = {}) {
       signal,
       cache: 'no-store',
       headers: { Accept: 'application/json' },
+      credentials: withSession ? 'include' : 'same-origin',
     })
   } catch (e) {
     if (e.name === 'AbortError') throw e
@@ -38,12 +44,8 @@ export async function gameApi(path, { signal } = {}) {
 }
 
 /**
- * Ярлык роли для интерфейса.
- *
- * В бэкенде display_name — это строка MiniMessage с плейсхолдером <name>
- * (например `<gradient:#f00:#00f><name></gradient>`), она предназначена для
- * игрового чата, а не для веба. Вырезаем теги; если после этого ничего
- * осмысленного не осталось — переводим по ключу роли.
+ * Ярлык роли для интерфейса. Бэкенд отдаёт готовый текст в той же форме, что и
+ * форум, поэтому одна роль читается одним кодом в обоих местах.
  */
 const ROLE_LABELS = {
   default: 'Игрок',
@@ -58,12 +60,7 @@ const ROLE_LABELS = {
 
 export function roleLabel(role) {
   if (!role) return 'Игрок'
-  const stripped = (role.title ?? '')
-    .replace(/<[^>]*>/g, '')
-    .replace(/\s+/g, ' ')
-    .trim()
-  if (stripped) return stripped
-  return ROLE_LABELS[role.key] ?? role.key
+  return role.title ?? ROLE_LABELS[role.key] ?? role.key
 }
 
 /** Роли ниже этого приоритета не показываем бейджем — это дефолт для всех. */

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useSEO } from '../../hooks/useSEO'
 import { useApiData } from '../../hooks/useApiData'
 import { useForumAuth } from '../../context/ForumAuthContext'
@@ -8,6 +8,7 @@ import { formatSmartTime } from '../../lib/forumFormat'
 import {
   Breadcrumbs, ListSkeleton, ErrorState, EmptyState, Pagination, LoginNotice, ConfirmDialog, FormError, UserHead, RoleBadge, Toggle,
 } from '../../components/forum/ui'
+import { PROVIDERS, ProviderIcon } from '../../components/forum/providers'
 
 function Shell({ title, children, crumb }) {
   return (
@@ -122,6 +123,103 @@ export function SubscriptionsPage() {
 }
 
 /* ===== Настройки ===== */
+
+const LINK_ERRORS = {
+  provider_taken: 'К этому игроку уже привязан другой аккаунт этого сервиса.',
+  limit_reached: 'На этот аккаунт сервиса уже привязано максимум игроков.',
+  denied: 'Вход в сервис не подтверждён.',
+  session: 'Сессия истекла. Войдите заново и повторите.',
+  provider_error: 'Сервис не ответил. Попробуйте позже.',
+  provider_unavailable: 'Привязка через этот сервис сейчас недоступна.',
+  internal: 'Что-то пошло не так. Попробуйте позже.',
+}
+
+function ProviderLinks() {
+  const [params] = useSearchParams()
+  const [busy, setBusy] = useState(null)
+  const [error, setError] = useState(null)
+  const linked = params.get('linked')
+  const linkError = params.get('link_error')
+  const { data, loading } = useApiData('/auth/identities')
+  const identities = data?.identities ?? []
+
+  const start = async (key) => {
+    setBusy(key)
+    setError(null)
+    try {
+      const { url } = await api(`/auth/link/${key}/start`, { method: 'POST' })
+      // Привязка кончается редиректом обратно на эту страницу, значит это переход, а не fetch.
+      window.location.href = url
+    } catch (e) {
+      setError(e.message)
+      setBusy(null)
+    }
+  }
+
+  return (
+    <section className="card space-y-3">
+      <h2 className="font-mono font-semibold text-heading">Внешние аккаунты</h2>
+      <p className="text-sm text-text-light/70">
+        Привяжите сервис, чтобы входить на форум без{' '}
+        <code className="px-1.5 py-0.5 rounded bg-black/20 font-mono text-accent">/auth</code> в игре.
+        На каждый сервис по одной привязке; одним аккаунтом сервиса можно владеть несколькими игроками.
+      </p>
+      {linked && (
+        <p className="text-sm text-green-400">
+          {PROVIDERS.find((p) => p.key === linked)?.label ?? linked} привязан.
+        </p>
+      )}
+      {linkError && (
+        <p className="text-sm text-red-400">{LINK_ERRORS[linkError] ?? 'Не удалось привязать аккаунт.'}</p>
+      )}
+      {!loading && identities.length > 0 && (
+        <ul className="space-y-1.5">
+          {identities.map((it, i) => {
+            const meta = PROVIDERS.find((p) => p.key === it.provider)
+            return (
+              <li
+                key={`${it.provider}-${i}`}
+                className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-black/20 text-sm"
+              >
+                <ProviderIcon
+                  provider={it.provider}
+                  className="w-4 h-4 flex-shrink-0"
+                  style={{ color: meta?.color }}
+                />
+                <span className="text-heading">{meta?.label ?? it.provider}</span>
+                {it.label && <span className="text-text-light/60 truncate">{it.label}</span>}
+                <span className="ml-auto text-xs text-green-400 flex-shrink-0">привязан</span>
+              </li>
+            )
+          })}
+        </ul>
+      )}
+      {/* На каждый сервис по одной привязке, поэтому привязанные из выбора уходят. */}
+      {!loading && (
+        <div className="grid gap-2 sm:grid-cols-2">
+          {PROVIDERS.filter((p) => !identities.some((it) => it.provider === p.key)).map((p) => (
+            <button
+              key={p.key}
+              onClick={() => start(p.key)}
+              disabled={busy !== null}
+              className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl border border-white/10 bg-bg-section text-sm font-medium text-heading hover:border-accent/40 hover:bg-white/5 transition-colors disabled:opacity-50"
+            >
+              <ProviderIcon provider={p.key} className="w-5 h-5 flex-shrink-0" style={{ color: p.color }} />
+              {busy === p.key ? 'Открываем…' : `Привязать ${p.label}`}
+            </button>
+          ))}
+        </div>
+      )}
+      {!loading && identities.length > 0 && (
+        <p className="text-xs text-text-light/50">
+          На каждый сервис по одной привязке. Чтобы сменить привязанный аккаунт, напишите администрации.
+        </p>
+      )}
+      <FormError error={error} />
+    </section>
+  )
+}
+
 export function ForumSettingsPage() {
   useSEO('Настройки — Форум PfauMC')
   const { user, setUser, logoutEverywhere } = useForumAuth()
@@ -196,6 +294,8 @@ export function ForumSettingsPage() {
               <p className="text-sm text-text-light/70">Список тем, на которые вы подписаны, — на отдельной странице.</p>
               <Link to="/forum/subscriptions" className="btn-ghost text-sm py-2 px-4 inline-flex">Открыть подписки</Link>
             </section>
+
+            <ProviderLinks />
 
             <section className="card space-y-3">
               <h2 className="font-mono font-semibold text-heading">Безопасность</h2>

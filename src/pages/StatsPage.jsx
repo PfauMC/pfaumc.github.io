@@ -18,7 +18,7 @@ export default function StatsPage() {
   // График, аптайм, слоты и версия — оттуда же, но это сквозной прокси mcwatch:
   // свою историю онлайна бэкенд не собирает, а сам mcwatch не отдаёт CORS.
   const { data: monitor, loading, error, reload } = useApiData('/monitor', { fetcher: gameApi })
-  const { data: online, refresh: refreshOnline } = usePlayersOnline()
+  const { data: onlinePlayers, refresh: refreshOnline } = usePlayersOnline()
 
   // Ответ кэшируется на стороне сервера на 5 минут — чаще опрашивать нет смысла.
   useEffect(() => {
@@ -31,12 +31,12 @@ export default function StatsPage() {
     return () => clearInterval(id)
   }, [reload, refreshOnline])
 
+  const players = onlinePlayers ?? []
   // Цифра — из пинга сервера (monitor.online): это ровно то число, что видно в
-  // игре. Счётчик сессий бэкенда занижает — им пользуемся только для списка имён.
-  const onlineCount = monitor?.online ?? online?.count ?? 0
+  // игре. Список сессий бэкенда занижает, из него берём только имена.
+  const onlineCount = monitor?.online ?? players.length
   const maxOnline = monitor?.max_online ?? null
   const fillPct = maxOnline ? Math.round((onlineCount / maxOnline) * 100) : 0
-  const players = online?.players ?? []
   // Игровой API отвечает за присутствие, а не за доступность сервера. Если
   // мониторинг недоступен, судим по факту: есть игроки — значит поднят.
   const isUp = monitor ? monitor.is_up : onlineCount > 0 ? true : null
@@ -110,7 +110,7 @@ export default function StatsPage() {
                 <div className="text-text-light/50 text-xs font-mono uppercase tracking-widest mb-3">Игроков онлайн</div>
                 <div className="flex items-end gap-3 mb-4">
                   <div className="font-mono text-5xl font-bold text-heading tabular-nums">
-                    {monitor || online ? onlineCount : <span className="opacity-30">—</span>}
+                    {monitor || onlinePlayers ? onlineCount : <span className="opacity-30">—</span>}
                   </div>
                   {maxOnline && (
                     <div className="font-mono text-2xl text-text-light/40 mb-1 tabular-nums">/ {maxOnline}</div>
@@ -139,7 +139,7 @@ export default function StatsPage() {
                     <div className="flex flex-wrap gap-2">
                       {players.slice(0, 24).map((p) => (
                         <span
-                          key={p.uuid}
+                          key={p.id}
                           className="inline-flex items-center gap-1.5 bg-bg-section border border-white/5 rounded-lg px-2.5 py-1 text-xs font-mono text-text-light"
                         >
                           <span className="w-1.5 h-1.5 rounded-full bg-green-400 flex-shrink-0" />

@@ -126,6 +126,7 @@ export default function CategoryPage() {
       {creating && info && (
         <TopicForm
           categoryId={info.id}
+          categorySlug={slug}
           onClose={() => setCreating(false)}
           onCreated={() => { setCreating(false); topics.reload() }}
         />

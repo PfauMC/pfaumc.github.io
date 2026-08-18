@@ -2,14 +2,58 @@ import { Link } from 'react-router-dom'
 
 // Разметка сообщений превращается сразу в React-элементы.
 // dangerouslySetInnerHTML здесь не используется нигде и использоваться не
-// должен: пользовательский HTML физически не может попасть в DOM.
+// должен: пользовательский HTML физически не может попасть в DOM. Цвет и
+// градиент — не HTML и не произвольный CSS: параметры (`#hex`, `h`/`v`,
+// 12–40) разбираются регуляркой и уходят прямо в объект инлайн-стиля,
+// поэтому вставить туда что-то кроме проверенного формата нельзя.
 //
-// Поддерживается: **жирный**, *курсив*, `код`, [текст](ссылка), голые ссылки,
-// > цитата, [quote=Ник]…[/quote], списки «- » и «1. », @упоминания.
+// Поддерживается: **жирный**, *курсив*, __подчёркнутый__, ~~зачёркнутый~~,
+// `код`, [color=#hex]…[/color], [gradient=#hex,#hex,h|v]…[/gradient],
+// [size=12..40]…[/size], [текст](ссылка), голые ссылки, # / ## / ### / ####
+// заголовки, > цитата, [quote=Ник]…[/quote], списки «- » и «1. », @упоминания.
+//
+// Бэкенд при публикации (не в черновике) заново проверяет эти же параметры —
+// см. validate_markup_tokens в pfaumc-backend/src/web/forum.rs — фронтенду
+// он не доверяет.
+
+export const FONT_SIZE_MIN = 12
+export const FONT_SIZE_MAX = 40
+
+const HEX = '#[0-9A-Fa-f]{3}|#[0-9A-Fa-f]{6}'
 
 const QUOTE_BLOCK = /\[quote(?:=([^\]\n]{1,32}))?\]([\s\S]*?)\[\/quote\]/gi
+const HEADING = /^(#{1,4})\s+(.*)$/
 
-const INLINE = /(\*\*[^*\n]+\*\*|\*[^*\n]+\*|`[^`\n]+`|\[[^\]\n]+\]\(https?:\/\/[^\s)]+\)|https?:\/\/[^\s<>"]+|@[A-Za-z0-9_]{1,16})/g
+// Единая внешняя группа обязательна: String.prototype.split(regex) включает
+// совпадение в результат, только если у паттерна есть захватывающая группа —
+// без неё все токены (жирный, цвет, градиент…) split() просто выкинет.
+const INLINE = new RegExp(
+  '(' +
+    [
+      String.raw`\*\*[^*\n]+\*\*`,
+      String.raw`\*[^*\n]+\*`,
+      String.raw`__[^_\n]+__`,
+      String.raw`~~[^~\n]+~~`,
+      String.raw`\x60[^\x60\n]+\x60`,
+      String.raw`\[color=(?:${HEX})\][^[\n]*\[/color\]`,
+      String.raw`\[gradient=(?:${HEX}),(?:${HEX}),[hv]\][^[\n]*\[/gradient\]`,
+      String.raw`\[size=\d{1,3}\][^[\n]*\[/size\]`,
+      String.raw`\[[^\]\n]+\]\(https?://[^\s)]+\)`,
+      String.raw`https?://[^\s<>"]+`,
+      String.raw`@[A-Za-z0-9_]{1,16}`,
+    ].join('|') +
+  ')',
+  'g'
+)
+
+const clampSize = (n) => Math.min(FONT_SIZE_MAX, Math.max(FONT_SIZE_MIN, n || 16))
+
+const headingClass = {
+  1: 'font-mono text-2xl sm:text-3xl font-bold text-heading mt-4 mb-2 first:mt-0',
+  2: 'font-mono text-xl sm:text-2xl font-bold text-heading mt-3.5 mb-2 first:mt-0',
+  3: 'font-mono text-lg sm:text-xl font-bold text-heading mt-3 mb-1.5 first:mt-0',
+  4: 'font-mono text-base sm:text-lg font-bold text-heading mt-2.5 mb-1.5 first:mt-0',
+}
 
 function inline(text, keyPrefix) {
   const parts = text.split(INLINE)
@@ -26,7 +70,52 @@ function inline(text, keyPrefix) {
         </code>
       )
     }
+    if (part.startsWith('__')) return <u key={key}>{part.slice(2, -2)}</u>
+    if (part.startsWith('~~')) return <s key={key}>{part.slice(2, -2)}</s>
     if (part.startsWith('*')) return <em key={key}>{part.slice(1, -1)}</em>
+
+    if (part.startsWith('[color=')) {
+      const m = part.match(/^\[color=(#[0-9A-Fa-f]{3}|#[0-9A-Fa-f]{6})\]([\s\S]*)\[\/color\]$/)
+      if (m) {
+        return (
+          <span key={key} style={{ color: m[1] }}>
+            {inline(m[2], `${key}c`)}
+          </span>
+        )
+      }
+    }
+    if (part.startsWith('[gradient=')) {
+      const m = part.match(
+        /^\[gradient=(#[0-9A-Fa-f]{3}|#[0-9A-Fa-f]{6}),(#[0-9A-Fa-f]{3}|#[0-9A-Fa-f]{6}),([hv])\]([\s\S]*)\[\/gradient\]$/
+      )
+      if (m) {
+        const [, from, to, dir, inner] = m
+        return (
+          <span
+            key={key}
+            style={{
+              backgroundImage: `linear-gradient(${dir === 'v' ? '180deg' : '90deg'}, ${from}, ${to})`,
+              WebkitBackgroundClip: 'text',
+              backgroundClip: 'text',
+              color: 'transparent',
+              WebkitTextFillColor: 'transparent',
+            }}
+          >
+            {inline(inner, `${key}g`)}
+          </span>
+        )
+      }
+    }
+    if (part.startsWith('[size=')) {
+      const m = part.match(/^\[size=(\d{1,3})\]([\s\S]*)\[\/size\]$/)
+      if (m) {
+        return (
+          <span key={key} style={{ fontSize: `${clampSize(Number(m[1]))}px` }}>
+            {inline(m[2], `${key}s`)}
+          </span>
+        )
+      }
+    }
 
     if (part.startsWith('@')) {
       const nick = part.slice(1)
@@ -106,6 +195,19 @@ function blocks(text, keyPrefix) {
 
     if (!line.trim()) {
       flush()
+      continue
+    }
+
+    const heading = line.match(HEADING)
+    if (heading) {
+      flush()
+      const level = heading[1].length
+      const Tag = `h${level}`
+      out.push(
+        <Tag key={`${keyPrefix}-b${out.length}`} className={headingClass[level]}>
+          {inline(heading[2], `${keyPrefix}-b${out.length}`)}
+        </Tag>
+      )
       continue
     }
 

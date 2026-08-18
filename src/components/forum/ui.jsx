@@ -298,3 +298,20 @@ export function FormError({ error }) {
     </p>
   )
 }
+
+/** Баннер восстановления черновика — не открывает его сам, только предлагает. */
+export function DraftBanner({ onRestore, onDiscard }) {
+  return (
+    <div className="flex flex-wrap items-center gap-3 mb-3 px-4 py-3 rounded-xl border border-accent/25 bg-accent/5">
+      <span className="text-sm text-text-light/80">📝 У вас есть сохранённый черновик</span>
+      <div className="ml-auto flex gap-2">
+        <button type="button" onClick={onDiscard} className="btn-ghost text-xs py-1.5 px-3">
+          Удалить
+        </button>
+        <button type="button" onClick={onRestore} className="btn-primary text-xs py-1.5 px-3">
+          Продолжить
+        </button>
+      </div>
+    </div>
+  )
+}

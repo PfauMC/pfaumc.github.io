@@ -1,12 +1,13 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useSEO } from '../../hooks/useSEO'
 import { useApiData } from '../../hooks/useApiData'
 import { useForumAuth } from '../../context/ForumAuthContext'
+import { useDraft } from '../../hooks/useDraft'
 import { api } from '../../lib/forumApi'
 import { formatCount, formatSmartTime, COUNT_REPLIES, COUNT_VIEWS } from '../../lib/forumFormat'
 import {
-  Breadcrumbs, ListSkeleton, ErrorState, Pagination, LoginNotice, Modal, ConfirmDialog, FormError, RoleBadge, UserHead, Field, inputClass,
+  Breadcrumbs, ListSkeleton, ErrorState, Pagination, LoginNotice, Modal, ConfirmDialog, FormError, RoleBadge, UserHead, Field, inputClass, DraftBanner,
 } from '../../components/forum/ui'
 import Editor from '../../components/forum/Editor'
 import PostCard from '../../components/forum/PostCard'
@@ -27,13 +28,42 @@ export default function TopicPage() {
   const topic = useApiData(`/forum/topics/${id}`)
   const posts = useApiData(`/forum/topics/${id}/posts?page=${page}`)
 
-  const [draft, setDraft] = useState('')
+  const [replyText, setReplyText] = useState('')
   const [replyTo, setReplyTo] = useState(null)
   const [sending, setSending] = useState(false)
   const [sendError, setSendError] = useState(null)
   const [modAction, setModAction] = useState(null)
+  const [draftBannerHandled, setDraftBannerHandled] = useState(false)
   const editorRef = useRef(null)
   const scrolledRef = useRef(false)
+
+  // Персистентный черновик ответа — хранится на бэкенде, не в localStorage
+  // (см. useDraft). Гостю и до загрузки темы он не нужен.
+  const savedDraft = useDraft('topic', id, { enabled: Boolean(user) })
+  const showDraftBanner = Boolean(savedDraft.stored) && !draftBannerHandled && !replyText.trim()
+
+  const handleReplyChange = useCallback(
+    (text) => {
+      setReplyText(text)
+      savedDraft.schedule({ body: text })
+    },
+    // savedDraft.schedule — новая функция на каждый рендер из useCallback внутри
+    // хука, но она стабильна по сути (замыкает только path/active); включать её
+    // в deps означало бы пересоздавать обработчик на каждый чих без надобности.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [savedDraft.schedule]
+  )
+
+  const restoreDraft = () => {
+    setDraftBannerHandled(true)
+    if (savedDraft.stored) setReplyText(savedDraft.stored.body)
+    focusEditor()
+  }
+
+  const discardDraft = () => {
+    setDraftBannerHandled(true)
+    savedDraft.discard()
+  }
 
   const info = topic.data?.topic
   useSEO(info ? `${info.title} — Форум PfauMC` : 'Форум PfauMC')
@@ -68,7 +98,8 @@ export default function TopicPage() {
   }
 
   const quote = (text) => {
-    setDraft((d) => (d ? `${d}\n\n${text}` : text))
+    const next = replyText ? `${replyText}\n\n${text}` : text
+    handleReplyChange(next)
     focusEditor()
   }
 
@@ -83,9 +114,10 @@ export default function TopicPage() {
     try {
       const data = await api('/forum/posts', {
         method: 'POST',
-        body: { topicId: id, body: draft, replyToPostId: replyTo?.id ?? null },
+        body: { topicId: id, body: replyText, replyToPostId: replyTo?.id ?? null },
       })
-      setDraft('')
+      setReplyText('')
+      savedDraft.forget()
       setReplyTo(null)
       const lastPage = Math.max(1, Math.ceil(data.postNumber / PAGE_SIZE))
       if (lastPage !== page) {
@@ -221,6 +253,7 @@ export default function TopicPage() {
           <div className="card text-center py-6 text-text-light/60 text-sm">Тема удалена.</div>
         ) : (
           <>
+            {showDraftBanner && <DraftBanner onRestore={restoreDraft} onDiscard={discardDraft} />}
             {replyTo && (
               <div className="flex items-center gap-2 mb-2 text-xs text-text-light/60">
                 <span>Ответ на #{replyTo.postNumber} · {replyTo.name}</span>
@@ -228,8 +261,10 @@ export default function TopicPage() {
               </div>
             )}
             <Editor
-              value={draft}
-              onChange={setDraft}
+              value={replyText}
+              onChange={handleReplyChange}
+              draftStatus={user ? savedDraft.status : null}
+              onSaveDraft={user ? () => savedDraft.saveNow() : null}
               onSubmit={submitReply}
               submitLabel="Ответить"
               busy={sending}

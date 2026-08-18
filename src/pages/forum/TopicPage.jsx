@@ -125,9 +125,11 @@ export default function TopicPage() {
   return (
     <PageShell>
       {/* Шапка темы — баннер */}
-      <header className="relative overflow-hidden rounded-2xl border border-white/5 bg-bg-card mb-4">
-        <div className="absolute inset-0 grid-bg opacity-70 pointer-events-none" aria-hidden="true" />
-        <div className="absolute inset-0 bg-card-glow pointer-events-none" aria-hidden="true" />
+      {/* Без overflow-hidden: он обрезал бы выпадашку модерации. Скругление держат
+          сами декоративные слои — фон клипается их собственным border-radius. */}
+      <header className="relative rounded-2xl border border-white/5 bg-bg-card mb-4">
+        <div className="absolute inset-0 rounded-2xl grid-bg opacity-70 pointer-events-none" aria-hidden="true" />
+        <div className="absolute inset-0 rounded-2xl bg-card-glow pointer-events-none" aria-hidden="true" />
 
         <div className="relative px-5 py-6 sm:px-7 sm:py-7 flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0 flex-1">

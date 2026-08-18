@@ -65,9 +65,21 @@ export default function PlayerProfilePage() {
             <h1 className="font-mono text-2xl sm:text-3xl font-bold text-heading break-words">{profile.name}</h1>
 
             <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mt-2">
-              <span className="text-xs font-mono px-2.5 py-1 rounded-full border text-accent bg-accent/10 border-accent/20">
-                {profile.role}
-              </span>
+              {profile.roles.map((role) => (
+                <span
+                  key={role.key}
+                  className={`text-xs font-mono px-2.5 py-1 rounded-full border ${
+                    role.color ? '' : 'text-accent bg-accent/10 border-accent/20'
+                  }`}
+                  style={
+                    role.color
+                      ? { color: role.color, background: `${role.color}1a`, borderColor: `${role.color}33` }
+                      : undefined
+                  }
+                >
+                  {role.title}
+                </span>
+              ))}
               <StatusBadge online={profile.online} lastSeen={profile.lastSeen} />
             </div>
 

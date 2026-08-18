@@ -1,12 +1,10 @@
 import { Link } from 'react-router-dom'
-import { usePlayerMeta } from '../hooks/usePlayerMeta'
 import { roleLabel } from '../lib/gameApi'
 import { formatRelativeTime } from '../utils/playerFormat'
 import PlayerHead from './PlayerHead'
 
 export default function PlayerCard({ player }) {
-  const { id, name, online, lastSeen } = player
-  const meta = usePlayerMeta(id)
+  const { id, name, online, lastSeen, skin, roles } = player
 
   return (
     <Link
@@ -14,7 +12,7 @@ export default function PlayerCard({ player }) {
       className="card group flex items-center gap-3 hover:border-accent/30 hover:bg-accent/5 transition-all duration-200 p-4"
     >
       <div className="relative flex-shrink-0">
-        <PlayerHead uuid={id} name={name} size={40} className="rounded-lg" />
+        <PlayerHead skin={skin} uuid={id} name={name} size={40} hydrate={false} className="rounded-lg" />
         {online && (
           <span className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full bg-green-400 border-2 border-bg-card" />
         )}
@@ -24,7 +22,9 @@ export default function PlayerCard({ player }) {
         <div className="font-mono text-sm font-semibold text-heading group-hover:text-accent transition-colors truncate">
           {name}
         </div>
-        {meta && <div className="text-text-light/50 text-xs truncate">{roleLabel(meta.role)}</div>}
+        {roles?.length > 0 && (
+          <div className="text-text-light/50 text-xs truncate">{roles.map(roleLabel).join(', ')}</div>
+        )}
       </div>
 
       <div className="flex-shrink-0 text-right">

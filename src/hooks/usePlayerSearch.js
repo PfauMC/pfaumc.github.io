@@ -23,7 +23,13 @@ export function usePlayerSearch(query) {
     gameApi(`/players?q=${encodeURIComponent(trimmed)}`, { signal: controller.signal })
       .then((json) =>
         setResults(
-          (json.items ?? []).map((r) => ({ id: r.id, name: r.name, online: r.online }))
+          (json.items ?? []).map((r) => ({
+            id: r.id,
+            name: r.name,
+            online: r.online,
+            skin: r.skin,
+            roles: r.roles,
+          }))
         )
       )
       .catch((e) => {

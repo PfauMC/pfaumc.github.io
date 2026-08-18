@@ -8,26 +8,36 @@ import { gameApi } from '../lib/gameApi'
  */
 const TTL_MS = 60_000
 
+/**
+ * Сбой помним заметно короче удачи, но всё же помним: при 429 немедленный повтор
+ * только углубляет отказ, а каждый рендер карточки запускал бы его заново.
+ */
+const FAIL_TTL_MS = 15_000
+
 const cache = new Map()
 
 /**
- * Скин и роль лежат в профиле, а список игроков их не отдаёт — добираем на
- * каждого отдельно. Обещания держим в общей карте, поэтому десяток карточек
- * одного игрока и обновление списка раз в полминуты стоят одного запроса.
+ * Добирает скин и роли профилем там, где их неоткуда взять: списки игроков теперь
+ * везут их с собой, а вот аватарка в шапке знает про вошедшего только uuid.
+ *
+ * Обещания держим в общей карте, поэтому десяток мест, показывающих одного и того же
+ * человека, стоят одного запроса.
  */
 export function loadPlayerMeta(key) {
   const hit = cache.get(key)
-  if (hit && Date.now() - hit.at < TTL_MS) return hit.promise
+  if (hit && Date.now() - hit.at < hit.ttl) return hit.promise
 
-  const promise = gameApi(`/players/${encodeURIComponent(key)}`)
+  const entry = { at: Date.now(), ttl: TTL_MS }
+  entry.promise = gameApi(`/players/${encodeURIComponent(key)}`)
     .then((json) => json.pfaumc ?? null)
+    // Разовый сбой не должен навсегда оставить игрока без скина, поэтому запись не
+    // вечная -- но и не выбрасывается сразу, иначе следующий же рендер повторит запрос.
     .catch(() => {
-      // Разовый сбой не должен навсегда оставить игрока без скина.
-      cache.delete(key)
+      entry.ttl = FAIL_TTL_MS
       return null
     })
-  cache.set(key, { at: Date.now(), promise })
-  return promise
+  cache.set(key, entry)
+  return entry.promise
 }
 
 export function usePlayerMeta(key) {

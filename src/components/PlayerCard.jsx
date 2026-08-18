@@ -1,9 +1,12 @@
 import { Link } from 'react-router-dom'
+import { usePlayerMeta } from '../hooks/usePlayerMeta'
+import { roleLabel } from '../lib/gameApi'
 import { formatRelativeTime } from '../utils/playerFormat'
 import PlayerHead from './PlayerHead'
 
 export default function PlayerCard({ player }) {
-  const { uuid, name, role, online, lastSeen, skin } = player
+  const { id, name, online, lastSeen } = player
+  const meta = usePlayerMeta(id)
 
   return (
     <Link
@@ -11,7 +14,7 @@ export default function PlayerCard({ player }) {
       className="card group flex items-center gap-3 hover:border-accent/30 hover:bg-accent/5 transition-all duration-200 p-4"
     >
       <div className="relative flex-shrink-0">
-        <PlayerHead skin={skin} uuid={uuid} name={name} size={40} className="rounded-lg" />
+        <PlayerHead uuid={id} name={name} size={40} className="rounded-lg" />
         {online && (
           <span className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full bg-green-400 border-2 border-bg-card" />
         )}
@@ -21,12 +24,11 @@ export default function PlayerCard({ player }) {
         <div className="font-mono text-sm font-semibold text-heading group-hover:text-accent transition-colors truncate">
           {name}
         </div>
-        {role && <div className="text-text-light/50 text-xs truncate">{role}</div>}
+        {meta && <div className="text-text-light/50 text-xs truncate">{roleLabel(meta.role)}</div>}
       </div>
 
       <div className="flex-shrink-0 text-right">
-        {/* online === undefined — результат поиска: статус неизвестен, молчим. */}
-        {online === undefined ? null : online ? (
+        {online ? (
           <span className="inline-flex items-center gap-1.5 text-green-400 text-xs font-medium">
             <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
             В сети

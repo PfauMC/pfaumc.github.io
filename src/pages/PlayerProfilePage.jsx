@@ -54,7 +54,7 @@ export default function PlayerProfilePage() {
         <div className="card flex flex-col sm:flex-row items-center sm:items-start gap-5 mb-6">
           <PlayerHead
             skin={profile.skin}
-            uuid={profile.uuid}
+            uuid={profile.id}
             name={profile.name}
             size={96}
             className="rounded-2xl flex-shrink-0"

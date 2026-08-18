@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { gameApi } from '../lib/gameApi'
 
 const DEBOUNCE_MS = 350
+// Бэкенд отвечает 400 на запрос короче двух символов.
+const MIN_QUERY = 2
 
 export function usePlayerSearch(query) {
   const [results, setResults] = useState([])
@@ -18,10 +20,10 @@ export function usePlayerSearch(query) {
     setLoading(true)
     setError(false)
 
-    gameApi(`/players/search?q=${encodeURIComponent(trimmed)}`, { signal: controller.signal })
+    gameApi(`/players?q=${encodeURIComponent(trimmed)}`, { signal: controller.signal })
       .then((json) =>
         setResults(
-          (json.results ?? []).map((r) => ({ uuid: r.uuid, name: r.name, skin: r.skin }))
+          (json.items ?? []).map((r) => ({ id: r.id, name: r.name, online: r.online }))
         )
       )
       .catch((e) => {
@@ -36,7 +38,7 @@ export function usePlayerSearch(query) {
     const trimmed = query.trim()
     lastQueryRef.current = trimmed
 
-    if (!trimmed) {
+    if (trimmed.length < MIN_QUERY) {
       abortRef.current?.abort()
       setResults([])
       setLoading(false)
@@ -51,7 +53,7 @@ export function usePlayerSearch(query) {
   useEffect(() => () => abortRef.current?.abort(), [])
 
   const retry = useCallback(() => {
-    if (lastQueryRef.current) runSearch(lastQueryRef.current)
+    if (lastQueryRef.current.length >= MIN_QUERY) runSearch(lastQueryRef.current)
   }, [runSearch])
 
   return { results, loading, error, retry }

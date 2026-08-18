@@ -1,14 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
-import { gameApi, roleLabel } from '../lib/gameApi'
+import { gameApi } from '../lib/gameApi'
 
 /**
  * Кто сейчас в игре — по данным игрового бэкенда.
  *
  * Присутствие там считается по сердцебиению открытой сессии, а не по пингу
  * извне, поэтому список точный и не «залипает» после падения сервера.
- *
- * Форма ответа приводится к той, что уже ждут PlayerCard и страницы, — чтобы
- * смена источника данных не расползлась по всему интерфейсу.
  */
 export function usePlayersOnline(autoRefreshMs = 30000) {
   const [data, setData] = useState(null)
@@ -17,22 +14,13 @@ export function usePlayersOnline(autoRefreshMs = 30000) {
 
   const fetchOnline = useCallback(() => {
     setError(false)
-    return gameApi('/players/online')
+    return gameApi('/players?online=true')
       .then((json) => {
-        setData({
-          online: true,
-          count: json.online ?? 0,
-          namesAvailable: true,
-          players: (json.players ?? [])
+        setData(
+          (json.items ?? [])
             .filter((p) => p.name)
-            .map((p) => ({
-              uuid: p.uuid,
-              name: p.name,
-              role: roleLabel(p.role),
-              skin: p.skin,
-              since: p.session_started_at,
-            })),
-        })
+            .map((p) => ({ id: p.id, name: p.name, online: p.online }))
+        )
       })
       .catch(() => setError(true))
       .finally(() => setLoading(false))

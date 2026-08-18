@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { usePlayerMeta } from '../hooks/usePlayerMeta'
 import { avatarUrl } from '../utils/playerFormat'
 
 /**
@@ -12,9 +13,13 @@ import { avatarUrl } from '../utils/playerFormat'
  *
  * Без скина откатываемся на mc-heads: хранилище скинов наполняется по мере
  * входов игроков, и пока оно неполное, буква-заглушка выглядела бы поломкой.
+ *
+ * Если скин не передали, но известен игрок — добираем его профилем: в списках
+ * игроков скина уже нет.
  */
 export default function PlayerHead({ skin, uuid, name, size = 40, className = '' }) {
-  const url = skin?.url
+  const hydrated = usePlayerMeta(skin ? null : uuid)
+  const url = skin?.url ?? hydrated?.skin?.url
   const hat = useHatLayer(url)
   const box = { width: size, height: size, imageRendering: 'pixelated' }
 

@@ -90,7 +90,9 @@ export default function Fireflies({ count = 28 }) {
     <canvas
       ref={canvasRef}
       className="fixed inset-0 pointer-events-none"
-      style={{ zIndex: 1, mixBlendMode: isDark ? 'screen' : 'multiply', opacity: isDark ? 0.8 : 0.5 }}
+      // Отрицательный z-index: фон body (opaque) под ним, а обычные (непозиционированные)
+      // блоки контента — карточки, текст — оказываются поверх, а не светлячки поверх них.
+      style={{ zIndex: -1, mixBlendMode: isDark ? 'screen' : 'multiply', opacity: isDark ? 0.8 : 0.5 }}
     />
   )
 }

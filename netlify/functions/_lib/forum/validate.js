@@ -8,6 +8,7 @@ export const LIMITS = {
   reason: { min: 3, max: 500 },
   note: { max: 500 },
   search: { max: 120 },
+  replyCooldownSec: { min: 0, max: 86400 },
 }
 
 /** Разрешённые реакции — эмодзи из белого списка, произвольные не принимаем. */
@@ -39,6 +40,13 @@ export function optionalText(raw, { max = 1000, label = 'Поле' } = {}) {
   const value = cleanText(raw)
   if (value.length > max) throw badRequest(`${label}: максимум ${max} символов`)
   return value
+}
+
+export function requireInt(raw, { min = 0, max = 1e9, label = 'Поле' } = {}) {
+  const n = Number.parseInt(raw, 10)
+  if (!Number.isFinite(n)) throw badRequest(`${label}: ожидалось число`)
+  if (n < min || n > max) throw badRequest(`${label}: от ${min} до ${max}`)
+  return n
 }
 
 export function requireBool(raw, fallback = null) {

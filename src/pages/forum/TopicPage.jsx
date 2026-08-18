@@ -168,6 +168,7 @@ export default function TopicPage() {
             <div className="flex flex-wrap items-center gap-2 mb-2 empty:hidden">
               {info?.isPinned && <Badge>📌 Закреплена</Badge>}
               {info?.isLocked && <Badge>🔒 Закрыта</Badge>}
+              {info?.replyCooldownSec > 0 && <Badge>⏱ {formatDuration(info.replyCooldownSec)} между сообщениями</Badge>}
               {info?.isDeleted && <Badge danger>🗑️ Удалена</Badge>}
             </div>
             <h1 className="font-mono text-xl sm:text-3xl font-bold text-heading break-words leading-tight">
@@ -298,6 +299,11 @@ function PageShell({ children }) {
   )
 }
 
+function formatDuration(sec) {
+  if (sec % 60 === 0 && sec >= 60) return `${sec / 60} мин`
+  return `${sec} сек`
+}
+
 function Badge({ children, danger }) {
   return (
     <span
@@ -375,6 +381,7 @@ function ModeratorMenu({ topic, onAction }) {
             {item('Изменить заголовок', 'rename')}
             {item(topic.isPinned ? 'Открепить' : 'Закрепить', 'pin')}
             {item(topic.isLocked ? 'Открыть тему' : 'Закрыть тему', 'lock')}
+            {item('Задержка ответов', 'cooldown')}
             {item('Переместить', 'move')}
             {topic.isDeleted ? item('Восстановить', 'restore') : item('Удалить тему', 'delete')}
           </div>
@@ -387,6 +394,7 @@ function ModeratorMenu({ topic, onAction }) {
 function ModeratorDialog({ action, topic, onClose, onDone, onDeleted }) {
   const [title, setTitle] = useState(topic.title)
   const [categoryId, setCategoryId] = useState(topic.categoryId)
+  const [cooldownSec, setCooldownSec] = useState(topic.replyCooldownSec ?? 0)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(null)
   const categories = useApiData(action === 'move' ? '/forum/categories' : null)
@@ -462,22 +470,18 @@ function ModeratorDialog({ action, topic, onClose, onDone, onDeleted }) {
     )
   }
 
+  const titles = { rename: 'Изменить заголовок', cooldown: 'Задержка между сообщениями', move: 'Переместить тему' }
+  const bodies = { rename: () => ({ title }), cooldown: () => ({ replyCooldownSec: cooldownSec }), move: () => ({ categoryId }) }
+
   return (
     <Modal
-      title={action === 'rename' ? 'Изменить заголовок' : 'Переместить тему'}
+      title={titles[action]}
       onClose={onClose}
       footer={
         <>
           <button onClick={onClose} className="btn-ghost text-sm py-2 px-4" disabled={busy}>Отмена</button>
           <button
-            onClick={() =>
-              call(() =>
-                api(`/forum/topics/${topic.id}`, {
-                  method: 'PATCH',
-                  body: action === 'rename' ? { title } : { categoryId },
-                })
-              )
-            }
+            onClick={() => call(() => api(`/forum/topics/${topic.id}`, { method: 'PATCH', body: bodies[action]() }))}
             className="btn-primary text-sm py-2 px-4"
             disabled={busy || (action === 'rename' && title.trim().length < 3)}
           >
@@ -489,6 +493,18 @@ function ModeratorDialog({ action, topic, onClose, onDone, onDeleted }) {
       {action === 'rename' ? (
         <Field label="Заголовок">
           <input value={title} onChange={(e) => setTitle(e.target.value.slice(0, 140))} autoFocus className={inputClass} />
+        </Field>
+      ) : action === 'cooldown' ? (
+        <Field label="Задержка между сообщениями одного игрока, секунд (0 — выключена)">
+          <input
+            type="number"
+            min={0}
+            max={86400}
+            value={cooldownSec}
+            onChange={(e) => setCooldownSec(Math.max(0, Math.min(86400, Number.parseInt(e.target.value, 10) || 0)))}
+            autoFocus
+            className={inputClass}
+          />
         </Field>
       ) : (
         <Field label="Категория">

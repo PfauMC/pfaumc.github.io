@@ -2,7 +2,7 @@ import { q, one, logModeration } from './db.js'
 import { badRequest, forbidden, notFound, json, intParam } from './http.js'
 import { requireUser, requireModerator, requireCsrf } from './auth.js'
 import * as shape from './shape.js'
-import { LIMITS, requireText, requireBool, requireId } from './validate.js'
+import { LIMITS, requireText, requireBool, requireId, requireInt } from './validate.js'
 
 export const PAGE_SIZE = 20
 
@@ -14,7 +14,7 @@ const SORTS = {
 }
 
 const TOPIC_SELECT = `
-  SELECT t.id, t.category_id, t.title, t.is_pinned, t.is_locked, t.views, t.post_count,
+  SELECT t.id, t.category_id, t.title, t.is_pinned, t.is_locked, t.reply_cooldown_sec, t.views, t.post_count,
          t.created_at, t.last_post_at, t.deleted_at,
          c.slug AS category_slug, c.title AS category_title, c.is_active AS category_active,
          ${shape.authorFields('au', 'a', 'ar')},
@@ -133,6 +133,10 @@ export async function update(req, ctx, id, body) {
   const title = body.title == null ? current.title : requireText(body.title, 'title', { ...LIMITS.title, label: 'Заголовок' })
   const isPinned = requireBool(body.isPinned, current.is_pinned)
   const isLocked = requireBool(body.isLocked, current.is_locked)
+  const replyCooldownSec =
+    body.replyCooldownSec == null
+      ? current.reply_cooldown_sec
+      : requireInt(body.replyCooldownSec, { ...LIMITS.replyCooldownSec, label: 'Задержка' })
   let categoryId = current.category_id
 
   if (body.categoryId != null) {
@@ -142,15 +146,17 @@ export async function update(req, ctx, id, body) {
   }
 
   await q(
-    `UPDATE forum_topics SET title = $2, is_pinned = $3, is_locked = $4, category_id = $5, updated_at = now()
+    `UPDATE forum_topics SET title = $2, is_pinned = $3, is_locked = $4, category_id = $5,
+            reply_cooldown_sec = $6, updated_at = now()
       WHERE id = $1`,
-    [id, title, isPinned, isLocked, categoryId]
+    [id, title, isPinned, isLocked, categoryId, replyCooldownSec]
   )
 
   const changes = {}
   if (title !== current.title) changes.title = title
   if (isPinned !== current.is_pinned) changes.isPinned = isPinned
   if (isLocked !== current.is_locked) changes.isLocked = isLocked
+  if (replyCooldownSec !== current.reply_cooldown_sec) changes.replyCooldownSec = replyCooldownSec
   if (String(categoryId) !== String(current.category_id)) changes.movedTo = String(categoryId)
   if (Object.keys(changes).length) await logModeration(mod.id, 'topic.update', 'topic', id, changes)
 

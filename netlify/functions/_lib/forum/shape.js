@@ -75,6 +75,7 @@ export function topic(row) {
     title: row.title,
     isPinned: row.is_pinned,
     isLocked: row.is_locked,
+    replyCooldownSec: row.reply_cooldown_sec ?? 0,
     isDeleted: Boolean(row.deleted_at),
     views: row.views,
     postCount: row.post_count,

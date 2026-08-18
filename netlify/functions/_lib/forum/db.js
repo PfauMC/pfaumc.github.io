@@ -65,3 +65,21 @@ export async function checkPostRateLimit(userId) {
   }
   return null
 }
+
+function formatDuration(sec) {
+  if (sec % 60 === 0 && sec >= 60) return `${sec / 60} мин`
+  return `${sec} сек`
+}
+
+/** Слоумод модератора для конкретной темы, поверх глобального checkPostRateLimit. */
+export async function checkTopicReplyCooldown(userId, topicId, cooldownSec) {
+  if (!cooldownSec) return null
+  const row = await one(
+    'SELECT max(created_at) AS last_at FROM forum_posts WHERE author_id = $1 AND topic_id = $2',
+    [userId, topicId]
+  )
+  if (row?.last_at && Date.now() - new Date(row.last_at).getTime() < cooldownSec * 1000) {
+    return `В этой теме можно отвечать раз в ${formatDuration(cooldownSec)}`
+  }
+  return null
+}

@@ -1,4 +1,4 @@
-import { q, one, tx, logModeration, checkPostRateLimit } from './db.js'
+import { q, one, tx, logModeration, checkPostRateLimit, checkTopicReplyCooldown } from './db.js'
 import { badRequest, forbidden, notFound, tooMany, json, intParam } from './http.js'
 import { requireUser, requireModerator, requireCsrf } from './auth.js'
 import * as shape from './shape.js'
@@ -25,7 +25,8 @@ const POST_SELECT = `
 async function loadTopicForRead(topicId, ctx) {
   const isMod = Boolean(ctx?.user.role.canModerate)
   const topic = await one(
-    `SELECT t.id, t.is_locked, t.deleted_at, c.is_active, c.is_visible, c.deleted_at AS category_deleted_at, t.title
+    `SELECT t.id, t.is_locked, t.deleted_at, t.reply_cooldown_sec,
+            c.is_active, c.is_visible, c.deleted_at AS category_deleted_at, t.title
        FROM forum_topics t JOIN forum_categories c ON c.id = t.category_id
       WHERE t.id = $1`,
     [topicId]
@@ -132,6 +133,11 @@ export async function create(req, ctx, body) {
 
   const limitError = await checkPostRateLimit(user.id)
   if (limitError) throw tooMany(limitError)
+
+  if (!user.role.canModerate) {
+    const cooldownError = await checkTopicReplyCooldown(user.id, topicId, topic.reply_cooldown_sec)
+    if (cooldownError) throw tooMany(cooldownError)
+  }
 
   const created = await insertPost(topicId, user.id, text, replyToId)
 

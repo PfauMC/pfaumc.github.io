@@ -118,6 +118,7 @@ CREATE TABLE IF NOT EXISTS forum_topics (
   title             text NOT NULL,
   is_pinned         boolean NOT NULL DEFAULT false,
   is_locked         boolean NOT NULL DEFAULT false,
+  reply_cooldown_sec integer NOT NULL DEFAULT 0,
   views             integer NOT NULL DEFAULT 0,
   post_count        integer NOT NULL DEFAULT 1,
   last_post_at      timestamptz NOT NULL DEFAULT now(),
@@ -128,6 +129,9 @@ CREATE TABLE IF NOT EXISTS forum_topics (
   deleted_by        bigint REFERENCES forum_users(id),
   title_tsv         tsvector GENERATED ALWAYS AS (to_tsvector('russian', title)) STORED
 );
+
+-- Для баз, созданных до появления настраиваемой задержки ответов.
+ALTER TABLE forum_topics ADD COLUMN IF NOT EXISTS reply_cooldown_sec integer NOT NULL DEFAULT 0;
 
 CREATE INDEX IF NOT EXISTS forum_topics_list_idx ON forum_topics (category_id, is_pinned DESC, last_post_at DESC);
 CREATE INDEX IF NOT EXISTS forum_topics_author_idx ON forum_topics (author_id);

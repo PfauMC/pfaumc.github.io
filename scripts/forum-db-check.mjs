@@ -308,6 +308,9 @@ await q('db.checkPostRateLimit', `SELECT
      (SELECT count(*)::int FROM forum_posts WHERE author_id = $1 AND created_at > now() - ($2 || ' seconds')::interval) AS burst`,
   [1, '300'])
 
+await q('db.checkTopicReplyCooldown', `SELECT max(created_at) AS last_at FROM forum_posts WHERE author_id = $1 AND topic_id = $2`,
+  [1, 1])
+
 await q('categories.uniqueSlug', `SELECT id FROM forum_categories WHERE slug = $1 AND ($2::bigint IS NULL OR id <> $2)`, ['obschee', null])
 
 console.log(process.exitCode ? '\n✗ есть ошибки' : '\n✓ все запросы выполнились')

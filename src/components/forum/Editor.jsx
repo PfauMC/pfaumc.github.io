@@ -167,7 +167,7 @@ export default function Editor({
               key={px}
               type="button"
               role="menuitem"
-              onClick={() => { closePopup(); applyWrap(`[size=${px}]`, '[/size]') }}
+              onClick={() => { closePopup(); applyWrap(`<size:${px}>`, '</size>') }}
               className="w-full flex items-center justify-between px-3 py-2 text-sm text-text-light hover:text-accent hover:bg-white/5 transition-colors"
             >
               <span style={{ fontSize: `${Math.min(20, px)}px` }}>{px} px</span>
@@ -175,16 +175,16 @@ export default function Editor({
           ))}
         </ToolbarMenu>
 
-        <ToolButton title="Жирный" disabled={toolsDisabled} onClick={() => applyWrap('**', '**')} className="font-bold">
+        <ToolButton title="Жирный" disabled={toolsDisabled} onClick={() => applyWrap('<b>', '</b>')} className="font-bold">
           B
         </ToolButton>
-        <ToolButton title="Курсив" disabled={toolsDisabled} onClick={() => applyWrap('*', '*')} className="italic">
+        <ToolButton title="Курсив" disabled={toolsDisabled} onClick={() => applyWrap('<i>', '</i>')} className="italic">
           I
         </ToolButton>
-        <ToolButton title="Подчёркнутый" disabled={toolsDisabled} onClick={() => applyWrap('__', '__')} className="underline">
+        <ToolButton title="Подчёркнутый" disabled={toolsDisabled} onClick={() => applyWrap('<u>', '</u>')} className="underline">
           U
         </ToolButton>
-        <ToolButton title="Зачёркнутый" disabled={toolsDisabled} onClick={() => applyWrap('~~', '~~')} className="line-through">
+        <ToolButton title="Зачёркнутый" disabled={toolsDisabled} onClick={() => applyWrap('<st>', '</st>')} className="line-through">
           S
         </ToolButton>
 
@@ -196,7 +196,7 @@ export default function Editor({
           disabled={toolsDisabled}
           swatch
         >
-          <ColorPopup onApply={(hex) => { closePopup(); applyWrap(`[color=${hex}]`, '[/color]') }} onClose={closePopup} />
+          <ColorPopup onApply={(hex) => { closePopup(); applyWrap(`<color:${hex}>`, '</color>') }} onClose={closePopup} />
         </PopupTrigger>
 
         <PopupTrigger
@@ -207,7 +207,7 @@ export default function Editor({
           disabled={toolsDisabled}
         >
           <GradientPopup
-            onApply={({ from, to, dir }) => { closePopup(); applyWrap(`[gradient=${from},${to},${dir}]`, '[/gradient]') }}
+            onApply={({ from, to }) => { closePopup(); applyWrap(`<gradient:${from}:${to}>`, '</gradient>') }}
             onClose={closePopup}
           />
         </PopupTrigger>
@@ -235,17 +235,6 @@ export default function Editor({
         <ToolButton title="Цитата" disabled={toolsDisabled} onClick={() => applyPrefix('> ')}>
           ❝
         </ToolButton>
-
-        <ToolbarMenu label="⋯" title="Ещё" isOpen={openPopup === 'more'} onToggle={() => togglePopup('more')} disabled={toolsDisabled}>
-          <button
-            type="button"
-            role="menuitem"
-            onClick={() => { closePopup(); applyWrap('`', '`') }}
-            className="w-full text-left px-3 py-2 text-sm font-mono text-text-light hover:text-accent hover:bg-white/5 transition-colors"
-          >
-            {'</> Код'}
-          </button>
-        </ToolbarMenu>
 
         <div className="ml-auto flex-shrink-0 pl-2">
           <button
@@ -287,7 +276,7 @@ export default function Editor({
       {/* Низ */}
       <div className="flex flex-wrap items-center gap-2 px-3 py-2.5 border-t border-white/5 bg-black/5 rounded-b-2xl">
         <p className="text-[11px] text-text-light/40 mr-auto hidden sm:block">
-          **жирный** · *курсив* · [текст](ссылка) · &gt; цитата · @Ник
+          &lt;b&gt;жирный&lt;/b&gt; · [текст](ссылка) · &gt; цитата · @Ник
         </p>
         {draftStatus && (
           <span className={`text-[11px] ${draftStatus === 'error' ? 'text-red-400' : 'text-text-light/40'}`}>

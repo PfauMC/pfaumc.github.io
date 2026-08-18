@@ -1,10 +1,15 @@
 import { useState } from 'react'
 
-// Попапы «Цвет» и «Градиент» панели редактора. Значения уходят в разметку
-// вида [color=#hex]…[/color] и [gradient=#hex,#hex,h|v]…[/gradient] —
-// см. src/lib/markup.jsx. HEX проверяется тем же regex, что и на бэкенде
-// (validate_markup_tokens в pfaumc-backend), так что мимо валидного формата
-// в стиль ничего не попадёт ни с той, ни с другой стороны.
+// Попапы «Цвет» и «Градиент» панели редактора. Значения уходят в MiniMessage-теги
+// <color:#hex>…</color> и <gradient:#hex:#hex>…</gradient> — см. src/lib/markup.jsx.
+// HEX проверяется тем же regex, что и на бэкенде (validate_markup_tokens в
+// pfaumc-backend), так что мимо валидного формата в стиль ничего не попадёт ни
+// с той, ни с другой стороны.
+//
+// Направления «горизонтально/вертикально» у градиента нет: настоящий
+// MiniMessage-градиент всегда идёт вдоль текста (это чат-строка в игре,
+// вертикали там просто неоткуда взяться) — своё расширение поверх стандарта
+// не делаем, раз цель в том, чтобы формат был переиспользуемым.
 
 const HEX_RE = /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/
 
@@ -120,12 +125,11 @@ export function ColorPopup({ onApply, onClose }) {
 export function GradientPopup({ onApply, onClose }) {
   const [from, setFrom] = useState('#1DA5E8')
   const [to, setTo] = useState('#EC4899')
-  const [dir, setDir] = useState('h')
 
   const valid = HEX_RE.test(from) && HEX_RE.test(to)
   const gradientStyle = valid
     ? {
-        backgroundImage: `linear-gradient(${dir === 'v' ? '180deg' : '90deg'}, ${from}, ${to})`,
+        backgroundImage: `linear-gradient(90deg, ${from}, ${to})`,
         WebkitBackgroundClip: 'text',
         backgroundClip: 'text',
         color: 'transparent',
@@ -142,27 +146,6 @@ export function GradientPopup({ onApply, onClose }) {
         <HexField value={to} onChange={setTo} label="Второй цвет" />
       </div>
 
-      <div className="flex items-center gap-1.5 mt-2.5">
-        {[
-          { key: 'h', label: 'Горизонтально' },
-          { key: 'v', label: 'Вертикально' },
-        ].map((opt) => (
-          <button
-            key={opt.key}
-            type="button"
-            onClick={() => setDir(opt.key)}
-            aria-pressed={dir === opt.key}
-            className={`flex-1 text-xs py-1.5 rounded-lg border transition-colors ${
-              dir === opt.key
-                ? 'border-accent/50 bg-accent/10 text-accent'
-                : 'border-white/10 text-text-light/70 hover:border-accent/40 hover:text-accent'
-            }`}
-          >
-            {opt.label}
-          </button>
-        ))}
-      </div>
-
       <div className="flex items-center justify-between gap-2 mt-3 pt-2.5 border-t border-white/5">
         <span className="text-sm font-bold truncate" style={gradientStyle}>
           Пример текста
@@ -174,7 +157,7 @@ export function GradientPopup({ onApply, onClose }) {
           <button
             type="button"
             disabled={!valid}
-            onClick={() => onApply({ from, to, dir })}
+            onClick={() => onApply({ from, to })}
             className="btn-primary text-xs py-1.5 px-3 disabled:opacity-40 disabled:pointer-events-none"
           >
             Применить

@@ -2,120 +2,120 @@ import { Link } from 'react-router-dom'
 
 // Разметка сообщений превращается сразу в React-элементы.
 // dangerouslySetInnerHTML здесь не используется нигде и использоваться не
-// должен: пользовательский HTML физически не может попасть в DOM. Цвет и
-// градиент — не HTML и не произвольный CSS: параметры (`#hex`, `h`/`v`,
-// 12–40) разбираются регуляркой и уходят прямо в объект инлайн-стиля,
-// поэтому вставить туда что-то кроме проверенного формата нельзя.
+// должен: пользовательский HTML физически не может попасть в DOM.
 //
-// Поддерживается: **жирный**, *курсив*, __подчёркнутый__, ~~зачёркнутый~~,
-// `код`, [color=#hex]…[/color], [gradient=#hex,#hex,h|v]…[/gradient],
-// [size=12..40]…[/size], [текст](ссылка), голые ссылки, # / ## / ### / ####
-// заголовки, > цитата, [quote=Ник]…[/quote], списки «- » и «1. », @упоминания.
+// Инлайн-форматирование — подмножество MiniMessage (тот же формат, которым в
+// игре описаны роли, см. `pfaumc-backend/src/web/mod.rs`): <b>, <i>, <u>,
+// <st>, <color:red>/<color:#hex>/<#hex>, <gradient:#a:#b:...>, <size:12..40>.
+// Специально без click/hover/insertion/font/shadow — на вебе им нечего делать,
+// а часть (click:run_command) вне игрового клиента просто опасна: любой тег
+// не из белого списка ALLOWED_TAGS остаётся на странице как обычный текст,
+// а не превращается в HTML/CSS. Параметры (`#hex`, именованный цвет, число
+// 12–40) разбираются регуляркой и уходят прямо в объект инлайн-стиля —
+// вставить туда что-то кроме проверенного формата нельзя.
 //
-// Бэкенд при публикации (не в черновике) заново проверяет эти же параметры —
+// Блоки — свои, MiniMessage о них ничего не знает (чат в игре однострочный):
+// # / ## / ### / #### заголовки, > цитата, [quote=Ник]…[/quote], списки
+// «- » и «1. », [текст](ссылка), голые ссылки, @упоминания.
+//
+// Бэкенд при публикации (не в черновике) заново проверяет эти же теги —
 // см. validate_markup_tokens в pfaumc-backend/src/web/forum.rs — фронтенду
 // он не доверяет.
 
 export const FONT_SIZE_MIN = 12
 export const FONT_SIZE_MAX = 40
 
-const HEX = '#[0-9A-Fa-f]{3}|#[0-9A-Fa-f]{6}'
-
 const QUOTE_BLOCK = /\[quote(?:=([^\]\n]{1,32}))?\]([\s\S]*?)\[\/quote\]/gi
 const HEADING = /^(#{1,4})\s+(.*)$/
 
-// Единая внешняя группа обязательна: String.prototype.split(regex) включает
-// совпадение в результат, только если у паттерна есть захватывающая группа —
-// без неё все токены (жирный, цвет, градиент…) split() просто выкинет.
-const INLINE = new RegExp(
-  '(' +
-    [
-      String.raw`\*\*[^*\n]+\*\*`,
-      String.raw`\*[^*\n]+\*`,
-      String.raw`__[^_\n]+__`,
-      String.raw`~~[^~\n]+~~`,
-      String.raw`\x60[^\x60\n]+\x60`,
-      String.raw`\[color=(?:${HEX})\][^[\n]*\[/color\]`,
-      String.raw`\[gradient=(?:${HEX}),(?:${HEX}),[hv]\][^[\n]*\[/gradient\]`,
-      String.raw`\[size=\d{1,3}\][^[\n]*\[/size\]`,
-      String.raw`\[[^\]\n]+\]\(https?://[^\s)]+\)`,
-      String.raw`https?://[^\s<>"]+`,
-      String.raw`@[A-Za-z0-9_]{1,16}`,
-    ].join('|') +
-  ')',
-  'g'
-)
+const ALLOWED_TAGS = new Set([
+  'b', 'bold', 'i', 'italic', 'em', 'u', 'underlined', 'st', 'strikethrough', 'color', 'gradient', 'size',
+])
+
+// 16 стандартных цветов Minecraft-чата — то же множество, что понимает
+// MiniMessage без hex.
+const NAMED_COLORS = {
+  black: '#000000', dark_blue: '#0000AA', dark_green: '#00AA00', dark_aqua: '#00AAAA',
+  dark_red: '#AA0000', dark_purple: '#AA00AA', gold: '#FFAA00', gray: '#AAAAAA', grey: '#AAAAAA',
+  dark_gray: '#555555', dark_grey: '#555555', blue: '#5555FF', green: '#55FF55', aqua: '#55FFFF',
+  red: '#FF5555', light_purple: '#FF55FF', yellow: '#FFFF55', white: '#FFFFFF',
+}
+
+const HEX_RE = /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/
+
+function resolveColor(value) {
+  if (!value) return null
+  if (value[0] === '#') return HEX_RE.test(value) ? value : null
+  return NAMED_COLORS[value.toLowerCase()] ?? null
+}
 
 const clampSize = (n) => Math.min(FONT_SIZE_MAX, Math.max(FONT_SIZE_MIN, n || 16))
 
-const headingClass = {
-  1: 'font-mono text-2xl sm:text-3xl font-bold text-heading mt-4 mb-2 first:mt-0',
-  2: 'font-mono text-xl sm:text-2xl font-bold text-heading mt-3.5 mb-2 first:mt-0',
-  3: 'font-mono text-lg sm:text-xl font-bold text-heading mt-3 mb-1.5 first:mt-0',
-  4: 'font-mono text-base sm:text-lg font-bold text-heading mt-2.5 mb-1.5 first:mt-0',
+// <(закрывающий /)?(имя тега | #hex)(:аргументы)?>
+const TAG_RE = /<(\/)?([a-zA-Z_]*|#[0-9A-Fa-f]{6}|#[0-9A-Fa-f]{3})((?::[^<>]*)*)>/g
+
+/**
+ * Строит дерево тегов из строки (без переносов — сюда всегда приходит одна
+ * строка блока, см. blocks()). Стек, а не одна регулярка на токен: тегам
+ * MiniMessage разрешено произвольно вкладываться друг в друга.
+ */
+function parseTags(text) {
+  const root = { tag: null, children: [] }
+  const stack = [root]
+  let cursor = 0
+  TAG_RE.lastIndex = 0
+
+  let match
+  while ((match = TAG_RE.exec(text))) {
+    const [full, closingMark, rawName, rawArgs] = match
+    if (match.index > cursor) {
+      stack[stack.length - 1].children.push(text.slice(cursor, match.index))
+    }
+    cursor = TAG_RE.lastIndex
+
+    const closing = closingMark === '/'
+    const isHex = rawName.startsWith('#')
+    const name = isHex ? 'color' : rawName.toLowerCase()
+    const top = () => stack[stack.length - 1]
+
+    if (name === '' && closing) {
+      // "</>" — общая закрывашка MiniMessage: закрывает последний открытый тег.
+      if (stack.length > 1) stack.pop()
+      else top().children.push(full)
+      continue
+    }
+    if (name === '' || (!isHex && !ALLOWED_TAGS.has(name))) {
+      // Не наш тег (click/hover/font/… или мусор) — оставляем как обычный текст.
+      top().children.push(full)
+      continue
+    }
+
+    if (closing) {
+      const idx = stack.map((n) => n.tag).lastIndexOf(name)
+      if (idx > 0) stack.length = idx
+      else top().children.push(full) // непарный </tag> — просто текст
+      continue
+    }
+
+    const args = isHex ? [rawName] : rawArgs ? rawArgs.slice(1).split(':') : []
+    const node = { tag: name, args, children: [] }
+    top().children.push(node)
+    stack.push(node)
+  }
+
+  if (cursor < text.length) stack[stack.length - 1].children.push(text.slice(cursor))
+  return root.children
 }
 
-function inline(text, keyPrefix) {
-  const parts = text.split(INLINE)
+const LEAF_INLINE = /(\[[^\]\n]+\]\(https?:\/\/[^\s)]+\)|https?:\/\/[^\s<>"]+|@[A-Za-z0-9_]{1,16})/g
+
+/** Ссылки, голые URL и @упоминания — не теги MiniMessage, разбираются отдельно на листьях дерева. */
+function renderLeaf(text, keyPrefix) {
+  const parts = text.split(LEAF_INLINE)
   return parts.map((part, i) => {
     const key = `${keyPrefix}-${i}`
     if (!part) return null
     if (i % 2 === 0) return part
-
-    if (part.startsWith('**')) return <strong key={key}>{part.slice(2, -2)}</strong>
-    if (part.startsWith('`')) {
-      return (
-        <code key={key} className="px-1.5 py-0.5 rounded bg-black/20 font-mono text-[0.9em] text-accent">
-          {part.slice(1, -1)}
-        </code>
-      )
-    }
-    if (part.startsWith('__')) return <u key={key}>{part.slice(2, -2)}</u>
-    if (part.startsWith('~~')) return <s key={key}>{part.slice(2, -2)}</s>
-    if (part.startsWith('*')) return <em key={key}>{part.slice(1, -1)}</em>
-
-    if (part.startsWith('[color=')) {
-      const m = part.match(/^\[color=(#[0-9A-Fa-f]{3}|#[0-9A-Fa-f]{6})\]([\s\S]*)\[\/color\]$/)
-      if (m) {
-        return (
-          <span key={key} style={{ color: m[1] }}>
-            {inline(m[2], `${key}c`)}
-          </span>
-        )
-      }
-    }
-    if (part.startsWith('[gradient=')) {
-      const m = part.match(
-        /^\[gradient=(#[0-9A-Fa-f]{3}|#[0-9A-Fa-f]{6}),(#[0-9A-Fa-f]{3}|#[0-9A-Fa-f]{6}),([hv])\]([\s\S]*)\[\/gradient\]$/
-      )
-      if (m) {
-        const [, from, to, dir, inner] = m
-        return (
-          <span
-            key={key}
-            style={{
-              backgroundImage: `linear-gradient(${dir === 'v' ? '180deg' : '90deg'}, ${from}, ${to})`,
-              WebkitBackgroundClip: 'text',
-              backgroundClip: 'text',
-              color: 'transparent',
-              WebkitTextFillColor: 'transparent',
-            }}
-          >
-            {inline(inner, `${key}g`)}
-          </span>
-        )
-      }
-    }
-    if (part.startsWith('[size=')) {
-      const m = part.match(/^\[size=(\d{1,3})\]([\s\S]*)\[\/size\]$/)
-      if (m) {
-        return (
-          <span key={key} style={{ fontSize: `${clampSize(Number(m[1]))}px` }}>
-            {inline(m[2], `${key}s`)}
-          </span>
-        )
-      }
-    }
 
     if (part.startsWith('@')) {
       const nick = part.slice(1)
@@ -141,6 +141,75 @@ function inline(text, keyPrefix) {
       </a>
     )
   })
+}
+
+function renderTags(nodes, keyPrefix) {
+  return nodes.map((node, i) => {
+    const key = `${keyPrefix}-${i}`
+    if (typeof node === 'string') return renderLeaf(node, key)
+
+    const kids = renderTags(node.children, key)
+    switch (node.tag) {
+      case 'b':
+      case 'bold':
+        return <strong key={key}>{kids}</strong>
+      case 'i':
+      case 'italic':
+      case 'em':
+        return <em key={key}>{kids}</em>
+      case 'u':
+      case 'underlined':
+        return <u key={key}>{kids}</u>
+      case 'st':
+      case 'strikethrough':
+        return <s key={key}>{kids}</s>
+      case 'color': {
+        const hex = resolveColor(node.args[0])
+        return (
+          <span key={key} style={hex ? { color: hex } : undefined}>
+            {kids}
+          </span>
+        )
+      }
+      case 'gradient': {
+        const stops = node.args.map(resolveColor).filter(Boolean)
+        if (stops.length < 2) return <span key={key}>{kids}</span>
+        return (
+          <span
+            key={key}
+            style={{
+              backgroundImage: `linear-gradient(90deg, ${stops.join(', ')})`,
+              WebkitBackgroundClip: 'text',
+              backgroundClip: 'text',
+              color: 'transparent',
+              WebkitTextFillColor: 'transparent',
+            }}
+          >
+            {kids}
+          </span>
+        )
+      }
+      case 'size':
+        return (
+          <span key={key} style={{ fontSize: `${clampSize(Number(node.args[0]))}px` }}>
+            {kids}
+          </span>
+        )
+      default:
+        return <span key={key}>{kids}</span>
+    }
+  })
+}
+
+function inline(text, keyPrefix) {
+  return renderTags(parseTags(text), keyPrefix)
+}
+
+const headingClass = {
+  1: 'font-mono text-2xl sm:text-3xl font-bold text-heading mt-4 mb-2 first:mt-0',
+  2: 'font-mono text-xl sm:text-2xl font-bold text-heading mt-3.5 mb-2 first:mt-0',
+  3: 'font-mono text-lg sm:text-xl font-bold text-heading mt-3 mb-1.5 first:mt-0',
+  4: 'font-mono text-base sm:text-lg font-bold text-heading mt-2.5 mb-1.5 first:mt-0',
 }
 
 function blocks(text, keyPrefix) {

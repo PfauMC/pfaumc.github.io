@@ -56,6 +56,7 @@ export default function PlayerProfilePage() {
             skin={profile.skin}
             uuid={profile.id}
             name={profile.name}
+            hydrate={false}
             size={96}
             className="rounded-2xl flex-shrink-0"
           />

@@ -18,7 +18,7 @@ import {
   touchSession,
 } from './_lib/forum/auth.js'
 import { q, one } from './_lib/forum/db.js'
-import { isValidMcName, isValidUuid, requireBool } from './_lib/forum/validate.js'
+import { isValidMcName, isValidUuid, requireBool, requireSignature } from './_lib/forum/validate.js'
 
 export const config = { path: '/api/auth/*' }
 
@@ -114,7 +114,8 @@ async function consumeLoginToken(req, body) {
 async function loadUser(userId) {
   const row = await one(
     `SELECT u.id, u.mc_uuid, u.name, u.skin_url, u.role_key, u.is_banned, u.ban_reason,
-            u.notify_replies, u.notify_mentions, u.notify_subscriptions, u.created_at, u.last_login_at,
+            u.notify_replies, u.notify_mentions, u.notify_subscriptions,
+            u.signature, u.show_signatures, u.created_at, u.last_login_at,
             r.title AS role_title, r.color AS role_color, r.can_moderate
        FROM forum_users u JOIN forum_roles r ON r.key = u.role_key
       WHERE u.id = $1`,
@@ -171,13 +172,16 @@ export default handle(async (req) => {
 
     await q(
       `UPDATE forum_users
-          SET notify_replies = $2, notify_mentions = $3, notify_subscriptions = $4, updated_at = now()
+          SET notify_replies = $2, notify_mentions = $3, notify_subscriptions = $4,
+              signature = $5, show_signatures = $6, updated_at = now()
         WHERE id = $1`,
       [
         user.id,
         requireBool(body.notifyReplies, user.notify.replies),
         requireBool(body.notifyMentions, user.notify.mentions),
         requireBool(body.notifySubscriptions, user.notify.subscriptions),
+        body.signature == null ? user.signature : requireSignature(body.signature),
+        requireBool(body.showSignatures, user.showSignatures),
       ]
     )
     const fresh = await loadUser(user.id)

@@ -91,6 +91,11 @@ export function topic(row) {
 
 export function post(row, reactions = []) {
   const deleted = Boolean(row.deleted_at)
+  // signature не входит в authorFields()/author() — это поле нужно только
+  // здесь, а не во всех 8 местах, где переиспользуется тот же SQL-фрагмент
+  // (последний постер темы, репортер, модератор в журнале и т.д.).
+  const postAuthor = author(row, 'a')
+  if (postAuthor) postAuthor.signature = row.a_signature ?? ''
   return {
     id: String(row.id),
     topicId: String(row.topic_id),
@@ -102,7 +107,7 @@ export function post(row, reactions = []) {
     createdAt: row.created_at,
     editedAt: row.edited_at,
     editedByModerator: Boolean(row.edited_by && String(row.edited_by) !== String(row.author_id)),
-    author: author(row, 'a'),
+    author: postAuthor,
     replyTo: row.reply_to_id
       ? { id: String(row.reply_to_id), postNumber: row.reply_to_number, authorName: row.reply_to_author }
       : null,

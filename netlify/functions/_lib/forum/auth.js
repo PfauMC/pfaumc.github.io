@@ -55,6 +55,7 @@ export function clearCookie(name, req) {
 const USER_FIELDS = `
   u.id, u.mc_uuid, u.name, u.skin_url, u.role_key, u.is_banned, u.ban_reason,
   u.notify_replies, u.notify_mentions, u.notify_subscriptions,
+  u.signature, u.show_signatures,
   u.created_at, u.last_login_at,
   r.title AS role_title, r.color AS role_color, r.can_moderate
 `
@@ -79,6 +80,8 @@ export function shapeUser(row) {
       mentions: row.notify_mentions,
       subscriptions: row.notify_subscriptions,
     },
+    signature: row.signature ?? '',
+    showSignatures: row.show_signatures,
     createdAt: row.created_at,
     lastLoginAt: row.last_login_at,
   }

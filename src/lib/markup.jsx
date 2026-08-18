@@ -32,6 +32,22 @@ const ALLOWED_TAGS = new Set([
   'b', 'bold', 'i', 'italic', 'em', 'u', 'underlined', 'st', 'strikethrough', 'color', 'gradient', 'size',
 ])
 
+// Подпись под сообщением — тот же движок тегов, но со своим (более узким по
+// духу, шире по составу) набором: без градиента/размера, зато с выравниванием
+// и картинкой по прямой ссылке. <img:...> самозакрывающийся — см. VOID_TAGS.
+export const SIGNATURE_ALLOWED_TAGS = new Set([
+  'b', 'bold', 'i', 'italic', 'em', 'u', 'underlined', 'st', 'strikethrough', 'color', 'align', 'img',
+])
+export const SIGNATURE_MAX_IMAGES = 1
+
+const VOID_TAGS = new Set(['img'])
+const ALIGN_VALUES = new Set(['left', 'center', 'right'])
+const SIGNATURE_IMAGE_RE = /^https?:\/\/[^\s<>"']+\.(?:png|jpe?g|webp|gif)(?:\?[^\s<>"']*)?$/i
+
+export function isSafeSignatureImageUrl(url) {
+  return typeof url === 'string' && SIGNATURE_IMAGE_RE.test(url)
+}
+
 // 16 стандартных цветов Minecraft-чата — то же множество, что понимает
 // MiniMessage без hex.
 const NAMED_COLORS = {
@@ -59,7 +75,7 @@ const TAG_RE = /<(\/)?([a-zA-Z_]*|#[0-9A-Fa-f]{6}|#[0-9A-Fa-f]{3})((?::[^<>]*)*)
  * строка блока, см. blocks()). Стек, а не одна регулярка на токен: тегам
  * MiniMessage разрешено произвольно вкладываться друг в друга.
  */
-function parseTags(text) {
+function parseTags(text, allowedTags = ALLOWED_TAGS) {
   const root = { tag: null, children: [] }
   const stack = [root]
   let cursor = 0
@@ -84,7 +100,7 @@ function parseTags(text) {
       else top().children.push(full)
       continue
     }
-    if (name === '' || (!isHex && !ALLOWED_TAGS.has(name))) {
+    if (name === '' || (!isHex && !allowedTags.has(name))) {
       // Не наш тег (click/hover/font/… или мусор) — оставляем как обычный текст.
       top().children.push(full)
       continue
@@ -100,7 +116,9 @@ function parseTags(text) {
     const args = isHex ? [rawName] : rawArgs ? rawArgs.slice(1).split(':') : []
     const node = { tag: name, args, children: [] }
     top().children.push(node)
-    stack.push(node)
+    // <img:...> самозакрывающийся: URL может содержать «:», у него нет
+    // осмысленного содержимого-потомка, поэтому в стек не идёт.
+    if (!VOID_TAGS.has(name)) stack.push(node)
   }
 
   if (cursor < text.length) stack[stack.length - 1].children.push(text.slice(cursor))
@@ -195,14 +213,55 @@ function renderTags(nodes, keyPrefix) {
             {kids}
           </span>
         )
+      case 'align': {
+        const dir = ALIGN_VALUES.has(node.args[0]) ? node.args[0] : 'left'
+        return (
+          <div key={key} style={{ textAlign: dir }}>
+            {kids}
+          </div>
+        )
+      }
+      case 'img': {
+        // Аргументы разрезаны по «:» общим механизмом тегов (см. parseTags) —
+        // для URL их надо склеить обратно, иначе "https://a.com" ломается на "https"/"//a.com".
+        const url = node.args.join(':')
+        if (!isSafeSignatureImageUrl(url)) return null
+        return (
+          <img
+            key={key}
+            src={url}
+            alt=""
+            loading="lazy"
+            referrerPolicy="no-referrer"
+            className="inline-block align-middle max-w-full h-auto rounded-md my-1"
+            style={{ maxHeight: '160px' }}
+          />
+        )
+      }
       default:
         return <span key={key}>{kids}</span>
     }
   })
 }
 
-function inline(text, keyPrefix) {
-  return renderTags(parseTags(text), keyPrefix)
+function inline(text, keyPrefix, allowedTags = ALLOWED_TAGS) {
+  return renderTags(parseTags(text, allowedTags), keyPrefix)
+}
+
+/**
+ * Рендер подписи пользователя — сознательно проще blocks(): без заголовков,
+ * цитат и списков (в подписи им не место), только строки и разрешённые
+ * инлайн-теги. Высоту и обрезку контролирует контейнер-обёртка (см. SignatureBlock).
+ */
+export function renderSignature(text, keyPrefix = 'sig') {
+  if (!text) return null
+  const lines = String(text).split('\n')
+  const out = []
+  lines.forEach((line, i) => {
+    if (i > 0) out.push(<br key={`${keyPrefix}-br${i}`} />)
+    out.push(...inline(line, `${keyPrefix}-l${i}`, SIGNATURE_ALLOWED_TAGS))
+  })
+  return out
 }
 
 const headingClass = {

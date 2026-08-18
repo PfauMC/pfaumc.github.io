@@ -12,6 +12,7 @@ const POST_SELECT = `
          p.deleted_at, p.reply_to_id,
          rp.post_number AS reply_to_number, ru.name AS reply_to_author,
          ${shape.authorFields('pu', 'a', 'pr')},
+         pu.signature AS a_signature,
          pu.created_at AS a_joined_at,
          (SELECT count(*)::int FROM forum_posts fp
            WHERE fp.author_id = p.author_id AND fp.deleted_at IS NULL) AS a_post_count

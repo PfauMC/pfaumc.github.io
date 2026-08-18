@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useSEO } from '../../hooks/useSEO'
 import { useApiData } from '../../hooks/useApiData'
@@ -9,6 +9,8 @@ import {
   Breadcrumbs, ListSkeleton, ErrorState, EmptyState, Pagination, LoginNotice, ConfirmDialog, FormError, UserHead, RoleBadge, Toggle,
 } from '../../components/forum/ui'
 import { PROVIDERS, ProviderIcon } from '../../components/forum/providers'
+import SignatureEditor from '../../components/forum/SignatureEditor'
+import SignatureBlock from '../../components/forum/SignatureBlock'
 
 function Shell({ title, children, crumb }) {
   return (
@@ -220,6 +222,81 @@ function ProviderLinks() {
   )
 }
 
+/**
+ * Подпись сохраняется отдельной кнопкой, не на каждый ввод как тумблеры —
+ * поэтому это свой api()-вызов, а не переиспользование update() из родителя:
+ * там успех/ошибка относятся к «Уведомлениям» и появились бы в чужой карточке.
+ */
+function SignatureSection({ user, setUser }) {
+  const [text, setText] = useState(user.signature ?? '')
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
+  const [error, setError] = useState(null)
+
+  // Смена аккаунта (мультиакк) — подтягиваем подпись нового, а не оставляем черновик прежнего.
+  useEffect(() => {
+    setText(user.signature ?? '')
+    setSaved(false)
+  }, [user.id])
+
+  const save = async () => {
+    setSaving(true)
+    setError(null)
+    setSaved(false)
+    try {
+      const data = await api('/auth/settings', {
+        method: 'PATCH',
+        body: {
+          notifyReplies: user.notify.replies,
+          notifyMentions: user.notify.mentions,
+          notifySubscriptions: user.notify.subscriptions,
+          showSignatures: user.showSignatures,
+          signature: text,
+        },
+      })
+      setUser(data.user)
+      setSaved(true)
+    } catch (e) {
+      setError(e.message)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const dirty = text !== (user.signature ?? '')
+
+  return (
+    <section className="card space-y-3">
+      <h2 className="font-mono font-semibold text-heading">Подпись</h2>
+      <p className="text-sm text-text-light/70">
+        Показывается под каждым вашим сообщением на форуме. Меняете подпись один раз — она сразу
+        обновляется везде, включая старые сообщения.
+      </p>
+      <SignatureEditor value={text} onChange={setText} />
+      {text.trim() && (
+        <div>
+          <p className="text-xs text-text-light/50 mb-1.5">Предпросмотр:</p>
+          <div className="rounded-xl border border-white/10 bg-black/10 px-4 py-3">
+            <p className="text-sm text-text-light/70">Так подпись будет выглядеть под сообщением.</p>
+            <SignatureBlock text={text} keyPrefix="sig-preview" />
+          </div>
+        </div>
+      )}
+      <div className="flex items-center gap-3">
+        <button
+          onClick={save}
+          disabled={saving || !dirty}
+          className="btn-primary text-sm py-2 px-4 disabled:opacity-40 disabled:pointer-events-none"
+        >
+          {saving ? 'Сохраняем…' : 'Сохранить подпись'}
+        </button>
+        {saved && !saving && <span className="text-xs text-green-400">Сохранено</span>}
+      </div>
+      <FormError error={error} />
+    </section>
+  )
+}
+
 export function ForumSettingsPage() {
   useSEO('Настройки — Форум PfauMC')
   const { user, setUser, logoutEverywhere } = useForumAuth()
@@ -239,6 +316,8 @@ export function ForumSettingsPage() {
           notifyReplies: user.notify.replies,
           notifyMentions: user.notify.mentions,
           notifySubscriptions: user.notify.subscriptions,
+          showSignatures: user.showSignatures,
+          signature: user.signature,
           ...patch,
         },
       })
@@ -284,10 +363,17 @@ export function ForumSettingsPage() {
                 onChange={(v) => update({ notifySubscriptions: v })}
                 label="Новые ответы в темах, на которые я подписан"
               />
+              <Toggle
+                checked={user.showSignatures !== false}
+                onChange={(v) => update({ showSignatures: v })}
+                label="Показывать подписи других пользователей"
+              />
               {saving && <p className="text-xs text-text-light/50">Сохраняем…</p>}
               {saved && !saving && <p className="text-xs text-green-400">Сохранено</p>}
               <FormError error={error} />
             </section>
+
+            <SignatureSection user={user} setUser={setUser} />
 
             <section className="card space-y-3">
               <h2 className="font-mono font-semibold text-heading">Подписки</h2>

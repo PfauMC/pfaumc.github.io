@@ -9,6 +9,33 @@ export const LIMITS = {
   note: { max: 500 },
   search: { max: 120 },
   replyCooldownSec: { min: 0, max: 86400 },
+  signature: { max: 500 },
+}
+
+const SIGNATURE_MAX_LINES = 5
+const SIGNATURE_MAX_IMAGES = 1
+const SIGNATURE_IMAGE_TAG_RE = /<img:([^<>]*)>/gi
+const SIGNATURE_IMAGE_URL_RE = /^https?:\/\/[^\s<>"']+\.(?:png|jpe?g|webp|gif)(?:\?[^\s<>"']*)?$/i
+
+/**
+ * Структурная проверка подписи (длина/строки/картинки). Безопасность от
+ * XSS обеспечивает сам клиентский рендерер (renderSignature в markup.jsx) —
+ * он никогда не превращает непонятные теги в HTML, так что здесь не парсим
+ * теги заново, а только ограничиваем то, что реально портит вёрстку форума.
+ */
+export function requireSignature(raw) {
+  const value = cleanText(raw)
+  if (value.length > LIMITS.signature.max) throw badRequest(`Подпись: максимум ${LIMITS.signature.max} символов`)
+  if (value.split('\n').length > SIGNATURE_MAX_LINES) throw badRequest(`Подпись: максимум ${SIGNATURE_MAX_LINES} строк`)
+
+  const images = [...value.matchAll(SIGNATURE_IMAGE_TAG_RE)]
+  if (images.length > SIGNATURE_MAX_IMAGES) throw badRequest('Подпись: можно прикрепить только один файл (фото или гифку)')
+  for (const [, url] of images) {
+    if (!SIGNATURE_IMAGE_URL_RE.test(url)) {
+      throw badRequest('Подпись: ссылка на изображение должна вести на PNG/JPG/WEBP/GIF по http(s)')
+    }
+  }
+  return value
 }
 
 /** Разрешённые реакции — эмодзи из белого списка, произвольные не принимаем. */

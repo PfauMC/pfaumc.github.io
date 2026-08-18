@@ -33,10 +33,16 @@ CREATE TABLE IF NOT EXISTS forum_users (
   notify_replies       boolean NOT NULL DEFAULT true,
   notify_mentions      boolean NOT NULL DEFAULT true,
   notify_subscriptions boolean NOT NULL DEFAULT true,
+  signature            text NOT NULL DEFAULT '',
+  show_signatures      boolean NOT NULL DEFAULT true,
   created_at           timestamptz NOT NULL DEFAULT now(),
   updated_at           timestamptz NOT NULL DEFAULT now(),
   last_login_at        timestamptz
 );
+
+-- Для баз, созданных до появления подписей.
+ALTER TABLE forum_users ADD COLUMN IF NOT EXISTS signature text NOT NULL DEFAULT '';
+ALTER TABLE forum_users ADD COLUMN IF NOT EXISTS show_signatures boolean NOT NULL DEFAULT true;
 
 -- ponytail: name_lower без UNIQUE — ник в Minecraft может освободиться и уйти
 -- другому игроку. Упоминание @Ник резолвится в самого свежего носителя ника.

@@ -171,7 +171,7 @@ console.log('   notifications:', notif.rows)
 const POST_SELECT = `
   SELECT p.id, p.topic_id, p.author_id, p.post_number, p.body, p.created_at, p.edited_at, p.edited_by,
          p.deleted_at, p.reply_to_id, rp.post_number AS reply_to_number, ru.name AS reply_to_author,
-         ${authorFields('pu', 'a', 'pr')}
+         ${authorFields('pu', 'a', 'pr')}, pu.signature AS a_signature
     FROM forum_posts p
     JOIN forum_users pu ON pu.id = p.author_id
     JOIN forum_roles pr ON pr.key = pu.role_key
@@ -296,12 +296,17 @@ await q('auth.createSession', `INSERT INTO forum_sessions (user_id, token_hash, 
    VALUES ($1,$2,$3,$4,$5,$6,$7)`, [1, 'h', 'c', true, 'ua', '1.2.3.4', new Date(Date.now() + 1e9).toISOString()])
 await q('auth.getSession', `SELECT s.id, s.user_id, s.csrf_token, s.remember, s.expires_at, s.last_used_at,
         u.id, u.mc_uuid, u.name, u.skin_url, u.role_key, u.is_banned, u.ban_reason,
-        u.notify_replies, u.notify_mentions, u.notify_subscriptions, u.created_at, u.last_login_at,
+        u.notify_replies, u.notify_mentions, u.notify_subscriptions, u.signature, u.show_signatures,
+        u.created_at, u.last_login_at,
         r.title AS role_title, r.color AS role_color, r.can_moderate
    FROM forum_sessions s JOIN forum_users u ON u.id = s.user_id JOIN forum_roles r ON r.key = u.role_key
   WHERE s.token_hash = $1 AND s.revoked_at IS NULL AND s.expires_at > now()`, ['h'])
 await q('auth.rotate', `UPDATE forum_sessions SET token_hash = $2, last_used_at = now(),
     expires_at = now() + ($3 || ' milliseconds')::interval WHERE id = $1`, [1, 'h2', '86400000'])
+await q('auth.settings', `UPDATE forum_users
+    SET notify_replies = $2, notify_mentions = $3, notify_subscriptions = $4,
+        signature = $5, show_signatures = $6, updated_at = now()
+  WHERE id = $1`, [1, true, true, true, '<b>привет</b>', true])
 
 await q('db.checkPostRateLimit', `SELECT
      (SELECT max(created_at) FROM forum_posts WHERE author_id = $1) AS last_at,

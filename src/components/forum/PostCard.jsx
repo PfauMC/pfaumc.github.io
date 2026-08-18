@@ -6,6 +6,7 @@ import { formatSmartTime, formatDateTime, REACTIONS, REPORT_REASON_LABELS } from
 import { useForumAuth } from '../../context/ForumAuthContext'
 import PlayerHead from '../PlayerHead'
 import Editor from './Editor'
+import SignatureBlock from './SignatureBlock'
 import { UserHead, RoleBadge, Modal, ConfirmDialog, FormError } from './ui'
 
 export default function PostCard({ post, topic, onQuote, onReply, onChanged, highlighted }) {
@@ -19,6 +20,8 @@ export default function PostCard({ post, topic, onQuote, onReply, onChanged, hig
   const [reactions, setReactions] = useState(post.reactions ?? [])
   const [pickerOpen, setPickerOpen] = useState(false)
 
+  // Гость не переключает настройку — видит подписи по умолчанию.
+  const showSignatures = user ? user.showSignatures !== false : true
   const isOwn = user && post.author && String(user.id) === String(post.author.id)
   const canEdit = Boolean(user && (isOwn ? !topic?.isLocked : isModerator))
   const canDelete = Boolean(user && (isModerator || (isOwn && post.postNumber !== 1 && !topic?.isLocked)))
@@ -127,9 +130,12 @@ export default function PostCard({ post, topic, onQuote, onReply, onChanged, hig
                 autoFocus
               />
             ) : (
-              <div className="text-text-light text-[0.95rem] leading-relaxed">
-                {renderMarkup(post.body, `p${post.id}`)}
-              </div>
+              <>
+                <div className="text-text-light text-[0.95rem] leading-relaxed">
+                  {renderMarkup(post.body, `p${post.id}`)}
+                </div>
+                {showSignatures && <SignatureBlock text={post.author?.signature} keyPrefix={`sig${post.id}`} />}
+              </>
             )}
           </div>
 

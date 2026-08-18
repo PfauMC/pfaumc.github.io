@@ -19,7 +19,7 @@ export function usePlayersOnline(autoRefreshMs = 30000) {
         setData(
           (json.items ?? [])
             .filter((p) => p.name)
-            .map((p) => ({ id: p.id, name: p.name, online: p.online }))
+            .map((p) => ({ id: p.id, name: p.name, online: p.online, skin: p.skin, roles: p.roles }))
         )
       })
       .catch(() => setError(true))

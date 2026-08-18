@@ -45,6 +45,12 @@ function densify(activity, days = 371) {
   return result
 }
 
+/** Ролей может не быть ни одной -- тогда показываем ту же подпись, что и раньше. */
+function shapeRoles(roles) {
+  const shaped = (roles ?? []).map((r) => ({ key: r.key, title: roleLabel(r), color: r.color }))
+  return shaped.length ? shaped : [{ key: 'default', title: roleLabel(null), color: null }]
+}
+
 export function usePlayerProfile(nickname) {
   const [raw, setRaw] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -89,7 +95,7 @@ export function usePlayerProfile(nickname) {
     return {
       id: player.id,
       name: player.name ?? nickname,
-      role: roleLabel(player.pfaumc?.role),
+      roles: shapeRoles(player.pfaumc?.roles),
       skin: player.pfaumc?.skin ?? null,
       online: stats.online,
       lastSeen: stats.last_seen_at,

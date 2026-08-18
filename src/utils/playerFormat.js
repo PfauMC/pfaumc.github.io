@@ -51,6 +51,33 @@ export function formatExactDateTime(isoDate) {
   })
 }
 
-export function avatarUrl(uuid, size = 100) {
-  return `https://mc-heads.net/avatar/${uuid}/${size}`
+/**
+ * Игрок, который не менял скин, всё равно не безликий: клиент выбирает ему одну из
+ * восемнадцати заготовок по хешу UUID. Здесь тот же список в том же порядке и тот же
+ * способ выбора, поэтому на сайте человек выглядит так же, как за него видят в игре.
+ *
+ * Java считает `(int)(hilo >> 32) ^ (int) hilo`, где `hilo = msb ^ lsb`. XOR
+ * ассоциативен, так что это просто XOR четырёх 32-битных слов, а побитовые операции в
+ * JS и так идут в 32-битных знаковых — знак получается тот же, что и у Java.
+ */
+const DEFAULT_SKINS = [
+  'slim/alex', 'slim/ari', 'slim/efe', 'slim/kai', 'slim/makena',
+  'slim/noor', 'slim/steve', 'slim/sunny', 'slim/zuri',
+  'wide/alex', 'wide/ari', 'wide/efe', 'wide/kai', 'wide/makena',
+  'wide/noor', 'wide/steve', 'wide/sunny', 'wide/zuri',
+]
+
+/** Тот же, что клиент отдаёт без профиля вообще. */
+const FALLBACK_SKIN = 'slim/steve'
+
+export function defaultSkinName(uuid) {
+  const hex = String(uuid ?? '').replace(/-/g, '')
+  if (!/^[0-9a-fA-F]{32}$/.test(hex)) return FALLBACK_SKIN
+  const word = (i) => parseInt(hex.slice(i * 8, i * 8 + 8), 16)
+  const hash = word(0) ^ word(1) ^ word(2) ^ word(3)
+  return DEFAULT_SKINS[((hash % DEFAULT_SKINS.length) + DEFAULT_SKINS.length) % DEFAULT_SKINS.length]
+}
+
+export function defaultSkinUrl(uuid) {
+  return `/assets/skins/${defaultSkinName(uuid)}.png`
 }

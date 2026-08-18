@@ -180,10 +180,12 @@ const POST_SELECT = `
 `
 await q('posts.listByTopic', `${POST_SELECT} WHERE p.topic_id = $1 ORDER BY p.post_number LIMIT $2 OFFSET $3`, [1, 20, 0])
 
-await q('posts.reactionsFor', `SELECT post_id, emoji, count(*)::int AS count,
-         COALESCE(bool_or(user_id = $2), false) AS mine
-    FROM forum_post_reactions WHERE post_id = ANY($1::bigint[]) GROUP BY post_id, emoji
-   ORDER BY count DESC, emoji`, [[1, 2], null])
+await q('posts.reactionsFor', `SELECT r.post_id, r.emoji, count(*)::int AS count,
+         COALESCE(bool_or(r.user_id = $2), false) AS mine,
+         array_agg(u.name ORDER BY u.name) AS names
+    FROM forum_post_reactions r JOIN forum_users u ON u.id = r.user_id
+   WHERE r.post_id = ANY($1::bigint[]) GROUP BY r.post_id, r.emoji
+   ORDER BY count DESC, r.emoji`, [[1, 2], null])
 
 await q('posts.recountTopic', `UPDATE forum_topics t
     SET post_count = COALESCE(agg.n, 0), last_post_at = COALESCE(agg.last_at, t.created_at), last_post_user_id = agg.last_author

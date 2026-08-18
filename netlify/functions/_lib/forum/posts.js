@@ -42,19 +42,21 @@ async function loadTopicForRead(topicId, ctx) {
 async function reactionsFor(postIds, userId) {
   if (!postIds.length) return new Map()
   const rows = await q(
-    `SELECT post_id, emoji, count(*)::int AS count,
-            COALESCE(bool_or(user_id = $2), false) AS mine
-       FROM forum_post_reactions
-      WHERE post_id = ANY($1::bigint[])
-      GROUP BY post_id, emoji
-      ORDER BY count DESC, emoji`,
+    `SELECT r.post_id, r.emoji, count(*)::int AS count,
+            COALESCE(bool_or(r.user_id = $2), false) AS mine,
+            array_agg(u.name ORDER BY u.name) AS names
+       FROM forum_post_reactions r
+       JOIN forum_users u ON u.id = r.user_id
+      WHERE r.post_id = ANY($1::bigint[])
+      GROUP BY r.post_id, r.emoji
+      ORDER BY count DESC, r.emoji`,
     [postIds, userId]
   )
   const map = new Map()
   for (const r of rows) {
     const key = String(r.post_id)
     if (!map.has(key)) map.set(key, [])
-    map.get(key).push({ emoji: r.emoji, count: r.count, mine: r.mine })
+    map.get(key).push({ emoji: r.emoji, count: r.count, mine: r.mine, names: r.names })
   }
   return map
 }

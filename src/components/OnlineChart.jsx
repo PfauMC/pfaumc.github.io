@@ -235,14 +235,14 @@ export default function OnlineChart({ current, previous, currentStart }) {
           {hasCurrent && (
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-0.5 bg-accent rounded-full" />
-              <span className="text-heading font-mono tabular-nums">{current[hover]}</span>
+              <span className="text-heading font-mono tabular-nums">{Math.round(current[hover])}</span>
               <span className="text-text-light/50">эта неделя</span>
             </div>
           )}
           {hasPrevious && (
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-0.5 rounded-full bg-text-light/50" />
-              <span className="text-heading font-mono tabular-nums">{previous[hover]}</span>
+              <span className="text-heading font-mono tabular-nums">{Math.round(previous[hover])}</span>
               <span className="text-text-light/50">прошлая</span>
             </div>
           )}

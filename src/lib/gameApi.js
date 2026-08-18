@@ -25,8 +25,11 @@ export class GameApiError extends Error {
 export async function gameApi(path, { signal, withSession = false } = {}) {
   let res
   try {
+    // no-store: у /monitor стоит max-age=300, иначе перезагрузка страницы
+    // показывает те же цифры из кэша браузера.
     res = await fetch(`${BASE}/api/v1${path}`, {
       signal,
+      cache: 'no-store',
       headers: { Accept: 'application/json' },
       credentials: withSession ? 'include' : 'same-origin',
     })

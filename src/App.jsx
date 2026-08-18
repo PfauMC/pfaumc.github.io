@@ -38,6 +38,9 @@ const ForumSettingsPage = named(() => import('./pages/forum/UserPages'), 'ForumS
 const ReportsPage = named(() => import('./pages/forum/ModPages'), 'ReportsPage')
 const ModLogPage = named(() => import('./pages/forum/ModPages'), 'ModLogPage')
 const TrashPage = named(() => import('./pages/forum/ModPages'), 'TrashPage')
+const CitiesPage = lazy(() => import('./pages/cities/CitiesPage'))
+const CityPage = lazy(() => import('./pages/cities/CityPage'))
+const CityApplicationsPage = lazy(() => import('./pages/cities/CityApplicationsPage'))
 
 function HomePage() {
   useScrollToHash()
@@ -96,6 +99,9 @@ export default function App() {
               <Route path="/forum/reports" element={<ReportsPage />} />
               <Route path="/forum/trash" element={<TrashPage />} />
               <Route path="/forum/log" element={<ModLogPage />} />
+              <Route path="/cities" element={<CitiesPage />} />
+              <Route path="/cities/applications" element={<CityApplicationsPage />} />
+              <Route path="/cities/:slug" element={<CityPage />} />
               <Route path="/auth/game" element={<AuthGamePage />} />
               <Route path="/auth/failed" element={<AuthFailedPage />} />
               <Route path="/:modeId" element={<ModePage />} />

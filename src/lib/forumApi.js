@@ -36,13 +36,14 @@ function convertKeys(value, rename) {
 const toCamel = (k) => k.replace(/_([a-z0-9])/g, (_, c) => c.toUpperCase())
 const toSnake = (k) => k.replace(/[A-Z]/g, (c) => `_${c.toLowerCase()}`)
 
-export async function api(path, { method = 'GET', body, signal } = {}) {
+/**
+ * Общее ядро для любого JSON-эндпоинта бэкенда за сессионной курой (форум, города):
+ * та же CSRF-схема, тот же snake_case на границе, тот же формат ошибки.
+ */
+export async function apiRequest(url, { method = 'GET', body, signal } = {}) {
   const headers = {}
   if (body !== undefined) headers['Content-Type'] = 'application/json'
   if (method !== 'GET') headers['X-CSRF-Token'] = readCsrfCookie()
-
-  // Пути в компонентах остались прежними (/forum/... и /auth/...) — префикс один на всех.
-  const url = `${GAME_API_BASE}/api/v1/forum${path.startsWith('/forum') ? path.slice(6) : path}`
 
   let res
   try {
@@ -62,6 +63,12 @@ export async function api(path, { method = 'GET', body, signal } = {}) {
   const data = await res.json().catch(() => ({}))
   if (!res.ok) throw new ApiError(data.error ?? 'Что-то пошло не так', res.status, data.code)
   return convertKeys(data, toCamel)
+}
+
+export async function api(path, opts) {
+  // Пути в компонентах остались прежними (/forum/... и /auth/...) — префикс один на всех.
+  const url = `${GAME_API_BASE}/api/v1/forum${path.startsWith('/forum') ? path.slice(6) : path}`
+  return apiRequest(url, opts)
 }
 
 export const CSRF_COOKIE_NAME = CSRF_COOKIE

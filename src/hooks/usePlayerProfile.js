@@ -103,6 +103,7 @@ export function usePlayerProfile(nickname) {
       playtime: summarize(activity, allTimeMin),
       activity: densify(activity),
       integrations: null,
+      city: player.pfaumc?.city ?? null,
     }
   }, [raw, nickname])
 

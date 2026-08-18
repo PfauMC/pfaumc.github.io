@@ -56,6 +56,7 @@ export default function Navbar() {
     { label: 'Режимы', action: () => handleSection('#modes') },
     { label: 'Вики', to: '/wiki' },
     { label: 'Форум', to: '/forum' },
+    { label: 'Города', to: '/cities' },
     { label: 'Игроки', to: '/players' },
     { label: 'Статистика', to: '/stats' },
   ]

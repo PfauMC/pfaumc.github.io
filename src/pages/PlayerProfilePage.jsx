@@ -83,6 +83,15 @@ export default function PlayerProfilePage() {
               <StatusBadge online={profile.online} lastSeen={profile.lastSeen} />
             </div>
 
+            {profile.city && (
+              <p className="text-sm text-text-light/70 mt-2">
+                Город:{' '}
+                <Link to={`/cities/${profile.city.slug}`} className="text-heading hover:text-accent transition-colors">
+                  {profile.city.name}
+                </Link>
+              </p>
+            )}
+
             <MultiaccLink nick={profile.name} />
           </div>
         </div>

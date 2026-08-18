@@ -144,20 +144,30 @@ export default function PostCard({ post, topic, onQuote, onReply, onChanged, hig
             <div className="px-4 sm:px-5 pb-3">
               <div className="flex flex-wrap items-center gap-1.5 rounded-xl bg-black/10 border border-white/5 px-2.5 py-2">
                 {reactions.map((r) => (
-                  <button
-                    key={r.emoji}
-                    onClick={() => toggleReaction(r.emoji)}
-                    disabled={!user}
-                    title={user ? 'Поставить реакцию' : 'Нужна авторизация'}
-                    className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs border transition-colors disabled:cursor-not-allowed ${
-                      r.mine
-                        ? 'border-accent/50 bg-accent/10 text-accent'
-                        : 'border-transparent bg-white/5 text-text-light/70 hover:text-accent hover:border-accent/30'
-                    }`}
-                  >
-                    <span aria-hidden="true">{r.emoji}</span>
-                    <span className="tabular-nums">{r.count}</span>
-                  </button>
+                  <div key={r.emoji} className="relative group">
+                    {r.names?.length > 0 && (
+                      <div
+                        role="tooltip"
+                        className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 z-20 hidden group-hover:block w-max max-w-[220px] px-2.5 py-1.5 rounded-lg glass text-[11px] leading-snug text-text-light text-center"
+                      >
+                        {namesLabel(r.names)}
+                      </div>
+                    )}
+
+                    <button
+                      onClick={() => toggleReaction(r.emoji)}
+                      disabled={!user}
+                      title={user ? 'Поставить реакцию' : 'Нужна авторизация'}
+                      className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs border transition-colors disabled:cursor-not-allowed ${
+                        r.mine
+                          ? 'border-accent/50 bg-accent/10 text-accent'
+                          : 'border-transparent bg-white/5 text-text-light/70 hover:text-accent hover:border-accent/30'
+                      }`}
+                    >
+                      <span aria-hidden="true">{r.emoji}</span>
+                      <span className="tabular-nums">{r.count}</span>
+                    </button>
+                  </div>
                 ))}
 
                 {user && !post.isDeleted && (
@@ -342,6 +352,13 @@ function AuthorPane({ author }) {
       </div>
     </div>
   )
+}
+
+const NAMES_TOOLTIP_LIMIT = 15
+
+function namesLabel(names) {
+  if (names.length <= NAMES_TOOLTIP_LIMIT) return names.join(', ')
+  return `${names.slice(0, NAMES_TOOLTIP_LIMIT).join(', ')} и ещё ${names.length - NAMES_TOOLTIP_LIMIT}`
 }
 
 function ActionButton({ children, onClick, danger, className = '' }) {

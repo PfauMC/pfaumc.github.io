@@ -20,7 +20,13 @@ export class GameApiError extends Error {
 export async function gameApi(path, { signal } = {}) {
   let res
   try {
-    res = await fetch(`${BASE}/api/v1${path}`, { signal, headers: { Accept: 'application/json' } })
+    // no-store: у /monitor стоит max-age=300, иначе перезагрузка страницы
+    // показывает те же цифры из кэша браузера.
+    res = await fetch(`${BASE}/api/v1${path}`, {
+      signal,
+      cache: 'no-store',
+      headers: { Accept: 'application/json' },
+    })
   } catch (e) {
     if (e.name === 'AbortError') throw e
     throw new GameApiError('Нет связи с игровым сервером', 0)

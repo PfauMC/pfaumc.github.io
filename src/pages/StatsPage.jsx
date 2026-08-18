@@ -31,7 +31,9 @@ export default function StatsPage() {
     return () => clearInterval(id)
   }, [reload, refreshOnline])
 
-  const onlineCount = online?.count ?? 0
+  // Цифра — из пинга сервера (monitor.online): это ровно то число, что видно в
+  // игре. Счётчик сессий бэкенда занижает — им пользуемся только для списка имён.
+  const onlineCount = monitor?.online ?? online?.count ?? 0
   const maxOnline = monitor?.max_online ?? null
   const fillPct = maxOnline ? Math.round((onlineCount / maxOnline) * 100) : 0
   const players = online?.players ?? []
@@ -98,14 +100,6 @@ export default function StatsPage() {
                 <div className="sm:ml-auto flex flex-col items-start sm:items-end gap-1 flex-shrink-0">
                   <div className="text-text-light/50 text-xs">Последняя проверка</div>
                   <div className="font-mono text-sm text-text-light">{formatTime(monitor?.checked_at)}</div>
-                  <button
-                    onClick={reload}
-                    disabled={loading}
-                    className="text-accent hover:text-accent/80 text-xs font-medium transition-colors disabled:opacity-40 flex items-center gap-1 mt-1"
-                  >
-                    <RefreshIcon className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-                    Обновить
-                  </button>
                 </div>
               </div>
             </div>
@@ -116,7 +110,7 @@ export default function StatsPage() {
                 <div className="text-text-light/50 text-xs font-mono uppercase tracking-widest mb-3">Игроков онлайн</div>
                 <div className="flex items-end gap-3 mb-4">
                   <div className="font-mono text-5xl font-bold text-heading tabular-nums">
-                    {online ? onlineCount : <span className="opacity-30">—</span>}
+                    {monitor || online ? onlineCount : <span className="opacity-30">—</span>}
                   </div>
                   {maxOnline && (
                     <div className="font-mono text-2xl text-text-light/40 mb-1 tabular-nums">/ {maxOnline}</div>
@@ -282,16 +276,6 @@ function SpinIcon({ className = '' }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
       <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-    </svg>
-  )
-}
-
-function RefreshIcon({ className = '' }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-      <polyline points="23 4 23 10 17 10" />
-      <polyline points="1 20 1 14 7 14" />
-      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
     </svg>
   )
 }

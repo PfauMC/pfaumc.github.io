@@ -31,6 +31,7 @@ export function ForumAuthProvider({ children }) {
     if (!document.cookie.includes('pfau_csrf=')) {
       if (mounted.current) {
         setUser(null)
+        setAccounts([])
         setUnreadCount(0)
         setCanViewMultiacc(false)
         setLoading(false)
@@ -42,12 +43,16 @@ export function ForumAuthProvider({ children }) {
       const data = await api('/auth/me')
       if (!mounted.current || started !== epoch.current) return data
       setUser(data.user)
+      // Список аккаунтов приезжает вместе с сессией: отдельным запросом он мог уйти
+      // только после ответа на этот, то есть всегда вторым кругом.
+      setAccounts(data.accounts ?? [])
       setUnreadCount(data.unreadCount ?? 0)
       setCanViewMultiacc(Boolean(data.canViewMultiacc))
       return data
     } catch {
       if (mounted.current && started === epoch.current) {
         setUser(null)
+        setAccounts([])
         setCanViewMultiacc(false)
       }
       return null
@@ -58,31 +63,17 @@ export function ForumAuthProvider({ children }) {
 
   useEffect(() => { refresh() }, [refresh])
 
-  const refreshAccounts = useCallback(async () => {
-    const started = epoch.current
-    try {
-      const data = await api('/auth/accounts')
-      if (mounted.current && started === epoch.current) setAccounts(data.accounts ?? [])
-    } catch {
-      // Список аккаунтов не критичен: сессия рабочая и без него.
-    }
-  }, [])
-
   const activeUuid = user?.uuid
   const deviceReported = useRef(false)
+  // Отпечаток -- наблюдение, на экране от него ничего не зависит. Отправленный сразу,
+  // он занимает соединение (плюс preflight) в тот момент, когда страница ещё грузит
+  // то, что видно, поэтому ждёт простоя.
   useEffect(() => {
     if (!activeUuid || deviceReported.current) return
     deviceReported.current = true
-    reportDevice()
+    const whenIdle = window.requestIdleCallback ?? ((fn) => setTimeout(fn, 1000))
+    whenIdle(() => reportDevice())
   }, [activeUuid])
-
-  useEffect(() => {
-    if (!activeUuid) {
-      setAccounts([])
-      return
-    }
-    refreshAccounts()
-  }, [activeUuid, refreshAccounts])
 
   const switchAccount = useCallback(async (uuid) => {
     const data = await api('/auth/switch', { method: 'POST', body: { uuid } })
@@ -112,6 +103,7 @@ export function ForumAuthProvider({ children }) {
     await api('/auth/logout', { method: 'POST' })
     epoch.current += 1
     setUser(null)
+    setAccounts([])
     setUnreadCount(0)
   }, [])
 
@@ -119,6 +111,7 @@ export function ForumAuthProvider({ children }) {
     await api('/auth/logout-all', { method: 'POST' })
     epoch.current += 1
     setUser(null)
+    setAccounts([])
     setUnreadCount(0)
   }, [])
 

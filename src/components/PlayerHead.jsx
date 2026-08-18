@@ -15,10 +15,11 @@ import { avatarUrl } from '../utils/playerFormat'
  * входов игроков, и пока оно неполное, буква-заглушка выглядела бы поломкой.
  *
  * Если скин не передали, но известен игрок — добираем его профилем: в списках
- * игроков скина уже нет.
+ * игроков скина уже нет. `hydrate={false}` отключает добор там, где профиль уже
+ * прочитан целиком: пустой скин там означает «скина нет», а не «мы его не спросили».
  */
-export default function PlayerHead({ skin, uuid, name, size = 40, className = '' }) {
-  const hydrated = usePlayerMeta(skin ? null : uuid)
+export default function PlayerHead({ skin, uuid, name, size = 40, hydrate = true, className = '' }) {
+  const hydrated = usePlayerMeta(hydrate && !skin ? uuid : null)
   const url = skin?.url ?? hydrated?.skin?.url
   const hat = useHatLayer(url)
   const box = { width: size, height: size, imageRendering: 'pixelated' }

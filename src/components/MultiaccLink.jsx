@@ -22,11 +22,18 @@ export default function MultiaccLink({ nick }) {
 
     const controller = new AbortController()
     let cancelled = false
-    gameApi(`/multiacc?nicks=${encodeURIComponent(nick)}`, { withSession: true, signal: controller.signal })
-      .then((doc) => { if (!cancelled) setGraph(doc) })
-      // Право могли отозвать после входа, игрока — спрятать иммунитетом. И то, и другое
-      // выглядит одинаково: строки просто нет.
-      .catch(() => {})
+    // Обход связей — самый дорогой запрос на странице, а строка по нему появляется
+    // сбоку и не задерживает ничего. Ждём простоя, чтобы он не толкался с тем, что
+    // на экране.
+    const whenIdle = window.requestIdleCallback ?? ((fn) => setTimeout(fn, 500))
+    whenIdle(() => {
+      if (cancelled) return
+      gameApi(`/multiacc?nicks=${encodeURIComponent(nick)}`, { withSession: true, signal: controller.signal })
+        .then((doc) => { if (!cancelled) setGraph(doc) })
+        // Право могли отозвать после входа, игрока — спрятать иммунитетом. И то, и другое
+        // выглядит одинаково: строки просто нет.
+        .catch(() => {})
+    })
 
     return () => {
       cancelled = true

@@ -30,8 +30,8 @@ export default function CategoryPage() {
 
   const category = useApiData(`/forum/categories/${encodeURIComponent(slug)}`)
   const topics = useApiData(`/forum/categories/${encodeURIComponent(slug)}/topics?page=${page}&sort=${sort}`)
-  // Форум города: сервер пока не даёт главам права создавать темы (см. docs/forum-auth-api.md),
-  // поэтому распознаём это на клиенте — по совпадению forumCategorySlug города игрока.
+  // Форум города: сервер уже пускает туда жителей города (см. docs/forum-auth-api.md),
+  // здесь только показываем кнопку главе — по совпадению forumCategorySlug города игрока.
   const mine = useApiData(user ? '/mine' : null, { fetcher: citiesApi })
   const isOwnCityCategory = mine.data?.city?.isMayor && mine.data.city.forumCategorySlug === slug
   const canCreateTopic = isModerator || isOwnCityCategory

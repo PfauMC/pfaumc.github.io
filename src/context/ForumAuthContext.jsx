@@ -127,6 +127,7 @@ export function ForumAuthProvider({ children }) {
       logout,
       logoutEverywhere,
       isModerator: Boolean(user?.role?.canModerate),
+      canViewHidden: Boolean(user?.role?.canViewHidden),
       accounts,
       activeAccount: accounts.find((a) => a.isActive) ?? user,
       switchAccount,

@@ -282,7 +282,7 @@ function AuthorPane({ author }) {
           <Link
             to={`/u/${encodeURIComponent(author.name)}`}
             className="font-mono text-sm font-semibold truncate hover:underline"
-            style={{ color: author.role.color }}
+            style={{ color: author.role?.color }}
           >
             {author.name}
           </Link>
@@ -305,17 +305,19 @@ function AuthorPane({ author }) {
         <Link
           to={`/u/${encodeURIComponent(author.name)}`}
           className="font-mono text-sm font-semibold break-all hover:underline leading-tight"
-          style={{ color: author.role.color }}
+          style={{ color: author.role?.color }}
         >
           {author.name}
         </Link>
 
-        <span
-          className="w-full rounded-md px-2 py-1 text-[11px] font-medium leading-none"
-          style={{ color: author.role.color, background: `${author.role.color}22` }}
-        >
-          {author.role.title}
-        </span>
+        {author.role && (
+          <span
+            className="w-full rounded-md px-2 py-1 text-[11px] font-medium leading-none"
+            style={{ color: author.role.color, background: `${author.role.color}22` }}
+          >
+            {author.role.title}
+          </span>
+        )}
 
         <dl className="w-full mt-1 space-y-0.5 text-[11px] text-text-light/40">
           {author.postCount != null && (

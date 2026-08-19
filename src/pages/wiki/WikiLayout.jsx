@@ -47,9 +47,16 @@ export default function WikiLayout() {
     }
     document.addEventListener('keydown', onKeyDown)
 
+    // Если окно расширили за пределы мобильного брейкпоинта, пока дровер
+    // открыт — сбрасываем состояние, иначе overflow:hidden зависает навсегда.
+    const desktopQuery = window.matchMedia('(min-width: 850px)')
+    const onDesktop = (e) => { if (e.matches) setSidebarOpen(false) }
+    desktopQuery.addEventListener('change', onDesktop)
+
     return () => {
       document.body.style.overflow = prevOverflow
       document.removeEventListener('keydown', onKeyDown)
+      desktopQuery.removeEventListener('change', onDesktop)
     }
   }, [sidebarOpen])
 

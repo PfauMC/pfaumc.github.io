@@ -15,16 +15,9 @@ export function formatPlaytime(totalMinutes) {
   const min = Math.max(0, Math.round(totalMinutes || 0))
   if (min < 60) return `${min} мин`
 
-  const hours = min / 60
-  if (hours < 24) {
-    const rounded = Math.round(hours * 10) / 10
-    const str = Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1).replace('.', ',')
-    return `${str} ч`
-  }
-
-  const days = Math.floor(min / 1440)
-  const remHours = Math.round((min % 1440) / 60)
-  return remHours > 0 ? `${days} д. ${remHours} ч` : `${days} д.`
+  const hours = Math.floor(min / 60)
+  const remMin = min % 60
+  return remMin > 0 ? `${hours} ч ${remMin} мин` : `${hours} ч`
 }
 
 export function formatRelativeTime(isoDate) {

@@ -147,6 +147,16 @@ function ApplicationForm({ onClose, onSubmitted }) {
   const set = (patch) => setForm((f) => ({ ...f, ...patch }))
 
   const submit = async () => {
+    const missing = []
+    if (form.name.trim().length < 3) missing.push('название')
+    if (form.description.trim().length < 10) missing.push('описание')
+    if (!xOk) missing.push('координата X')
+    if (!zOk) missing.push('координата Z')
+    if (missing.length) {
+      setError(`Заполните обязательные поля: ${missing.join(', ')}.`)
+      return
+    }
+
     setBusy(true)
     setError(null)
     try {
@@ -170,7 +180,6 @@ function ApplicationForm({ onClose, onSubmitted }) {
 
   const xOk = form.x.trim() !== '' && Number.isFinite(Number(form.x))
   const zOk = form.z.trim() !== '' && Number.isFinite(Number(form.z))
-  const canSubmit = form.name.trim().length >= 3 && form.description.trim().length >= 10 && xOk && zOk
 
   return (
     <Modal
@@ -179,14 +188,14 @@ function ApplicationForm({ onClose, onSubmitted }) {
       footer={
         <>
           <button onClick={onClose} className="btn-ghost text-sm py-2 px-4" disabled={busy}>Отмена</button>
-          <button onClick={submit} className="btn-primary text-sm py-2 px-4" disabled={busy || !canSubmit}>
+          <button onClick={submit} className="btn-primary text-sm py-2 px-4" disabled={busy}>
             {busy ? 'Отправляем…' : 'Отправить заявку'}
           </button>
         </>
       }
     >
       <div className="space-y-4">
-        <Field label="Название города">
+        <Field label="Название города *">
           <input
             value={form.name}
             onChange={(e) => set({ name: e.target.value.slice(0, 60) })}
@@ -196,7 +205,7 @@ function ApplicationForm({ onClose, onSubmitted }) {
           />
         </Field>
 
-        <Field label="Краткое описание">
+        <Field label="Краткое описание *">
           <textarea
             value={form.description}
             onChange={(e) => set({ description: e.target.value.slice(0, 1000) })}
@@ -206,7 +215,7 @@ function ApplicationForm({ onClose, onSubmitted }) {
         </Field>
 
         <div className="grid grid-cols-3 gap-3">
-          <Field label="X">
+          <Field label="X *">
             <input
               type="number"
               value={form.x}
@@ -222,7 +231,7 @@ function ApplicationForm({ onClose, onSubmitted }) {
               className={inputClass}
             />
           </Field>
-          <Field label="Z">
+          <Field label="Z *">
             <input
               type="number"
               value={form.z}

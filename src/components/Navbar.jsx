@@ -30,6 +30,16 @@ export default function Navbar() {
 
   useEffect(() => {
     if (!menuOpen) return
+    // Если окно расширили за пределы мобильного брейкпоинта, пока меню
+    // открыто — закрываем его, иначе overflow:hidden зависает навсегда.
+    const desktopQuery = window.matchMedia('(min-width: 850px)')
+    const onDesktop = (e) => { if (e.matches) setMenuOpen(false) }
+    desktopQuery.addEventListener('change', onDesktop)
+    return () => desktopQuery.removeEventListener('change', onDesktop)
+  }, [menuOpen])
+
+  useEffect(() => {
+    if (!menuOpen) return
     const onKeyDown = (e) => {
       if (e.key === 'Escape') closeMenu()
     }

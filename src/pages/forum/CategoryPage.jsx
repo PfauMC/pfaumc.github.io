@@ -34,9 +34,11 @@ export default function CategoryPage() {
   // здесь только показываем кнопку главе — по совпадению forumCategorySlug города игрока.
   const mine = useApiData(user ? '/mine' : null, { fetcher: citiesApi })
   const isOwnCityCategory = mine.data?.city?.isMayor && mine.data.city.forumCategorySlug === slug
-  const canCreateTopic = isModerator || isOwnCityCategory
 
   const info = category.data?.category
+  // Модератор — всегда. Глава своего города — в форуме своего города. Обычный игрок —
+  // только если хелпер открыл категорию всем при создании (info.isOpen, см. CategoryForm).
+  const canCreateTopic = Boolean(isModerator || isOwnCityCategory || (info?.isOpen && user))
   useSEO(info ? `${info.title} — Форум PfauMC` : 'Форум PfauMC', info?.description || undefined)
 
   const setParam = (patch) => {

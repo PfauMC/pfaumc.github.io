@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useSEO } from '../../hooks/useSEO'
 import { useApiData } from '../../hooks/useApiData'
 import { usePlayerSearch } from '../../hooks/usePlayerSearch'
@@ -10,13 +10,30 @@ import { Breadcrumbs, ListSkeleton, ErrorState, UserHead, FormError, ConfirmDial
 
 export default function CityPage() {
   const { slug } = useParams()
-  const { user } = useForumAuth()
+  const navigate = useNavigate()
+  const { user, isModerator } = useForumAuth()
   const city = useApiData(`/${encodeURIComponent(slug)}`, { fetcher: citiesApi })
   const info = city.data?.city
 
   useSEO(info ? `${info.name} — города PfauMC` : 'Город — PfauMC', info?.description || undefined)
 
   const isMayor = Boolean(user && info?.mayor?.id === user.uuid)
+  const canDelete = isMayor || isModerator
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState(null)
+
+  const deleteCity = async () => {
+    setDeleting(true)
+    setDeleteError(null)
+    try {
+      await citiesApi(`/${slug}`, { method: 'DELETE' })
+      navigate('/cities')
+    } catch (e) {
+      setDeleteError(e.message)
+      setDeleting(false)
+    }
+  }
 
   if (city.loading && !city.data) {
     return (
@@ -52,12 +69,21 @@ export default function CityPage() {
               <h1 className="font-mono text-2xl sm:text-3xl font-bold text-heading mb-1">{info.name}</h1>
               <p className="text-xs text-text-light/50">Основан {formatDateTime(info.createdAt)}</p>
             </div>
-            {info.forumCategorySlug && (
-              <Link to={`/forum/c/${info.forumCategorySlug}`} className="btn-ghost text-sm py-2 px-4 flex-shrink-0">
-                Форум города
-              </Link>
-            )}
+            <div className="flex items-center gap-2 flex-shrink-0">
+              {info.forumCategorySlug && (
+                <Link to={`/forum/c/${info.forumCategorySlug}`} className="btn-ghost text-sm py-2 px-4">
+                  Форум города
+                </Link>
+              )}
+              {canDelete && (
+                <button onClick={() => setConfirmDelete(true)} className="btn-ghost text-sm py-2 px-4 text-red-400 hover:bg-red-500/10">
+                  Удалить город
+                </button>
+              )}
+            </div>
           </div>
+
+          <FormError error={deleteError} />
 
           {info.description && <p className="text-text-light mt-4 leading-relaxed">{info.description}</p>}
 
@@ -82,6 +108,17 @@ export default function CityPage() {
 
         <ResidentsSection city={info} isMayor={isMayor} onChanged={city.reload} />
       </div>
+
+      {confirmDelete && (
+        <ConfirmDialog
+          title="Удалить город?"
+          text={`«${info.name}» вместе со списком жителей исчезнет безвозвратно. Форум города скроется, как обычная удалённая категория — модератор сможет его восстановить.`}
+          confirmLabel="Удалить"
+          busy={deleting}
+          onClose={() => setConfirmDelete(false)}
+          onConfirm={deleteCity}
+        />
+      )}
     </div>
   )
 }

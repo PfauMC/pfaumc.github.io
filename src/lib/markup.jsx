@@ -29,8 +29,16 @@ const QUOTE_BLOCK = /\[quote(?:=([^\]\n]{1,32}))?\]([\s\S]*?)\[\/quote\]/gi
 const HEADING = /^(#{1,4})\s+(.*)$/
 
 const ALLOWED_TAGS = new Set([
-  'b', 'bold', 'i', 'italic', 'em', 'u', 'underlined', 'st', 'strikethrough', 'color', 'gradient', 'size',
+  'b', 'bold', 'i', 'italic', 'em', 'u', 'underlined', 'st', 'strikethrough', 'color', 'gradient', 'size', 'spoiler',
 ])
+
+// <spoiler> — скрытый текст, видимый только персоналу (хелпер и выше). Завести
+// его тоже может только стафф (validate_markup_tokens_with на бэкенде), так что
+// автор без роли никогда не окажется по другую сторону своего же тега. Права
+// проверяются бэкендом при отдаче сообщения: игроку без доступа сервер присылает
+// уже пустой `<spoiler:hidden></spoiler>` — реального текста в ответе нет вообще,
+// так что вскрыть его через DevTools нельзя.
+const SPOILER_HIDDEN_ARG = 'hidden'
 
 // Подпись под сообщением — тот же движок тегов, но со своим (более узким по
 // духу, шире по составу) набором: без градиента/размера, зато с выравниванием
@@ -213,6 +221,28 @@ function renderTags(nodes, keyPrefix) {
             {kids}
           </span>
         )
+      case 'spoiler': {
+        if (node.args[0] === SPOILER_HIDDEN_ARG || node.children.length === 0) {
+          return (
+            <span
+              key={key}
+              className="inline-flex items-center gap-2 align-middle px-2.5 py-1 my-0.5 rounded-lg border border-dashed border-white/15 bg-white/5 text-text-light/50 select-none"
+              title="Доступно только персоналу"
+            >
+              <span aria-hidden="true">🙈</span>
+              <span className="leading-tight">
+                <span className="block text-xs font-medium text-text-light/70">Скрытый текст</span>
+                <span className="block text-[10px] italic">Доступно только персоналу</span>
+              </span>
+            </span>
+          )
+        }
+        return (
+          <span key={key} className="border-b border-dashed border-accent/50" title="Видно только персоналу">
+            {kids}
+          </span>
+        )
+      }
       case 'align': {
         const dir = ALIGN_VALUES.has(node.args[0]) ? node.args[0] : 'left'
         return (

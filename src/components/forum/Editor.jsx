@@ -1,5 +1,6 @@
 import { useId, useRef, useState } from 'react'
 import { renderMarkup } from '../../lib/markup'
+import { useForumAuth } from '../../context/ForumAuthContext'
 import { FormError } from './ui'
 import { ColorPopup } from './FormatPopups'
 import EmojiPicker from './EmojiPicker'
@@ -41,6 +42,7 @@ export default function Editor({
   draftStatus = null,
   onSaveDraft = null,
 }) {
+  const { canViewHidden } = useForumAuth()
   const [preview, setPreview] = useState(false)
   const [openPopup, setOpenPopup] = useState(null) // 'heading' | 'size' | 'color' | 'emoji' | 'more' | null
   const textareaRef = useRef(null)
@@ -101,6 +103,45 @@ export default function Editor({
       el.focus()
       el.setSelectionRange(caret, caret)
     })
+  }
+
+  const SPOILER_OPEN = '<spoiler>'
+  const SPOILER_CLOSE = '</spoiler>'
+
+  /** Иконка глаза: оборачивает выделение в <spoiler>, повторный клик по уже скрытому — снимает. */
+  const toggleSpoiler = () => {
+    const el = textareaRef.current
+    if (!el) return
+    const { selectionStart: start, selectionEnd: end } = el
+
+    // Выделение сидит внутри обёртки — снимаем сами теги вокруг него.
+    const before = value.slice(Math.max(0, start - SPOILER_OPEN.length), start)
+    const after = value.slice(end, end + SPOILER_CLOSE.length)
+    if (before === SPOILER_OPEN && after === SPOILER_CLOSE) {
+      const next = value.slice(0, start - SPOILER_OPEN.length) + value.slice(start, end) + value.slice(end + SPOILER_CLOSE.length)
+      setValueClamped(next)
+      const caret = start - SPOILER_OPEN.length
+      requestAnimationFrame(() => {
+        el.focus()
+        el.setSelectionRange(caret, caret + (end - start))
+      })
+      return
+    }
+
+    // Выделены сами теги вместе с содержимым — тоже снимаем.
+    const selected = value.slice(start, end)
+    if (selected.startsWith(SPOILER_OPEN) && selected.endsWith(SPOILER_CLOSE) && selected.length >= SPOILER_OPEN.length + SPOILER_CLOSE.length) {
+      const stripped = selected.slice(SPOILER_OPEN.length, selected.length - SPOILER_CLOSE.length)
+      const next = value.slice(0, start) + stripped + value.slice(end)
+      setValueClamped(next)
+      requestAnimationFrame(() => {
+        el.focus()
+        el.setSelectionRange(start, start + stripped.length)
+      })
+      return
+    }
+
+    applyWrap(SPOILER_OPEN, SPOILER_CLOSE)
   }
 
   const insertAtCursor = (text) => {
@@ -208,6 +249,20 @@ export default function Editor({
         <ToolButton title="Ссылка" disabled={toolsDisabled} onClick={() => applyWrap('[', '](https://)', 'текст')}>
           🔗
         </ToolButton>
+
+        {/* Заводить скрытый текст может только стафф — бэкенд всё равно отклонит
+            тег от остальных (validate_markup_tokens_with), но без кнопки не
+            вводим в заблуждение обычного игрока, который потом не увидит
+            свой же текст обратно (redact_spoilers прячет его от всех ниже порога). */}
+        {canViewHidden && (
+          <ToolButton
+            title="Скрытый текст — видно только персоналу (хелпер и выше)"
+            disabled={toolsDisabled}
+            onClick={toggleSpoiler}
+          >
+            👁
+          </ToolButton>
+        )}
 
         <PopupTrigger
           label="😊"

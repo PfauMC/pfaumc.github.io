@@ -467,6 +467,7 @@ export function CategoryForm({ category, groups = [], defaultGroupId = '', onClo
     groupId: category?.groupId ?? defaultGroupId ?? '',
     isVisible: category?.isVisible ?? true,
     isActive: category?.isActive ?? true,
+    isOpen: category?.isOpen ?? false,
   })
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(null)
@@ -539,6 +540,12 @@ export function CategoryForm({ category, groups = [], defaultGroupId = '', onClo
 
         <Toggle checked={form.isVisible} onChange={(v) => set({ isVisible: v })} label="Видна игрокам" />
         <Toggle checked={form.isActive} onChange={(v) => set({ isActive: v })} label="Открыта для новых сообщений" />
+        {/* Только при создании: бэкенд не даёт поменять это потом (update_category
+            поле не трогает), поэтому в форме редактирования тогл не показываем —
+            он бы выглядел рабочим, но ничего бы не сохранял. */}
+        {!category && (
+          <Toggle checked={form.isOpen} onChange={(v) => set({ isOpen: v })} label="Темы может создавать любой игрок, не только модератор" />
+        )}
 
         <FormError error={error} />
       </div>

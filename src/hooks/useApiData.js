@@ -7,13 +7,13 @@ import { api } from '../lib/forumApi'
  */
 export function useApiData(path, { skip = false, fetcher = api } = {}) {
   const [data, setData] = useState(null)
-  const [loading, setLoading] = useState(!skip && Boolean(path))
+  const [loading, setLoading] = useState(!skip && path !== null)
   const [error, setError] = useState(null)
   const [nonce, setNonce] = useState(0)
   const abortRef = useRef(null)
 
   useEffect(() => {
-    if (!path || skip) {
+    if (path === null || skip) {
       setLoading(false)
       return undefined
     }

@@ -20,7 +20,7 @@ export default function CitiesPage() {
   const { user, loading: authLoading } = useForumAuth()
   const [applying, setApplying] = useState(false)
 
-  const cities = useApiData('/cities', { fetcher: citiesApi })
+  const cities = useApiData('', { fetcher: citiesApi })
   const mine = useApiData(user ? '/mine' : null, { fetcher: citiesApi })
   const applications = useApiData(user ? '/applications/mine' : null, { fetcher: citiesApi })
 

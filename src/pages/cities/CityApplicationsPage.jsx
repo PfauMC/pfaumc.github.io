@@ -138,7 +138,7 @@ function ChecklistItem({ ok, children }) {
 function ApplicationCard({ application, busy, onApprove, onReject }) {
   const c = application.checklist
   const days = c ? Math.floor(c.playtimeSeconds / 86400) : null
-  const autoOk = c && c.playtimeOk && c.notMayorOk && c.spawnOk && c.nearestOk
+  const autoOk = c && c.notMayorOk && c.spawnOk && c.nearestOk
   const [buildingsConfirmed, setBuildingsConfirmed] = useState(false)
 
   return (
@@ -165,7 +165,7 @@ function ApplicationCard({ application, busy, onApprove, onReject }) {
 
       {c && (
         <ul className="grid sm:grid-cols-2 gap-x-4 gap-y-1.5 text-sm mb-3 p-3 rounded-xl bg-black/10 border border-white/5">
-          <ChecklistItem ok={c.playtimeOk}>Глава играет больше 7 дней ({days} дн.)</ChecklistItem>
+          <ChecklistItem ok={c.playtimeOk}>Глава играет больше 7 дней ({days} дн.) — проверить вручную</ChecklistItem>
           <ChecklistItem ok={c.notMayorOk}>Ещё не глава другого города</ChecklistItem>
           <ChecklistItem ok={buildingsConfirmed}>Больше 5 построек — проверить в игре</ChecklistItem>
           <ChecklistItem ok={c.spawnOk}>От спавна {Math.round(c.spawnDistance)} блоков (нужно ≥1000)</ChecklistItem>

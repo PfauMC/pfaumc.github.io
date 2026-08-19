@@ -3,6 +3,7 @@ import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { useSEO } from '../../hooks/useSEO'
 import { useApiData } from '../../hooks/useApiData'
 import { useForumAuth } from '../../context/ForumAuthContext'
+import { citiesApi } from '../../lib/citiesApi'
 import {
   formatCount, formatSmartTime, COUNT_REPLIES, COUNT_VIEWS,
 } from '../../lib/forumFormat'
@@ -21,7 +22,7 @@ const SORTS = [
 export default function CategoryPage() {
   const { slug } = useParams()
   const [params, setParams] = useSearchParams()
-  const { isModerator } = useForumAuth()
+  const { user, isModerator } = useForumAuth()
   const [creating, setCreating] = useState(false)
 
   const page = Number.parseInt(params.get('page') ?? '1', 10) || 1
@@ -29,6 +30,11 @@ export default function CategoryPage() {
 
   const category = useApiData(`/forum/categories/${encodeURIComponent(slug)}`)
   const topics = useApiData(`/forum/categories/${encodeURIComponent(slug)}/topics?page=${page}&sort=${sort}`)
+  // Форум города: сервер уже пускает туда жителей города (см. docs/forum-auth-api.md),
+  // здесь только показываем кнопку главе — по совпадению forumCategorySlug города игрока.
+  const mine = useApiData(user ? '/mine' : null, { fetcher: citiesApi })
+  const isOwnCityCategory = mine.data?.city?.isMayor && mine.data.city.forumCategorySlug === slug
+  const canCreateTopic = isModerator || isOwnCityCategory
 
   const info = category.data?.category
   useSEO(info ? `${info.title} — Форум PfauMC` : 'Форум PfauMC', info?.description || undefined)
@@ -69,7 +75,7 @@ export default function CategoryPage() {
           )}
         </div>
 
-        {isModerator && info && (
+        {canCreateTopic && info && (
           <button onClick={() => setCreating(true)} className="btn-primary text-sm py-2 px-4 flex-shrink-0">
             + Тема
           </button>
@@ -104,8 +110,8 @@ export default function CategoryPage() {
         <EmptyState
           icon="💬"
           title="Тем пока нет"
-          text={isModerator ? 'Создайте первую тему в этой категории.' : 'В этой категории ещё ничего не обсуждали.'}
-          action={isModerator ? <button onClick={() => setCreating(true)} className="btn-primary text-sm py-2 px-4">Создать тему</button> : null}
+          text={canCreateTopic ? 'Создайте первую тему в этой категории.' : 'В этой категории ещё ничего не обсуждали.'}
+          action={canCreateTopic ? <button onClick={() => setCreating(true)} className="btn-primary text-sm py-2 px-4">Создать тему</button> : null}
         />
       ) : (
         <>

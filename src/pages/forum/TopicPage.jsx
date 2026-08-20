@@ -425,12 +425,16 @@ function ModeratorMenu({ topic, onAction }) {
         <>
           <div className="fixed inset-0 z-30" onClick={() => setOpen(false)} aria-hidden="true" />
           <div role="menu" className="absolute right-0 top-full mt-2 z-40 w-52 py-1 rounded-xl glass overflow-hidden">
-            {item('Изменить заголовок', 'rename')}
-            {item(topic.isPinned ? 'Открепить' : 'Закрепить', 'pin')}
-            {item(topic.isLocked ? 'Открыть тему' : 'Закрыть тему', 'lock')}
-            {item('Задержка ответов', 'cooldown')}
-            {item('Переместить', 'move')}
-            {topic.isArchived ? item('Вернуть из архива', 'unarchive') : item('В архив', 'archive')}
+            {!topic.isDeleted && (
+              <>
+                {item('Изменить заголовок', 'rename')}
+                {item(topic.isPinned ? 'Открепить' : 'Закрепить', 'pin')}
+                {item(topic.isLocked ? 'Открыть тему' : 'Закрыть тему', 'lock')}
+                {item('Задержка ответов', 'cooldown')}
+                {item('Переместить', 'move')}
+                {topic.isArchived ? item('Вернуть из архива', 'unarchive') : item('В архив', 'archive')}
+              </>
+            )}
             {topic.isDeleted ? item('Восстановить', 'restore') : item('Удалить тему', 'delete')}
           </div>
         </>

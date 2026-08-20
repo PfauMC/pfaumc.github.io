@@ -1,12 +1,12 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useSEO } from '../../hooks/useSEO'
 import { useApiData } from '../../hooks/useApiData'
 import { useForumAuth } from '../../context/ForumAuthContext'
 import { api } from '../../lib/forumApi'
 import { formatSmartTime, REPORT_REASON_LABELS, MOD_ACTION_LABELS } from '../../lib/forumFormat'
 import {
-  Breadcrumbs, ListSkeleton, ErrorState, EmptyState, Pagination, UserHead, RoleBadge, FormError,
+  Breadcrumbs, ListSkeleton, ErrorState, EmptyState, Pagination, UserHead, RoleBadge, FormError, inputClass,
 } from '../../components/forum/ui'
 
 function ModShell({ title, crumb, children }) {
@@ -158,14 +158,105 @@ export function ReportsPage() {
 }
 
 /* ===== Журнал модерации ===== */
+
+// Что можно восстановить прямо из журнала: по паре (action, targetType) — эндпоинт
+// и человекочитаемое имя того, что вернётся.
+const RESTORE_FROM_LOG = {
+  'post.delete': { kind: 'posts', label: 'сообщение' },
+  'topic.delete': { kind: 'topics', label: 'тему' },
+}
+
 export function ModLogPage() {
   useSEO('Журнал модерации — Форум PfauMC')
   const { isModerator } = useForumAuth()
-  const [page, setPage] = useState(1)
-  const { data, loading, error, reload } = useApiData(isModerator ? `/forum/moderation-log?page=${page}` : null)
+  const [params, setParams] = useSearchParams()
+  const page = Number.parseInt(params.get('page') ?? '1', 10) || 1
+  const [filtersOpen, setFiltersOpen] = useState(
+    Boolean(params.get('action') || params.get('nickname') || params.get('from') || params.get('to'))
+  )
+  const [busyId, setBusyId] = useState(null)
+  const [actionError, setActionError] = useState(null)
+
+  const query = new URLSearchParams(params)
+  query.set('page', String(page))
+  const { data, loading, error, reload } = useApiData(isModerator ? `/forum/moderation-log?${query.toString()}` : null)
+
+  const setParam = (key, value) => {
+    const next = new URLSearchParams(params)
+    if (!value) next.delete(key)
+    else next.set(key, value)
+    next.delete('page')
+    setParams(next)
+  }
+
+  const restore = async (entry) => {
+    const target = RESTORE_FROM_LOG[entry.action]
+    if (!target) return
+    setBusyId(entry.id)
+    setActionError(null)
+    try {
+      await api(`/forum/${target.kind}/${entry.targetId}/restore`, { method: 'POST' })
+      reload()
+    } catch (e) {
+      setActionError(e.message)
+    } finally {
+      setBusyId(null)
+    }
+  }
 
   return (
     <ModShell title="Журнал модерации" crumb="Журнал">
+      <input
+        value={params.get('q') ?? ''}
+        onChange={(e) => setParam('q', e.target.value.slice(0, 100))}
+        placeholder="Поиск по нику, действию, тексту…"
+        className={`${inputClass} mb-3`}
+      />
+
+      <button
+        onClick={() => setFiltersOpen((o) => !o)}
+        aria-expanded={filtersOpen}
+        className="text-sm text-text-light/60 hover:text-accent transition-colors mb-3"
+      >
+        {filtersOpen ? '− Фильтры' : '+ Фильтры'}
+      </button>
+
+      {filtersOpen && (
+        <div className="card mb-5 grid gap-3 sm:grid-cols-2">
+          <label className="block">
+            <span className="block text-xs text-text-light/60 mb-1.5">Действие</span>
+            <select value={params.get('action') ?? ''} onChange={(e) => setParam('action', e.target.value)} className={inputClass}>
+              <option value="">Любое</option>
+              {Object.entries(MOD_ACTION_LABELS).map(([key, label]) => (
+                <option key={key} value={key}>{label}</option>
+              ))}
+            </select>
+          </label>
+
+          <label className="block">
+            <span className="block text-xs text-text-light/60 mb-1.5">Ник (модератор или тот, кого коснулось)</span>
+            <input
+              value={params.get('nickname') ?? ''}
+              onChange={(e) => setParam('nickname', e.target.value.replace(/[^A-Za-z0-9_]/g, '').slice(0, 16))}
+              placeholder="Например, Steve"
+              className={inputClass}
+            />
+          </label>
+
+          <label className="block">
+            <span className="block text-xs text-text-light/60 mb-1.5">С даты</span>
+            <input type="date" value={params.get('from') ?? ''} onChange={(e) => setParam('from', e.target.value)} className={inputClass} />
+          </label>
+
+          <label className="block">
+            <span className="block text-xs text-text-light/60 mb-1.5">По дату</span>
+            <input type="date" value={params.get('to') ?? ''} onChange={(e) => setParam('to', e.target.value)} className={inputClass} />
+          </label>
+        </div>
+      )}
+
+      <FormError error={actionError} />
+
       {loading && !data ? (
         <ListSkeleton rows={6} />
       ) : error ? (
@@ -175,30 +266,62 @@ export function ModLogPage() {
       ) : (
         <>
           <div className="space-y-2">
-            {data.entries.map((entry) => (
-              <div key={entry.id} className="card py-3 flex items-start gap-3">
-                <UserHead user={entry.moderator} size={32} link={false} />
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm text-text-light">
-                    <span className="font-mono text-heading">{entry.moderator?.name}</span>{' '}
-                    {MOD_ACTION_LABELS[entry.action] ?? entry.action}
-                    {entry.details?.title && <span className="text-heading"> «{entry.details.title}»</span>}
-                    {entry.action === 'player.mute' && entry.details?.duration && (
-                      <span className="text-text-light/60"> на {entry.details.duration}</span>
+            {data.entries.map((entry) => {
+              const canRestore = Boolean(RESTORE_FROM_LOG[entry.action] && entry.targetId)
+              return (
+                <div key={entry.id} className="card py-3">
+                  <div className="flex items-start gap-3">
+                    <UserHead user={entry.moderator} size={32} link={false} />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm text-text-light">
+                        <span className="font-mono text-heading">{entry.moderator?.name}</span>{' '}
+                        {MOD_ACTION_LABELS[entry.action] ?? entry.action}
+                        {entry.details?.authorName && (
+                          <> у <span className="font-mono text-heading">{entry.details.authorName}</span></>
+                        )}
+                        {entry.details?.title && <span className="text-heading"> «{entry.details.title}»</span>}
+                        {entry.action === 'player.mute' && entry.details?.duration && (
+                          <span className="text-text-light/60"> на {entry.details.duration}</span>
+                        )}
+                        {entry.details?.reason && <span className="text-heading"> «{entry.details.reason}»</span>}
+                      </p>
+                      <p className="text-xs text-text-light/40 mt-0.5">{formatSmartTime(entry.createdAt)}</p>
+                    </div>
+                    {entry.targetType === 'topic' && entry.targetId && (
+                      <Link to={`/forum/t/${entry.targetId}`} className="text-xs text-accent hover:underline flex-shrink-0">
+                        тема
+                      </Link>
                     )}
-                    {entry.details?.reason && <span className="text-heading"> «{entry.details.reason}»</span>}
-                  </p>
-                  <p className="text-xs text-text-light/40 mt-0.5">{formatSmartTime(entry.createdAt)}</p>
+                    {canRestore && (
+                      <button
+                        onClick={() => restore(entry)}
+                        disabled={busyId === entry.id}
+                        className="btn-ghost text-xs py-1.5 px-3 flex-shrink-0"
+                      >
+                        Восстановить
+                      </button>
+                    )}
+                  </div>
+                  {entry.action === 'post.delete' && entry.details?.body && (
+                    <p className="mt-2 ml-11 text-sm text-text-light/70 leading-relaxed border-l-2 border-white/10 pl-3">
+                      {entry.details.body}
+                    </p>
+                  )}
                 </div>
-                {entry.targetType === 'topic' && entry.targetId && (
-                  <Link to={`/forum/t/${entry.targetId}`} className="text-xs text-accent hover:underline flex-shrink-0">
-                    тема
-                  </Link>
-                )}
-              </div>
-            ))}
+              )
+            })}
           </div>
-          <Pagination page={data.page} total={data.total} pageSize={data.pageSize} onChange={setPage} />
+          <Pagination
+            page={data.page}
+            total={data.total}
+            pageSize={data.pageSize}
+            onChange={(p) => {
+              const next = new URLSearchParams(params)
+              next.set('page', String(p))
+              setParams(next)
+              window.scrollTo({ top: 0, behavior: 'smooth' })
+            }}
+          />
         </>
       )}
     </ModShell>

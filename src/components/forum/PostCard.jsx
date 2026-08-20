@@ -57,23 +57,11 @@ export default function PostCard({ post, topic, onQuote, onReply, onChanged, hig
     }
   }
 
-  if (post.isDeleted && !isModerator) {
-    return (
-      <article id={`post-${post.postNumber}`} className="card py-4 opacity-60">
-        <p className="text-text-light/50 text-sm italic">Сообщение удалено модератором.</p>
-      </article>
-    )
-  }
-
   return (
     <article
       id={`post-${post.postNumber}`}
       className={`rounded-2xl border bg-bg-card overflow-hidden scroll-mt-28 transition-colors ${
-        highlighted
-          ? 'border-accent/50 shadow-[0_0_24px_rgba(29,165,232,0.15)]'
-          : post.isDeleted
-            ? 'border-red-500/30 opacity-70'
-            : 'border-white/5'
+        highlighted ? 'border-accent/50 shadow-[0_0_24px_rgba(29,165,232,0.15)]' : 'border-white/5'
       }`}
     >
       <div className="flex flex-col sm:flex-row">
@@ -105,9 +93,6 @@ export default function PostCard({ post, topic, onQuote, onReply, onChanged, hig
 
           {/* Тело */}
           <div className="px-4 sm:px-5 py-4 flex-1">
-            {post.isDeleted && (
-              <p className="mb-2 text-xs text-red-400/90">Сообщение удалено — видно только модераторам.</p>
-            )}
             {post.replyTo && (
               <a
                 href={`#post-${post.replyTo.postNumber}`}
@@ -140,7 +125,7 @@ export default function PostCard({ post, topic, onQuote, onReply, onChanged, hig
           </div>
 
           {/* Реакции */}
-          {!editing && (reactions.length > 0 || (user && !post.isDeleted)) && (
+          {!editing && (reactions.length > 0 || user) && (
             <div className="px-4 sm:px-5 pb-3">
               <div className="flex flex-wrap items-center gap-1.5 rounded-xl bg-black/10 border border-white/5 px-2.5 py-2">
                 {reactions.map((r) => (
@@ -170,7 +155,7 @@ export default function PostCard({ post, topic, onQuote, onReply, onChanged, hig
                   </div>
                 ))}
 
-                {user && !post.isDeleted && (
+                {user && (
                   <div className="relative">
                     <button
                       onClick={() => setPickerOpen((o) => !o)}
@@ -205,7 +190,7 @@ export default function PostCard({ post, topic, onQuote, onReply, onChanged, hig
           {/* Действия */}
           {!editing && (
             <footer className="flex flex-wrap items-center gap-x-1 gap-y-1 px-3 sm:px-4 py-2 border-t border-white/5 bg-black/5">
-              {user && !topic?.isLocked && !post.isDeleted && (
+              {user && !topic?.isLocked && (
                 <>
                   <ActionButton onClick={() => onReply?.(post)}>Ответить</ActionButton>
                   <ActionButton onClick={() => onQuote?.(buildQuote(post.author?.name ?? '', post.body))}>
@@ -213,14 +198,16 @@ export default function PostCard({ post, topic, onQuote, onReply, onChanged, hig
                   </ActionButton>
                 </>
               )}
-              {canEdit && !post.isDeleted && <ActionButton onClick={() => setEditing(true)}>Изменить</ActionButton>}
-              {canDelete && !post.isDeleted && (
+              {canEdit && <ActionButton onClick={() => setEditing(true)}>Изменить</ActionButton>}
+              {canDelete && (
                 <ActionButton
                   danger
                   onClick={() =>
                     setConfirm({
                       title: 'Удалить сообщение?',
-                      text: 'Сообщение будет скрыто. Модератор сможет его восстановить.',
+                      text: isModerator
+                        ? 'Сообщение исчезнет с форума. Текст останется в журнале модерации — там его можно восстановить.'
+                        : 'Сообщение исчезнет с форума без возможности восстановить самостоятельно.',
                       confirmLabel: 'Удалить',
                       action: async () => {
                         await api(`/forum/posts/${post.id}`, { method: 'DELETE' })
@@ -232,19 +219,7 @@ export default function PostCard({ post, topic, onQuote, onReply, onChanged, hig
                   Удалить
                 </ActionButton>
               )}
-              {isModerator && post.isDeleted && (
-                <ActionButton
-                  onClick={() =>
-                    run(async () => {
-                      await api(`/forum/posts/${post.id}/restore`, { method: 'POST' })
-                      onChanged?.()
-                    })
-                  }
-                >
-                  Восстановить
-                </ActionButton>
-              )}
-              {user && !isOwn && !post.isDeleted && (
+              {user && !isOwn && (
                 <ActionButton className="ml-auto" onClick={() => setReporting(true)}>
                   Пожаловаться
                 </ActionButton>

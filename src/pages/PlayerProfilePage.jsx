@@ -6,10 +6,14 @@ import { formatExactDateTime, formatPlaytime, formatRelativeTime } from '../util
 import ActivityHeatmap from '../components/ActivityHeatmap'
 import PlayerHead from '../components/PlayerHead'
 import MultiaccLink from '../components/MultiaccLink'
+import { useForumAuth } from '../context/ForumAuthContext'
+import { api } from '../lib/forumApi'
+import { Modal, Field, inputClass, FormError } from '../components/forum/ui'
 
 export default function PlayerProfilePage() {
   const { nickname } = useParams()
   const { profile, loading, notFound, error, retry } = usePlayerProfile(nickname)
+  const { isModerator, user } = useForumAuth()
 
   useSEO(
     profile ? `${profile.name} — профиль игрока | PfauMC` : `Игрок ${nickname} — PfauMC`,
@@ -93,6 +97,7 @@ export default function PlayerProfilePage() {
             )}
 
             <MultiaccLink nick={profile.name} />
+            {isModerator && user?.uuid !== profile.id && <MuteControl uuid={profile.id} name={profile.name} />}
           </div>
         </div>
 
@@ -136,6 +141,83 @@ export default function PlayerProfilePage() {
           </div>
         )}
       </div>
+    </div>
+  )
+}
+
+/** Мут форума: хелпер+ выдаёт его прямо с профиля игрока, срок — строкой (30m/3d/2M). */
+function MuteControl({ uuid, name }) {
+  const [muting, setMuting] = useState(false)
+  const [duration, setDuration] = useState('1d')
+  const [reason, setReason] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState(null)
+
+  const run = async (fn) => {
+    setBusy(true)
+    setError(null)
+    try {
+      await fn()
+      setMuting(false)
+    } catch (e) {
+      setError(e.message)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <div className="mt-3">
+      <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
+        <button onClick={() => setMuting(true)} className="btn-ghost text-xs py-1.5 px-3">🔇 Замутить на форуме</button>
+        <button
+          onClick={() => run(() => api(`/players/${uuid}/mute`, { method: 'DELETE' }))}
+          className="btn-ghost text-xs py-1.5 px-3"
+          disabled={busy}
+        >
+          Снять мут
+        </button>
+      </div>
+      {!muting && <FormError error={error} />}
+
+      {muting && (
+        <Modal
+          title={`Замутить ${name}`}
+          onClose={() => { setMuting(false); setError(null) }}
+          footer={
+            <>
+              <button onClick={() => { setMuting(false); setError(null) }} className="btn-ghost text-sm py-2 px-4" disabled={busy}>
+                Отмена
+              </button>
+              <button
+                onClick={() =>
+                  run(() =>
+                    api(`/players/${uuid}/mute`, { method: 'POST', body: { duration, reason: reason.trim() || undefined } })
+                  )
+                }
+                className="btn-primary text-sm py-2 px-4"
+                disabled={busy || !duration.trim()}
+              >
+                {busy ? 'Мутим…' : 'Замутить'}
+              </button>
+            </>
+          }
+        >
+          <Field label="Срок: число и единица без пробела — m (минуты), d (дни), M (месяцы)">
+            <input
+              value={duration}
+              onChange={(e) => setDuration(e.target.value.trim())}
+              placeholder="30m, 3d, 2M"
+              autoFocus
+              className={inputClass}
+            />
+          </Field>
+          <Field label="Причина (необязательно)">
+            <input value={reason} onChange={(e) => setReason(e.target.value.slice(0, 200))} className={inputClass} />
+          </Field>
+          <FormError error={error} />
+        </Modal>
+      )}
     </div>
   )
 }

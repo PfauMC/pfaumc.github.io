@@ -63,4 +63,6 @@ export const MOD_ACTION_LABELS = {
   'report.resolved': 'закрыл жалобу',
   'report.rejected': 'отклонил жалобу',
   'report.open': 'переоткрыл жалобу',
+  'player.mute': 'выдал мут',
+  'player.unmute': 'снял мут',
 }

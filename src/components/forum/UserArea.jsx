@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useForumAuth } from '../../context/ForumAuthContext'
 import { api } from '../../lib/forumApi'
-import { formatSmartTime } from '../../lib/forumFormat'
+import { formatSmartTime, formatDateTime } from '../../lib/forumFormat'
 import { UserHead, RoleBadge } from './ui'
 import LoginModal from './LoginModal'
 
@@ -211,6 +211,12 @@ function UserMenu() {
             <div className="px-4 py-3 border-b border-white/5">
               <p className="font-mono font-semibold text-heading text-sm truncate">{user.name}</p>
               <div className="mt-1"><RoleBadge role={user.role} /></div>
+              {user.isMuted && (
+                <p className="mt-1.5 text-xs text-red-400">
+                  🔇 Мут до {formatDateTime(user.mutedUntil)} — пишете только в чате своего города
+                  {user.muteReason && <>: {user.muteReason}</>}
+                </p>
+              )}
             </div>
 
             {accounts.length > 1 && (

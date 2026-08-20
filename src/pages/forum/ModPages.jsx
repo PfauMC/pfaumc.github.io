@@ -270,7 +270,7 @@ export function ModLogPage() {
               const canRestore = Boolean(RESTORE_FROM_LOG[entry.action] && entry.targetId)
               return (
                 <div key={entry.id} className="card py-3">
-                  <div className="flex items-start gap-3">
+                  <div className="flex flex-wrap items-start gap-x-3 gap-y-1">
                     <UserHead user={entry.moderator} size={32} link={false} />
                     <div className="min-w-0 flex-1">
                       <p className="text-sm text-text-light">

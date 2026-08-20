@@ -163,7 +163,7 @@ export default function TopicPage() {
         <div className="absolute inset-0 rounded-2xl grid-bg opacity-70 pointer-events-none" aria-hidden="true" />
         <div className="absolute inset-0 rounded-2xl bg-card-glow pointer-events-none" aria-hidden="true" />
 
-        <div className="relative px-5 py-6 sm:px-7 sm:py-7 flex flex-wrap items-start justify-between gap-4">
+        <div className="relative px-5 py-6 sm:px-7 sm:py-7 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2 mb-2 empty:hidden">
               {info?.isPinned && <Badge>📌 Закреплена</Badge>}

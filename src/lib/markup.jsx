@@ -41,10 +41,11 @@ const ALLOWED_TAGS = new Set([
 const SPOILER_HIDDEN_ARG = 'hidden'
 
 // Подпись под сообщением — тот же движок тегов, но со своим (более узким по
-// духу, шире по составу) набором: без градиента/размера, зато с выравниванием
-// и картинкой по прямой ссылке. <img:...> самозакрывающийся — см. VOID_TAGS.
+// духу, шире по составу) набором: без размера (в короткой строке это не то,
+// чем стоит управлять), зато с градиентом, выравниванием и картинкой по прямой
+// ссылке. <img:...> самозакрывающийся — см. VOID_TAGS.
 export const SIGNATURE_ALLOWED_TAGS = new Set([
-  'b', 'bold', 'i', 'italic', 'em', 'u', 'underlined', 'st', 'strikethrough', 'color', 'align', 'img',
+  'b', 'bold', 'i', 'italic', 'em', 'u', 'underlined', 'st', 'strikethrough', 'color', 'gradient', 'align', 'img',
 ])
 export const SIGNATURE_MAX_IMAGES = 1
 

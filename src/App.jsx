@@ -38,6 +38,7 @@ const ForumSettingsPage = named(() => import('./pages/forum/UserPages'), 'ForumS
 const ReportsPage = named(() => import('./pages/forum/ModPages'), 'ReportsPage')
 const ModLogPage = named(() => import('./pages/forum/ModPages'), 'ModLogPage')
 const TrashPage = named(() => import('./pages/forum/ModPages'), 'TrashPage')
+const ArchivePage = named(() => import('./pages/forum/ModPages'), 'ArchivePage')
 const CitiesPage = lazy(() => import('./pages/cities/CitiesPage'))
 const CityPage = lazy(() => import('./pages/cities/CityPage'))
 const CityApplicationsPage = lazy(() => import('./pages/cities/CityApplicationsPage'))
@@ -98,6 +99,7 @@ export default function App() {
               <Route path="/forum/settings" element={<ForumSettingsPage />} />
               <Route path="/forum/reports" element={<ReportsPage />} />
               <Route path="/forum/trash" element={<TrashPage />} />
+              <Route path="/forum/archive" element={<ArchivePage />} />
               <Route path="/forum/log" element={<ModLogPage />} />
               <Route path="/cities" element={<CitiesPage />} />
               <Route path="/cities/applications" element={<CityApplicationsPage />} />

@@ -65,4 +65,8 @@ export const MOD_ACTION_LABELS = {
   'report.open': 'переоткрыл жалобу',
   'player.mute': 'выдал мут',
   'player.unmute': 'снял мут',
+  'category.archive': 'перенёс категорию в архив',
+  'category.unarchive': 'вернул категорию из архива',
+  'topic.archive': 'перенёс тему в архив',
+  'topic.unarchive': 'вернул тему из архива',
 }

@@ -7,7 +7,7 @@ export function UserHead({ user, size = 40, className = '', link = true }) {
   if (!user) {
     return (
       <div
-        className={`rounded-lg bg-bg-section flex items-center justify-center text-text-light/40 ${className}`}
+        className={`rounded-lg bg-bg-section flex-shrink-0 flex items-center justify-center text-text-light/40 ${className}`}
         style={{ width: size, height: size }}
         aria-hidden="true"
       >

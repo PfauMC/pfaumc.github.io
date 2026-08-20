@@ -91,7 +91,14 @@ export default function SignatureEditor({ value, onChange }) {
           disabled={toolsDisabled}
           swatch
         >
-          <ColorPopup onApply={(hex) => { closePopup(); applyWrap(`<color:${hex}>`, '</color>') }} onClose={closePopup} />
+          <ColorPopup
+            onApply={(result) => {
+              closePopup()
+              if (result.type === 'gradient') applyWrap(`<gradient:${result.from}:${result.to}>`, '</gradient>')
+              else applyWrap(`<color:${result.hex}>`, '</color>')
+            }}
+            onClose={closePopup}
+          />
         </PopupTrigger>
 
         <div className="w-px h-5 bg-white/10 mx-0.5 flex-shrink-0" aria-hidden="true" />

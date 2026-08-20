@@ -342,7 +342,7 @@ export function ForumSettingsPage() {
                   <span className="font-mono font-semibold text-heading">{user.name}</span>
                   <RoleBadge role={user.role} />
                 </div>
-                <p className="text-xs text-text-light/50 mt-1">На форуме {formatSmartTime(user.createdAt)}</p>
+                <p className="text-xs text-text-light/50 mt-1">Зарегистрирован на форуме {formatSmartTime(user.createdAt)}</p>
               </div>
             </div>
 

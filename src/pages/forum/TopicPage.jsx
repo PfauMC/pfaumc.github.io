@@ -163,7 +163,7 @@ export default function TopicPage() {
         <div className="absolute inset-0 rounded-2xl grid-bg opacity-70 pointer-events-none" aria-hidden="true" />
         <div className="absolute inset-0 rounded-2xl bg-card-glow pointer-events-none" aria-hidden="true" />
 
-        <div className="relative px-5 py-6 sm:px-7 sm:py-7 flex flex-wrap items-start justify-between gap-4">
+        <div className="relative px-5 py-6 sm:px-7 sm:py-7 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2 mb-2 empty:hidden">
               {info?.isPinned && <Badge>📌 Закреплена</Badge>}
@@ -425,12 +425,16 @@ function ModeratorMenu({ topic, onAction }) {
         <>
           <div className="fixed inset-0 z-30" onClick={() => setOpen(false)} aria-hidden="true" />
           <div role="menu" className="absolute right-0 top-full mt-2 z-40 w-52 py-1 rounded-xl glass overflow-hidden">
-            {item('Изменить заголовок', 'rename')}
-            {item(topic.isPinned ? 'Открепить' : 'Закрепить', 'pin')}
-            {item(topic.isLocked ? 'Открыть тему' : 'Закрыть тему', 'lock')}
-            {item('Задержка ответов', 'cooldown')}
-            {item('Переместить', 'move')}
-            {topic.isArchived ? item('Вернуть из архива', 'unarchive') : item('В архив', 'archive')}
+            {!topic.isDeleted && (
+              <>
+                {item('Изменить заголовок', 'rename')}
+                {item(topic.isPinned ? 'Открепить' : 'Закрепить', 'pin')}
+                {item(topic.isLocked ? 'Открыть тему' : 'Закрыть тему', 'lock')}
+                {item('Задержка ответов', 'cooldown')}
+                {item('Переместить', 'move')}
+                {topic.isArchived ? item('Вернуть из архива', 'unarchive') : item('В архив', 'archive')}
+              </>
+            )}
             {topic.isDeleted ? item('Восстановить', 'restore') : item('Удалить тему', 'delete')}
           </div>
         </>

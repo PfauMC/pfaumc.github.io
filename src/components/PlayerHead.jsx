@@ -29,7 +29,7 @@ export default function PlayerHead({ skin, uuid, name, size = 40, hydrate = true
     <div
       role="img"
       aria-label={name}
-      className={`bg-bg-section ${className}`}
+      className={`bg-bg-section flex-shrink-0 ${className}`}
       style={{
         ...box,
         backgroundImage: hat ? `url(${url}), url(${url})` : `url(${url})`,

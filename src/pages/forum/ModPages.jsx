@@ -183,6 +183,10 @@ export function ModLogPage() {
                     <span className="font-mono text-heading">{entry.moderator?.name}</span>{' '}
                     {MOD_ACTION_LABELS[entry.action] ?? entry.action}
                     {entry.details?.title && <span className="text-heading"> «{entry.details.title}»</span>}
+                    {entry.action === 'player.mute' && entry.details?.duration && (
+                      <span className="text-text-light/60"> на {entry.details.duration}</span>
+                    )}
+                    {entry.details?.reason && <span className="text-heading"> «{entry.details.reason}»</span>}
                   </p>
                   <p className="text-xs text-text-light/40 mt-0.5">{formatSmartTime(entry.createdAt)}</p>
                 </div>

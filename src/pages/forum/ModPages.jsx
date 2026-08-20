@@ -417,3 +417,94 @@ export function TrashPage() {
     </ModShell>
   )
 }
+
+/* ===== Архив ===== */
+export function ArchivePage() {
+  useSEO('Архив — Форум PfauMC')
+  const { isModerator } = useForumAuth()
+  const { data, loading, error, reload } = useApiData(isModerator ? '/forum/archive' : null)
+  const [busy, setBusy] = useState(null)
+  const [actionError, setActionError] = useState(null)
+
+  const unarchive = async (kind, id) => {
+    setBusy(`${kind}-${id}`)
+    setActionError(null)
+    try {
+      await api(`/forum/${kind}/${id}/unarchive`, { method: 'POST' })
+      reload()
+    } catch (e) {
+      setActionError(e.message)
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  const empty = !data?.categories.length && !data?.topics.length
+
+  return (
+    <ModShell title="Архив" crumb="Архив">
+      <FormError error={actionError} />
+
+      {loading && !data ? (
+        <ListSkeleton rows={4} />
+      ) : error ? (
+        <ErrorState onRetry={reload} />
+      ) : empty ? (
+        <EmptyState icon="📦" title="Архив пуст" text="Заархивированные категории и темы появятся здесь." />
+      ) : (
+        <div className="space-y-8">
+          {data.categories.length > 0 && (
+            <section>
+              <h2 className="font-mono font-semibold text-heading mb-3">Категории</h2>
+              <div className="space-y-2">
+                {data.categories.map((c) => (
+                  <div key={c.id} className="card py-3 flex items-center gap-3">
+                    <span aria-hidden="true" className="text-lg">{c.icon}</span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm text-heading truncate">{c.title}</p>
+                      <p className="text-xs text-text-light/40">в архиве с {formatSmartTime(c.archivedAt)}</p>
+                    </div>
+                    <button
+                      onClick={() => unarchive('categories', c.id)}
+                      disabled={busy === `categories-${c.id}`}
+                      className="btn-ghost text-xs py-1.5 px-3 flex-shrink-0"
+                    >
+                      Вернуть из архива
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {data.topics.length > 0 && (
+            <section>
+              <h2 className="font-mono font-semibold text-heading mb-3">Темы</h2>
+              <div className="space-y-2">
+                {data.topics.map((t) => (
+                  <div key={t.id} className="card py-3 flex items-center gap-3">
+                    <div className="min-w-0 flex-1">
+                      <Link to={`/forum/t/${t.id}`} className="text-sm text-heading hover:text-accent transition-colors truncate block">
+                        {t.title}
+                      </Link>
+                      <p className="text-xs text-text-light/40">
+                        {t.categoryTitle} · в архиве с {formatSmartTime(t.archivedAt)}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => unarchive('topics', t.id)}
+                      disabled={busy === `topics-${t.id}`}
+                      className="btn-ghost text-xs py-1.5 px-3 flex-shrink-0"
+                    >
+                      Вернуть из архива
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+        </div>
+      )}
+    </ModShell>
+  )
+}

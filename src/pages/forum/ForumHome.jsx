@@ -106,6 +106,7 @@ export default function ForumHome() {
             <Link to="/forum/reports" className="btn-ghost text-sm py-2 px-4">Жалобы</Link>
             <Link to="/cities/applications" className="btn-ghost text-sm py-2 px-4">Заявки на города</Link>
             <Link to="/forum/trash" className="btn-ghost text-sm py-2 px-4">Корзина</Link>
+            <Link to="/forum/archive" className="btn-ghost text-sm py-2 px-4">Архив</Link>
             <Link to="/forum/log" className="btn-ghost text-sm py-2 px-4">Журнал</Link>
           </div>
         )}
@@ -188,6 +189,15 @@ export default function ForumHome() {
                                 action: () => api(`/forum/categories/${category.id}`, { method: 'DELETE' }),
                               })
                             }
+                            onArchive={() =>
+                              setConfirm({
+                                title: 'Перенести категорию в архив?',
+                                text: `«${category.title}» пропадёт из общего списка. Видна только хелперу+, в /forum/archive.`,
+                                confirmLabel: 'В архив',
+                                danger: false,
+                                action: () => api(`/forum/categories/${category.id}/archive`, { method: 'POST' }),
+                              })
+                            }
                             onMoveUp={i > 0 ? () => moveCategory(sectionIndex, i, -1) : null}
                             onMoveDown={
                               i < section.categories.length - 1 ? () => moveCategory(sectionIndex, i, 1) : null
@@ -234,7 +244,8 @@ export default function ForumHome() {
         <ConfirmDialog
           title={confirm.title}
           text={confirm.text}
-          confirmLabel="Удалить"
+          confirmLabel={confirm.confirmLabel ?? 'Удалить'}
+          danger={confirm.danger ?? true}
           busy={busy}
           onClose={() => setConfirm(null)}
           onConfirm={() => run(confirm.action)}
@@ -280,7 +291,7 @@ function SectionHeader({ group, collapsed, onToggle, isModerator, onEdit, onDele
   )
 }
 
-function CategoryRow({ category, isModerator, onEdit, onDelete, onMoveUp, onMoveDown }) {
+function CategoryRow({ category, isModerator, onEdit, onDelete, onArchive, onMoveUp, onMoveDown }) {
   return (
     <div className={`group ${!category.isVisible ? 'opacity-60' : ''}`}>
       <div className="flex flex-col sm:flex-row sm:items-center">
@@ -358,6 +369,12 @@ function CategoryRow({ category, isModerator, onEdit, onDelete, onMoveUp, onMove
             className="ml-auto px-2.5 py-1 rounded-lg text-xs text-text-light/50 hover:text-accent hover:bg-white/5 transition-colors"
           >
             Изменить
+          </button>
+          <button
+            onClick={onArchive}
+            className="px-2.5 py-1 rounded-lg text-xs text-text-light/50 hover:text-accent hover:bg-white/5 transition-colors"
+          >
+            В архив
           </button>
           <button
             onClick={onDelete}

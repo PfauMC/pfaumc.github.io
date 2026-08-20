@@ -170,6 +170,7 @@ export default function TopicPage() {
               {info?.isLocked && <Badge>🔒 Закрыта</Badge>}
               {info?.replyCooldownSec > 0 && <Badge>⏱ {formatDuration(info.replyCooldownSec)} между сообщениями</Badge>}
               {info?.isDeleted && <Badge danger>🗑️ Удалена</Badge>}
+              {info?.isArchived && <Badge>📦 В архиве</Badge>}
             </div>
             <h1 className="font-mono text-xl sm:text-3xl font-bold text-heading break-words leading-tight">
               {info?.title ?? 'Загрузка…'}
@@ -197,6 +198,9 @@ export default function TopicPage() {
             <div className="flex items-center gap-2 flex-shrink-0">
               {user && <SubscribeButton topicId={id} initial={info.isSubscribed} />}
               {isModerator && <ModeratorMenu topic={info} onAction={setModAction} />}
+              {!isModerator && user && String(user.id) === String(info.author?.id) && (
+                <AuthorDeleteButton topicId={id} onDeleted={() => navigate(`/forum/c/${info.categorySlug}`)} />
+              )}
             </div>
           )}
         </div>
@@ -252,6 +256,8 @@ export default function TopicPage() {
           <div className="card text-center py-6 text-text-light/60 text-sm">🔒 Тема закрыта для новых ответов.</div>
         ) : info?.isDeleted ? (
           <div className="card text-center py-6 text-text-light/60 text-sm">Тема удалена.</div>
+        ) : info?.isArchived ? (
+          <div className="card text-center py-6 text-text-light/60 text-sm">Тема в архиве, отвечать нельзя.</div>
         ) : (
           <>
             {showDraftBanner && <DraftBanner onRestore={restoreDraft} onDiscard={discardDraft} />}
@@ -351,6 +357,47 @@ function SubscribeButton({ topicId, initial }) {
   )
 }
 
+/** Автор темы (не модератор — тому доступно то же через «Модерация ▾») удаляет свою тему. */
+function AuthorDeleteButton({ topicId, onDeleted }) {
+  const [confirm, setConfirm] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState(null)
+
+  const remove = async () => {
+    setBusy(true)
+    setError(null)
+    try {
+      await api(`/forum/topics/${topicId}`, { method: 'DELETE' })
+      onDeleted()
+    } catch (e) {
+      setError(e.message)
+      setBusy(false)
+    }
+  }
+
+  return (
+    <>
+      <button
+        onClick={() => setConfirm(true)}
+        className="text-xs py-2 px-3 rounded-lg border border-white/10 text-text-light/70 hover:border-red-400/40 hover:text-red-400 transition-colors"
+      >
+        Удалить тему
+      </button>
+      {confirm && (
+        <ConfirmDialog
+          title="Удалить тему?"
+          text="Тема со всеми сообщениями скроется с форума."
+          confirmLabel="Удалить"
+          busy={busy}
+          onClose={() => setConfirm(false)}
+          onConfirm={remove}
+        />
+      )}
+      <FormError error={error} />
+    </>
+  )
+}
+
 function ModeratorMenu({ topic, onAction }) {
   const [open, setOpen] = useState(false)
 
@@ -383,6 +430,7 @@ function ModeratorMenu({ topic, onAction }) {
             {item(topic.isLocked ? 'Открыть тему' : 'Закрыть тему', 'lock')}
             {item('Задержка ответов', 'cooldown')}
             {item('Переместить', 'move')}
+            {topic.isArchived ? item('Вернуть из архива', 'unarchive') : item('В архив', 'archive')}
             {topic.isDeleted ? item('Восстановить', 'restore') : item('Удалить тему', 'delete')}
           </div>
         </>
@@ -466,6 +514,34 @@ function ModeratorDialog({ action, topic, onClose, onDone, onDeleted }) {
         busy={busy}
         onClose={onClose}
         onConfirm={() => call(() => api(`/forum/topics/${topic.id}/restore`, { method: 'POST' }))}
+      />
+    )
+  }
+
+  if (action === 'archive') {
+    return (
+      <ConfirmDialog
+        title="Перенести тему в архив?"
+        text="Тема пропадёт из списка категории и закроется для новых ответов. Видна только хелперу+, в /forum/archive."
+        confirmLabel="В архив"
+        danger={false}
+        busy={busy}
+        onClose={onClose}
+        onConfirm={() => call(() => api(`/forum/topics/${topic.id}/archive`, { method: 'POST' }))}
+      />
+    )
+  }
+
+  if (action === 'unarchive') {
+    return (
+      <ConfirmDialog
+        title="Вернуть тему из архива?"
+        text="Тема снова появится в списке категории и откроется для ответов."
+        confirmLabel="Вернуть"
+        danger={false}
+        busy={busy}
+        onClose={onClose}
+        onConfirm={() => call(() => api(`/forum/topics/${topic.id}/unarchive`, { method: 'POST' }))}
       />
     )
   }

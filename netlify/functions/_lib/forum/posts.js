@@ -157,15 +157,15 @@ export async function create(req, ctx, body) {
        FROM (
          SELECT u.id AS user_id, 'mention'::text AS type, 1 AS priority
            FROM forum_users u
-          WHERE u.name_lower = ANY($5::text[]) AND u.notify_mentions AND NOT u.is_banned
+          WHERE u.name_lower = ANY($5::text[]) AND u.notify_mentions AND NOT u.forum_banned
          UNION ALL
          SELECT p.author_id, 'reply', 2
            FROM forum_posts p JOIN forum_users u ON u.id = p.author_id
-          WHERE p.id = $6 AND u.notify_replies AND NOT u.is_banned
+          WHERE p.id = $6 AND u.notify_replies AND NOT u.forum_banned
          UNION ALL
          SELECT sub.user_id, 'topic_reply', 3
            FROM forum_topic_subscriptions sub JOIN forum_users u ON u.id = sub.user_id
-          WHERE sub.topic_id = $2 AND u.notify_subscriptions AND NOT u.is_banned
+          WHERE sub.topic_id = $2 AND u.notify_subscriptions AND NOT u.forum_banned
        ) s
       WHERE s.user_id <> $1
       ORDER BY s.user_id, s.priority`,

@@ -30,6 +30,8 @@ CREATE TABLE IF NOT EXISTS forum_users (
   role_key             text NOT NULL DEFAULT 'player' REFERENCES forum_roles(key) ON UPDATE CASCADE,
   is_banned            boolean NOT NULL DEFAULT false,
   ban_reason           text,
+  forum_banned         boolean NOT NULL DEFAULT false,
+  forum_ban_reason     text,
   notify_replies       boolean NOT NULL DEFAULT true,
   notify_mentions      boolean NOT NULL DEFAULT true,
   notify_subscriptions boolean NOT NULL DEFAULT true,
@@ -43,6 +45,11 @@ CREATE TABLE IF NOT EXISTS forum_users (
 -- Для баз, созданных до появления подписей.
 ALTER TABLE forum_users ADD COLUMN IF NOT EXISTS signature text NOT NULL DEFAULT '';
 ALTER TABLE forum_users ADD COLUMN IF NOT EXISTS show_signatures boolean NOT NULL DEFAULT true;
+
+-- Бан на сервере (is_banned/ban_reason) не должен закрывать доступ на форум —
+-- это отдельный, форумный бан, который выдаётся модераторами независимо.
+ALTER TABLE forum_users ADD COLUMN IF NOT EXISTS forum_banned boolean NOT NULL DEFAULT false;
+ALTER TABLE forum_users ADD COLUMN IF NOT EXISTS forum_ban_reason text;
 
 -- ponytail: name_lower без UNIQUE — ник в Minecraft может освободиться и уйти
 -- другому игроку. Упоминание @Ник резолвится в самого свежего носителя ника.

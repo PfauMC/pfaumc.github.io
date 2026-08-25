@@ -54,6 +54,7 @@ export function clearCookie(name, req) {
 
 const USER_FIELDS = `
   u.id, u.mc_uuid, u.name, u.skin_url, u.role_key, u.is_banned, u.ban_reason,
+  u.forum_banned, u.forum_ban_reason,
   u.notify_replies, u.notify_mentions, u.notify_subscriptions,
   u.signature, u.show_signatures,
   u.created_at, u.last_login_at,
@@ -75,6 +76,8 @@ export function shapeUser(row) {
     },
     isBanned: row.is_banned,
     banReason: row.ban_reason,
+    forumBanned: row.forum_banned,
+    forumBanReason: row.forum_ban_reason,
     notify: {
       replies: row.notify_replies,
       mentions: row.notify_mentions,
@@ -179,11 +182,11 @@ export async function revokeAllSessions(userId) {
   await q('UPDATE forum_sessions SET revoked_at = now() WHERE user_id = $1 AND revoked_at IS NULL', [userId])
 }
 
-/** Требует авторизованного и незабаненного пользователя. */
+/** Требует авторизованного пользователя без форумного бана. Бан на сервере (isBanned) сюда не переносится — это отдельный, игровой бан. */
 export function requireUser(ctx) {
   if (!ctx) throw unauthorized()
-  if (ctx.user.isBanned) {
-    throw new HttpError(403, ctx.user.banReason ? `Доступ закрыт: ${ctx.user.banReason}` : 'Доступ закрыт', 'banned')
+  if (ctx.user.forumBanned) {
+    throw new HttpError(403, ctx.user.forumBanReason ? `Доступ закрыт: ${ctx.user.forumBanReason}` : 'Доступ закрыт', 'banned')
   }
   return ctx.user
 }

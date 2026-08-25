@@ -114,6 +114,7 @@ async function consumeLoginToken(req, body) {
 async function loadUser(userId) {
   const row = await one(
     `SELECT u.id, u.mc_uuid, u.name, u.skin_url, u.role_key, u.is_banned, u.ban_reason,
+            u.forum_banned, u.forum_ban_reason,
             u.notify_replies, u.notify_mentions, u.notify_subscriptions,
             u.signature, u.show_signatures, u.created_at, u.last_login_at,
             r.title AS role_title, r.color AS role_color, r.can_moderate

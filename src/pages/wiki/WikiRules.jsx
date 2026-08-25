@@ -183,10 +183,10 @@ export default function WikiRules() {
       {/* Report */}
       <div className="mt-6 p-4 bg-accent/8 border border-accent/20 rounded-xl text-sm text-text-light">
         <span className="text-accent font-bold">Не смогли договориться? </span>
-        Сообщите о нарушении в{' '}
-        <a href="https://discord.gg/BPmxWwdChY" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">
-          Discord
-        </a>{' '}
+        Сообщите о нарушении на{' '}
+        <Link to="/forum" className="text-accent hover:underline">
+          форуме
+        </Link>{' '}
         с доказательствами (скриншот/видео) и ником нарушителя.
       </div>
     </article>

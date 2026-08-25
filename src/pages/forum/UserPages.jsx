@@ -346,6 +346,12 @@ export function ForumSettingsPage() {
               </div>
             </div>
 
+            {user.isBanned && (
+              <div className="card border-red-500/30 bg-red-500/5 text-sm text-red-300">
+                Вы забанены на сервере{user.banReason ? `: ${user.banReason}` : ''}. На форум это не влияет — писать здесь можно.
+              </div>
+            )}
+
             <section className="card space-y-4">
               <h2 className="font-mono font-semibold text-heading">Уведомления</h2>
               <Toggle

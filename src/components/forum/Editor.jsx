@@ -7,6 +7,10 @@ import EmojiPicker from './EmojiPicker'
 
 const MAX_LENGTH = 10000
 
+// Маркер маркированного/нумерованного списка в начале строки — зеркалит
+// регулярки блочного парсера (см. blocks() в src/lib/markup.jsx).
+const LIST_PREFIX_RE = /^([-*]|\d{1,3}[.)])\s+/
+
 const HEADING_OPTIONS = [
   { level: 0, label: 'Обычный текст' },
   { level: 1, label: 'Заголовок H1', className: 'font-bold text-lg' },
@@ -161,7 +165,47 @@ export default function Editor({
     if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && !busy) {
       e.preventDefault()
       onSubmit()
+      return
     }
+    if (e.key === 'Enter' && !e.shiftKey) continueList(e)
+  }
+
+  /**
+   * Enter в маркированном/нумерованном списке продолжает его — те же префиксы,
+   * что распознаёт рендерер (см. LIST_PREFIX_RE, зеркалит regex из markup.jsx).
+   * Enter на уже пустом пункте списка убирает маркер и выходит из списка,
+   * иначе пришлось бы стирать его руками.
+   */
+  const continueList = (e) => {
+    const el = textareaRef.current
+    if (!el) return
+    const { selectionStart: start, selectionEnd: end } = el
+    if (start !== end) return
+    const lineStart = value.lastIndexOf('\n', start - 1) + 1
+    const match = value.slice(lineStart, start).match(LIST_PREFIX_RE)
+    if (!match) return
+    e.preventDefault()
+
+    const [prefix, marker] = match
+    if (start === lineStart + prefix.length) {
+      const next = value.slice(0, lineStart) + value.slice(lineStart + prefix.length)
+      setValueClamped(next)
+      requestAnimationFrame(() => {
+        el.focus()
+        el.setSelectionRange(lineStart, lineStart)
+      })
+      return
+    }
+
+    const nextMarker = /^\d/.test(marker) ? `${Number.parseInt(marker, 10) + 1}${marker.slice(-1)}` : marker
+    const insertion = `\n${nextMarker} `
+    const next = value.slice(0, start) + insertion + value.slice(end)
+    setValueClamped(next)
+    const caret = start + insertion.length
+    requestAnimationFrame(() => {
+      el.focus()
+      el.setSelectionRange(caret, caret)
+    })
   }
 
   const tooLong = value.length > MAX_LENGTH

@@ -90,7 +90,8 @@ export function usePlayerProfile(nickname) {
       date: d.date,
       minutes: Math.round(d.seconds / 60),
     }))
-    const allTimeMin = Math.round((stats.playtime?.online_seconds ?? 0) / 60)
+    // active_seconds — без афк (online_seconds включает афк). Для сессий до 2026-07-03 бэкенд отдаёт active_seconds = 0.
+    const allTimeMin = Math.round((stats.playtime?.active_seconds ?? 0) / 60)
 
     return {
       id: player.id,

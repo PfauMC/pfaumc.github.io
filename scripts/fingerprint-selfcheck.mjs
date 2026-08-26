@@ -1,15 +1,16 @@
-// Значения в deviceFingerprint и порядок их склейки менять нельзя: тот же хеш независимо
-// считает вторая реализация. Расхождение ничем себя не проявит -- ничего не упадёт и в
-// логи не попадёт, -- поэтому оно и ловится сверкой: фиксированный придуманный браузер
-// обязан дать константу ниже. Репозиторий этот публичный, так что подробности не здесь.
+// Значения для отпечатка устройства собирают две независимые реализации. Хеш из них
+// считает сервер, поэтому договариваться о склейке и хешировании больше не нужно, а вот о
+// самих значениях -- нужно: пришли одна сторона экран как "1920x1080x24", а другая как
+// "1920x1080", и один браузер снова даст два разных отпечатка. Молча -- ничего не упадёт и
+// в логи не попадёт.
+//
+// Отсюда общий образец: придуманный браузер ниже и ожидаемый набор совпадают со второй
+// реализацией и с серверным тестом, который закрепляет получаемый из них хеш.
 //
 // Запуск: node scripts/fingerprint-selfcheck.mjs
 import { readFileSync } from 'node:fs'
-import { webcrypto } from 'node:crypto'
 import { createContext, runInContext } from 'node:vm'
 import assert from 'node:assert/strict'
-
-const VECTOR = '67e55d514b709217922710f019b9c09db0687a660855fbbe953a9bdf5f252cf1'
 
 const B = {
   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) pfaumc-test',
@@ -25,12 +26,23 @@ const B = {
   canvasDataUrl: 'data:image/png;base64,pfaumc-test-canvas',
 }
 
-const win = { devicePixelRatio: B.devicePixelRatio, crypto: webcrypto, TextEncoder }
+const EXPECTED = {
+  user_agent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) pfaumc-test',
+  languages: 'ru-RU,ru',
+  timezone: 'Europe/Moscow',
+  screen: '1920x1080x24',
+  pixel_ratio: '1.5',
+  cores: '8',
+  memory: '8',
+  platform: 'Windows',
+  touch: '0:false',
+  canvas: 'data:image/png;base64,pfaumc-test-canvas',
+}
+
+const win = { devicePixelRatio: B.devicePixelRatio }
 const sandbox = {
   window: win,
   globalThis: win,
-  crypto: webcrypto,
-  TextEncoder,
   navigator: {
     userAgent: B.userAgent,
     languages: B.languages,
@@ -54,21 +66,25 @@ const sandbox = {
 }
 Object.assign(win, sandbox)
 
-// Модуль тянет forumApi ради отправки; здесь считается только хеш, поэтому импорт срезается.
+// Модуль тянет forumApi ради отправки; здесь собираются только значения, поэтому импорт
+// срезается.
 const src = readFileSync(new URL('../src/lib/deviceFingerprint.js', import.meta.url), 'utf8')
   .replace(/^import .*$/m, '')
   .replace(/export /g, '')
 
-const actual = await new Promise((resolve, reject) => {
-  sandbox.done = resolve
-  sandbox.fail = reject
-  runInContext(`${src}\ndeviceFingerprint().then(done, fail)`, createContext(sandbox))
-})
-
-assert.equal(
-  actual,
-  VECTOR,
-  `отпечаток разошёлся с эталоном:\n  получен ${actual}\n  ожидался ${VECTOR}\n` +
-    'Сигналы и порядок склейки обязаны совпадать со второй реализацией.',
+// Через JSON, а не объектом: собранный внутри vm объект тянет за собой прототип чужого
+// realm, и сравнение спотыкается на нём вместо самих значений.
+const actual = JSON.parse(
+  await new Promise((resolve, reject) => {
+    sandbox.done = resolve
+    sandbox.fail = reject
+    sandbox.JSON = JSON
+    runInContext(
+      `${src}\ntry { done(JSON.stringify(deviceSignals())) } catch (e) { fail(e) }`,
+      createContext(sandbox),
+    )
+  }),
 )
-console.log('ok  сайтовый отпечаток совпал с эталоном')
+
+assert.deepEqual(actual, EXPECTED, 'набор значений разошёлся с образцом')
+console.log('ok  значения сайта совпали с образцом')

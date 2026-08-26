@@ -32,7 +32,7 @@ export const COUNT_MESSAGES = ['сообщение', 'сообщения', 'со
 export const COUNT_REPLIES = ['ответ', 'ответа', 'ответов']
 export const COUNT_VIEWS = ['просмотр', 'просмотра', 'просмотров']
 
-/** Должен совпадать с белым списком на сервере (netlify/functions/_lib/forum/validate.js). */
+/** Должен совпадать с белым списком на сервере (pfaumc-backend/src/web/forum.rs). */
 export const REACTIONS = ['👍', '❤️', '😂', '🔥', '😮', '😢']
 
 export const REPORT_REASON_LABELS = {

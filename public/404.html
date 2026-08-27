@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <title>PfauMC</title>
+    <script>
+      // GitHub Pages не умеет отдавать SPA-роуты с кодом 200, поэтому 404.html
+      // кодирует путь в query-string и редиректит на корень, откуда index.html
+      // (см. decode-скрипт там) восстанавливает настоящий URL через history API.
+      // Технику придумал rafgraph/spa-github-pages.
+      var l = window.location
+      l.replace(
+        l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
+        '/?/' + l.pathname.slice(1).replace(/&/g, '~and~') +
+        (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
+        l.hash
+      )
+    </script>
+  </head>
+  <body></body>
+</html>

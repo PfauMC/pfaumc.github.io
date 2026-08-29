@@ -54,6 +54,8 @@ export default function PlayerProfilePage() {
           К списку игроков
         </Link>
 
+        <BanBanner ban={profile.ban} />
+
         {/* Header card */}
         <div className="card flex flex-col sm:flex-row items-center sm:items-start gap-5 mb-6">
           <PlayerHead
@@ -125,6 +127,8 @@ export default function PlayerProfilePage() {
             </div>
           </div>
         )}
+
+        <ViolationHistory violations={profile.violations} />
 
         {profile.integrations && profile.integrations.length > 0 && (
           <div>
@@ -217,6 +221,71 @@ function MuteControl({ uuid, name }) {
           </Field>
           <FormError error={error} />
         </Modal>
+      )}
+    </div>
+  )
+}
+
+/** Заметная плашка активного бана. Ничего технического -- только причина и срок. */
+function BanBanner({ ban }) {
+  if (!ban) return null
+  return (
+    <div className="card border-red-500/30 bg-red-500/5 mb-6">
+      <p className="font-mono font-bold text-red-400">🚫 Игрок заблокирован</p>
+      {ban.reason && <p className="text-sm text-text-light/80 mt-1.5">Причина: {ban.reason}</p>}
+      <p className="text-xs text-text-light/50 mt-1.5">
+        {ban.expiresAt ? `Заблокирован до ${formatExactDateTime(ban.expiresAt)}` : 'Заблокирован навсегда'}
+      </p>
+    </div>
+  )
+}
+
+const VIOLATION_KIND_LABELS = { ban: 'Бан', mute: 'Мут' }
+const VIOLATION_STATUS_LABELS = { active: 'Действует', expired: 'Истёк', lifted: 'Снят' }
+const VIOLATION_STATUS_STYLE = {
+  active: 'bg-red-500/15 text-red-400',
+  expired: 'bg-white/5 text-text-light/50',
+  lifted: 'bg-white/5 text-text-light/50',
+}
+const VIOLATIONS_STEP = 5
+
+/**
+ * История нарушений: только то, что относится к самому наказанию (см.
+ * db::punish::public_violation_history) -- ни того, кто выдал, ни служебных заметок
+ * модерации. Список уже отсортирован новыми вперёд на бэкенде.
+ */
+function ViolationHistory({ violations }) {
+  const [visible, setVisible] = useState(VIOLATIONS_STEP)
+  if (!violations?.length) return null
+
+  return (
+    <div className="mb-6">
+      <h2 className="font-mono font-bold text-heading text-sm mb-3 uppercase tracking-widest text-text-light/50">
+        История нарушений
+      </h2>
+      <div className="space-y-2">
+        {violations.slice(0, visible).map((v, i) => (
+          <div key={i} className="card py-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-mono px-2 py-0.5 rounded-md bg-accent/10 text-accent">
+                {VIOLATION_KIND_LABELS[v.kind] ?? v.kind}
+              </span>
+              <span className={`text-xs px-2 py-0.5 rounded-md ${VIOLATION_STATUS_STYLE[v.status] ?? ''}`}>
+                {VIOLATION_STATUS_LABELS[v.status] ?? v.status}
+              </span>
+              <span className="text-xs text-text-light/40 ml-auto">{formatExactDateTime(v.createdAt)}</span>
+            </div>
+            {v.reason && <p className="text-sm text-text-light/80 mt-1.5">Причина: {v.reason}</p>}
+            <p className="text-xs text-text-light/50 mt-1">
+              {v.expiresAt ? `Срок: до ${formatExactDateTime(v.expiresAt)}` : 'Срок: бессрочно'}
+            </p>
+          </div>
+        ))}
+      </div>
+      {visible < violations.length && (
+        <button onClick={() => setVisible((n) => n + VIOLATIONS_STEP)} className="btn-ghost text-xs py-1.5 px-3 mt-3">
+          Показать ещё
+        </button>
       )}
     </div>
   )

@@ -20,6 +20,7 @@ const ModePage = lazy(() => import('./pages/ModePage'))
 const StatsPage = lazy(() => import('./pages/StatsPage'))
 const PlayersPage = lazy(() => import('./pages/PlayersPage'))
 const PlayerProfilePage = lazy(() => import('./pages/PlayerProfilePage'))
+const BanListPage = lazy(() => import('./pages/BanListPage'))
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'))
 const WikiLayout = lazy(() => import('./pages/wiki/WikiLayout'))
 const WikiIndex = lazy(() => import('./pages/wiki/WikiIndex'))
@@ -82,6 +83,7 @@ export default function App() {
               <Route path="/stats" element={<StatsPage />} />
               <Route path="/players" element={<PlayersPage />} />
               <Route path="/u/:nickname" element={<PlayerProfilePage />} />
+              <Route path="/bans" element={<BanListPage />} />
               <Route path="/wiki" element={<WikiLayout />}>
                 <Route index element={<WikiIndex />} />
                 <Route path="guide" element={<WikiGuide />} />

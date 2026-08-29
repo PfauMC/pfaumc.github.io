@@ -105,6 +105,20 @@ export function usePlayerProfile(nickname) {
       activity: densify(activity),
       integrations: null,
       city: player.pfaumc?.city ?? null,
+      // Действующий бан прямо сейчас -- null, если игрока не забанен. Причина и срок
+      // приходят с бэкенда уже проверенными (см. db::punish::active_ban); фронт их
+      // не пересчитывает.
+      ban: player.pfaumc?.ban
+        ? { reason: player.pfaumc.ban.reason, expiresAt: player.pfaumc.ban.expires_at }
+        : null,
+      // История нарушений, от новых к старым -- порядок уже такой с бэкенда.
+      violations: (player.pfaumc?.violations ?? []).map((v) => ({
+        kind: v.kind,
+        reason: v.reason,
+        createdAt: v.created_at,
+        expiresAt: v.expires_at,
+        status: v.status,
+      })),
     }
   }, [raw, nickname])
 

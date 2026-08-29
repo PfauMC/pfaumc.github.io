@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { PfauIcon } from './LoadingScreen'
 import { useTheme } from '../context/ThemeContext'
+import { useForumAuth } from '../context/ForumAuthContext'
 import UserArea from './forum/UserArea'
 
 const MENU_ID = 'mobile-nav-menu'
@@ -12,6 +13,7 @@ export default function Navbar() {
   const location = useLocation()
   const navigate = useNavigate()
   const { theme, toggle } = useTheme()
+  const { isModerator } = useForumAuth()
   const isHome = location.pathname === '/'
   const menuButtonRef = useRef(null)
 
@@ -69,6 +71,9 @@ export default function Navbar() {
     { label: 'Города', to: '/cities' },
     { label: 'Игроки', to: '/players' },
     { label: 'Статистика', to: '/stats' },
+    // Ссылка -- только удобство: реальная проверка прав живёт на бэкенде
+    // (Ctx::require_moderator у GET /api/v1/bans), не здесь.
+    ...(isModerator ? [{ label: 'Бан-лист', to: '/bans' }] : []),
   ]
 
   // backdrop-filter на шапке делает её containing block для fixed-потомков,

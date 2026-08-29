@@ -66,7 +66,10 @@ export function usePlayerProfile(nickname) {
     setRaw(null)
 
     const key = encodeURIComponent(nickname)
-    Promise.all([gameApi(`/players/${key}`), gameApi(`/players/${key}/stats`)])
+    // withSession: только эта ручка учитывает куку сайта — Helper+ получает от неё
+    // ещё и issued_by (см. SITE_API.md). Гостю/обычному игроку ничего не меняет:
+    // без куки или без роли бэкенд отвечает как раньше.
+    Promise.all([gameApi(`/players/${key}`, { withSession: true }), gameApi(`/players/${key}/stats`)])
       .then(([player, stats]) => {
         if (!cancelled) setRaw({ player, stats })
       })
@@ -110,9 +113,10 @@ export function usePlayerProfile(nickname) {
       city: player.pfaumc?.city ?? null,
       // Действующий бан прямо сейчас -- null, если игрока не забанен. Причина и срок
       // приходят с бэкенда уже проверенными (см. db::punish::active_ban); фронт их
-      // не пересчитывает.
+      // не пересчитывает. issuedBy — имя модератора — в ответе есть только у Helper+
+      // (бэкенд решает по сессии, см. SITE_API.md); у остальных ключа просто нет.
       ban: player.pfaumc?.ban
-        ? { reason: player.pfaumc.ban.reason, expiresAt: player.pfaumc.ban.expires_at }
+        ? { reason: player.pfaumc.ban.reason, expiresAt: player.pfaumc.ban.expires_at, issuedBy: player.pfaumc.ban.issued_by ?? null }
         : null,
       // История нарушений, от новых к старым -- порядок уже такой с бэкенда.
       violations: (player.pfaumc?.violations ?? []).map((v) => ({
@@ -121,6 +125,7 @@ export function usePlayerProfile(nickname) {
         createdAt: v.created_at,
         expiresAt: v.expires_at,
         status: v.status,
+        issuedBy: v.issued_by ?? null,
       })),
     }
   }, [raw, nickname])

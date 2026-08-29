@@ -236,6 +236,8 @@ function BanBanner({ ban }) {
       <p className="text-xs text-text-light/50 mt-1.5">
         {ban.expiresAt ? `Заблокирован до ${formatExactDateTime(ban.expiresAt)}` : 'Заблокирован навсегда'}
       </p>
+      {/* Есть только у Helper+ — бэкенд решает по сессии, не мы. */}
+      {ban.issuedBy && <p className="text-xs text-text-light/50 mt-1">Выдал: {ban.issuedBy}</p>}
     </div>
   )
 }
@@ -279,6 +281,8 @@ function ViolationHistory({ violations }) {
             <p className="text-xs text-text-light/50 mt-1">
               {v.expiresAt ? `Срок: до ${formatExactDateTime(v.expiresAt)}` : 'Срок: бессрочно'}
             </p>
+            {/* Есть только у Helper+ — бэкенд решает по сессии, не мы. */}
+            {v.issuedBy && <p className="text-xs text-text-light/50 mt-1">Выдал: {v.issuedBy}</p>}
           </div>
         ))}
       </div>

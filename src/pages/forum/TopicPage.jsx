@@ -198,6 +198,7 @@ export default function TopicPage() {
             <div className="flex items-center gap-2 flex-shrink-0">
               {user && <SubscribeButton topicId={id} initial={info.isSubscribed} />}
               {isModerator && <ModeratorMenu topic={info} onAction={setModAction} />}
+              {!isModerator && info.canPin && <PinButton topic={info} onDone={() => topic.reload()} />}
               {!isModerator && user && String(user.id) === String(info.author?.id) && (
                 <AuthorDeleteButton topicId={id} onDeleted={() => navigate(`/forum/c/${info.categorySlug}`)} />
               )}
@@ -357,6 +358,55 @@ function SubscribeButton({ topicId, initial }) {
   )
 }
 
+/**
+ * Владелец категории (глава города — своего города; модератору то же самое доступно
+ * через «Модерация ▾», см. ModeratorMenu) закрепляет и открепляет тему, не имея прав
+ * ни на что остальное в теме. Право проверяет бэкенд (см. set_topic_pinned) — эта
+ * кнопка лишь отражает already-checked `canPin`, а не подменяет проверку.
+ */
+function PinButton({ topic, onDone }) {
+  const [confirm, setConfirm] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState(null)
+
+  const toggle = async () => {
+    setBusy(true)
+    setError(null)
+    try {
+      await api(`/forum/topics/${topic.id}/${topic.isPinned ? 'unpin' : 'pin'}`, { method: 'POST' })
+      setConfirm(false)
+      onDone()
+    } catch (e) {
+      setError(e.message)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <>
+      <button
+        onClick={() => setConfirm(true)}
+        className="text-xs py-2 px-3 rounded-lg border border-white/10 text-text-light/70 hover:border-accent/40 hover:text-accent transition-colors"
+      >
+        {topic.isPinned ? 'Открепить' : '📌 Закрепить'}
+      </button>
+      {confirm && (
+        <ConfirmDialog
+          title={topic.isPinned ? 'Открепить тему?' : 'Закрепить тему?'}
+          text={topic.isPinned ? 'Тема вернётся в общий список.' : 'Тема будет показана вверху списка категории.'}
+          confirmLabel={topic.isPinned ? 'Открепить' : 'Закрепить'}
+          danger={false}
+          busy={busy}
+          onClose={() => setConfirm(false)}
+          onConfirm={toggle}
+        />
+      )}
+      <FormError error={error} />
+    </>
+  )
+}
+
 /** Автор темы (не модератор — тому доступно то же через «Модерация ▾») удаляет свою тему. */
 function AuthorDeleteButton({ topicId, onDeleted }) {
   const [confirm, setConfirm] = useState(false)
@@ -471,7 +521,7 @@ function ModeratorDialog({ action, topic, onClose, onDone, onDeleted }) {
         danger={false}
         busy={busy}
         onClose={onClose}
-        onConfirm={() => call(() => api(`/forum/topics/${topic.id}`, { method: 'PATCH', body: { isPinned: !topic.isPinned } }))}
+        onConfirm={() => call(() => api(`/forum/topics/${topic.id}/${topic.isPinned ? 'unpin' : 'pin'}`, { method: 'POST' }))}
       />
     )
   }

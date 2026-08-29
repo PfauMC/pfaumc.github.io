@@ -90,8 +90,11 @@ export function usePlayerProfile(nickname) {
       date: d.date,
       minutes: Math.round(d.seconds / 60),
     }))
-    // active_seconds — без афк (online_seconds включает афк). Для сессий до 2026-07-03 бэкенд отдаёт active_seconds = 0.
-    const allTimeMin = Math.round((stats.playtime?.active_seconds ?? 0) / 60)
+    // Та же метрика, что и у "за месяц/неделю/сегодня" (activity — тоже онлайн-время,
+    // афк включён): иначе "Всего" из active_seconds (без афк, и 0 у сессий до
+    // 2026-07-03 — бэкенд начал считать афк только с этой даты) оказывалось меньше
+    // суммы за месяц у игроков со старым стажем — "всего" не может быть меньше части.
+    const allTimeMin = Math.round((stats.playtime?.online_seconds ?? 0) / 60)
 
     return {
       id: player.id,

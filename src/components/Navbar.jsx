@@ -13,7 +13,7 @@ export default function Navbar() {
   const location = useLocation()
   const navigate = useNavigate()
   const { theme, toggle } = useTheme()
-  const { isModerator } = useForumAuth()
+  const { canViewBanlist } = useForumAuth()
   const isHome = location.pathname === '/'
   const menuButtonRef = useRef(null)
 
@@ -72,8 +72,9 @@ export default function Navbar() {
     { label: 'Игроки', to: '/players' },
     { label: 'Статистика', to: '/stats' },
     // Ссылка -- только удобство: реальная проверка прав живёт на бэкенде
-    // (Ctx::require_moderator у GET /api/v1/bans), не здесь.
-    ...(isModerator ? [{ label: 'Бан-лист', to: '/bans' }] : []),
+    // (Ctx::require_any_role у GET /api/v1/bans, точный набор role key
+    // helper/helper+/admin — не порог can_moderate), не здесь.
+    ...(canViewBanlist ? [{ label: 'Бан-лист', to: '/bans' }] : []),
   ]
 
   // backdrop-filter на шапке делает её containing block для fixed-потомков,

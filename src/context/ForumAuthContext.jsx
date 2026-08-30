@@ -11,6 +11,7 @@ export function ForumAuthProvider({ children }) {
   const [accounts, setAccounts] = useState([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [canViewMultiacc, setCanViewMultiacc] = useState(false)
+  const [canViewBanlist, setCanViewBanlist] = useState(false)
   const [loading, setLoading] = useState(true)
   const mounted = useRef(true)
   // Растёт при каждой смене активного аккаунта: ответ /auth/me, улетевший до
@@ -34,6 +35,7 @@ export function ForumAuthProvider({ children }) {
         setAccounts([])
         setUnreadCount(0)
         setCanViewMultiacc(false)
+        setCanViewBanlist(false)
         setLoading(false)
       }
       return null
@@ -48,12 +50,17 @@ export function ForumAuthProvider({ children }) {
       setAccounts(data.accounts ?? [])
       setUnreadCount(data.unreadCount ?? 0)
       setCanViewMultiacc(Boolean(data.canViewMultiacc))
+      // Пересчитывается бэкендом на каждый /auth/me из актуальной серверной роли
+      // (helper/helper+/admin) -- здесь просто читаем готовый результат, не
+      // определяем сами по имени/приоритету роли.
+      setCanViewBanlist(Boolean(data.canViewBanlist))
       return data
     } catch {
       if (mounted.current && started === epoch.current) {
         setUser(null)
         setAccounts([])
         setCanViewMultiacc(false)
+        setCanViewBanlist(false)
       }
       return null
     } finally {
@@ -122,6 +129,7 @@ export function ForumAuthProvider({ children }) {
       unreadCount,
       setUnreadCount,
       canViewMultiacc,
+      canViewBanlist,
       setUser,
       refresh,
       logout,
@@ -132,7 +140,7 @@ export function ForumAuthProvider({ children }) {
       activeAccount: accounts.find((a) => a.isActive) ?? user,
       switchAccount,
     }),
-    [user, loading, unreadCount, canViewMultiacc, refresh, logout, logoutEverywhere, accounts, switchAccount]
+    [user, loading, unreadCount, canViewMultiacc, canViewBanlist, refresh, logout, logoutEverywhere, accounts, switchAccount]
   )
 
   return <ForumAuthContext.Provider value={value}>{children}</ForumAuthContext.Provider>

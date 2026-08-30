@@ -35,13 +35,16 @@ function useDebounced(value, delay = 350) {
 const fetchWithSession = (path, opts) => gameApi(path, { ...opts, withSession: true })
 
 /**
- * `/bans` — бан-лист сайта. Право доступа проверяется на бэкенде
- * (`Ctx::require_moderator`, GET /api/v1/bans); здесь только вежливое сообщение,
+ * `/bans` — бан-лист сайта. Право доступа — точный набор серверных ролей
+ * (`helper`/`helper+`/`admin`), проверяется на бэкенде
+ * (`Ctx::require_any_role`, GET /api/v1/bans), не порогом can_moderate.
+ * `canViewBanlist` здесь — тот же результат, пересчитанный бэкендом на
+ * каждый вход (см. GET /forum/auth/me); здесь только вежливое сообщение,
  * если открыть страницу без прав, — не единственная защита.
  */
 export default function BanListPage() {
   useSEO('Бан-лист — PfauMC')
-  const { user, loading: authLoading, isModerator } = useForumAuth()
+  const { user, loading: authLoading, canViewBanlist } = useForumAuth()
 
   const [query, setQuery] = useState('')
   const [activeOnly, setActiveOnly] = useState(true)
@@ -55,7 +58,7 @@ export default function BanListPage() {
   params.set('active', String(activeOnly))
   params.set('page', String(page))
 
-  const { data, loading, error, reload } = useApiData(isModerator ? `/bans?${params.toString()}` : null, {
+  const { data, loading, error, reload } = useApiData(canViewBanlist ? `/bans?${params.toString()}` : null, {
     fetcher: fetchWithSession,
   })
 
@@ -67,7 +70,7 @@ export default function BanListPage() {
 
         {authLoading ? (
           <ListSkeleton rows={3} />
-        ) : !user || !isModerator ? (
+        ) : !user || !canViewBanlist ? (
           <EmptyState icon="🚫" title="Доступ только для персонала" text="Этот раздел скрыт от обычных игроков." />
         ) : (
           <>

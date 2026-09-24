@@ -249,8 +249,8 @@ export default function TopicPage() {
         </>
       )}
 
-      {/* Форма ответа */}
-      <div ref={editorRef} className="mt-6 scroll-mt-28">
+      {/* Форма ответа. Под скелетоном её не держим: сообщения потом сдвигали бы её вниз. */}
+      <div ref={editorRef} className={`mt-6 scroll-mt-28 ${posts.loading && !posts.data ? 'hidden' : ''}`}>
         {!user ? (
           <LoginNotice />
         ) : info?.isLocked ? (

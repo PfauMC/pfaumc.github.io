@@ -129,15 +129,30 @@
 .guide-reviews b { color: rgb(var(--c-text-base)); }
 
 @keyframes guide-card-in { from { opacity: 0; transform: translateY(12px); } }
+.guide-sheet-handle { display: none; }
 @media (max-width: 759px) {
-  .guide-shell { display: block; padding-top: 64px; min-height: 560px; }
-  .guide-panel { position: absolute; inset: 64px auto 0 0; z-index: 15; width: min(90vw, 390px); background: rgb(var(--c-bg-main)); transform: translateX(-102%); transition: transform .28s ease; }
-  .guide-panel.is-open { transform: translateX(0); }
+  .guide-shell { display: block; height: 100dvh; min-height: 480px; padding-top: 64px; }
+  /* Шторка снизу: верх карты остаётся виден, закрыть -- тапом по ручке или кнопкой на карте. */
+  .guide-panel { position: absolute; inset: auto 0 0 0; z-index: 15; height: 62%; border-right: 0; border-top: 1px solid rgb(255 255 255 / .1); border-radius: 18px 18px 0 0; background: rgb(var(--c-bg-main)); box-shadow: 0 -12px 40px rgb(0 0 0 / .4); transform: translateY(102%); transition: transform .28s ease; }
+  .guide-panel.is-open { transform: translateY(0); }
+  .guide-sheet-handle { display: block; flex: 0 0 auto; width: 100%; padding: 10px 0 2px; }
+  .guide-sheet-handle::before { content: ''; display: block; width: 40px; height: 4px; margin: 0 auto; border-radius: 2px; background: rgb(255 255 255 / .25); }
+  .guide-heading { padding: 6px 16px 10px; }
+  .guide-heading h1 { font-size: 20px; }
+  .guide-heading > p:last-child { display: none; }
+  .guide-search { margin-left: 16px; margin-right: 16px; }
+  .guide-filters { padding: 0 16px 12px; }
+  .guide-list-title, .guide-inline-state { padding-left: 16px; padding-right: 16px; }
+  .guide-notice { margin: 0 16px; }
+  .guide-panel-actions { padding: 10px 16px calc(12px + env(safe-area-inset-bottom)); }
   .guide-map { height: 100%; }
-  .guide-list-toggle { display: block; }
-  .guide-map-brand { top: 17px; right: 14px; }
-  .guide-map-note { left: 12px; right: 12px; bottom: 12px; text-align: center; }
-  .place-detail { left: 12px; bottom: 46px; width: calc(100% - 24px); }
+  .guide-list-toggle { display: block; top: auto; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom)); transform: translateX(-50%); padding: 11px 18px; border-radius: 999px; font-size: 13px; white-space: nowrap; }
+  .guide-map-brand { top: 12px; right: 12px; }
+  .guide-map-note { left: 12px; right: 12px; bottom: auto; top: 50px; text-align: center; }
+  .place-detail { left: 8px; right: 8px; bottom: 8px; width: auto; max-height: calc(100% - 16px); border-radius: 14px; z-index: 6; }
+  .place-detail-cover { height: 120px; }
+  .guide-search input, .guide-review-form select, .guide-review-form input, .guide-review-form button { font-size: 16px; }
+  .guide-map .leaflet-bottom.leaflet-right { bottom: calc(64px + env(safe-area-inset-bottom)); }
 }
 @media (prefers-reduced-motion: reduce) { .place-detail { animation: none; } .guide-panel { transition: none; } }
 

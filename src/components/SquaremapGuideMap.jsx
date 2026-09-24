@@ -119,7 +119,7 @@ export default function SquaremapGuideMap({ places, selected, onSelect, showRegi
           overlays[g.name] = layer
           layers.push(layer)
         })
-        if (layers.length) control = L.control.layers(null, overlays, { collapsed: true }).addTo(map.current)
+        if (layers.length) control = L.control.layers(null, overlays, { collapsed: true, position: 'bottomright' }).addTo(map.current)
       })
       .catch(() => {})
     return () => {

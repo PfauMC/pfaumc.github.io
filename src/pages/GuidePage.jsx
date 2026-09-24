@@ -34,7 +34,8 @@ export default function GuidePage() {
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState('all')
   const [selected, setSelected] = useState(null)
-  const [listOpen, setListOpen] = useState(true)
+  // На телефоне список -- шторка поверх карты, открытым он закрыл бы её целиком.
+  const [listOpen, setListOpen] = useState(() => window.innerWidth >= 760)
   const [applying, setApplying] = useState(false)
   const [moderating, setModerating] = useState(false)
   const [notice, setNotice] = useState(null)
@@ -56,6 +57,7 @@ export default function GuidePage() {
   return (
     <main className="guide-shell">
       <section className={`guide-panel ${listOpen ? 'is-open' : ''}`} aria-label="Каталог мест">
+        <button className="guide-sheet-handle" onClick={() => setListOpen(false)} aria-label="Скрыть список" />
         <header className="guide-heading">
           <p className="guide-kicker">ПУТЕВОДИТЕЛЬ ПО МИРУ</p>
           <h1>Куда отправимся?</h1>

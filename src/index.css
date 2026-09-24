@@ -109,7 +109,7 @@
 .guide-inline-state button { color: rgb(var(--c-accent)); }
 
 .guide-map { position: relative; min-width: 0; background: #17272b; overflow: hidden; }
-.guide-leaflet { isolation: isolate; width: 100%; height: 100%; background: #17272b; filter: saturate(1.08) contrast(1.14) brightness(.96); }
+.guide-leaflet { isolation: isolate; width: 100%; height: 100%; background: #17272b; filter: saturate(.82) contrast(1.03) brightness(.8); }
 /* На extra-зуме тайлы растягиваются -- блоки должны оставаться чёткими, а не мыльными. */
 .guide-leaflet .leaflet-tile { image-rendering: pixelated; }
 .guide-marker { position: relative; width: 42px; height: 42px; display: grid; place-items: center; border: 3px solid white; border-radius: 50% 50% 50% 8px; transform: rotate(-45deg); background: #168cca; color: white; box-shadow: 0 4px 16px rgb(0 0 0 / .45); transition: transform .18s, background .18s; }

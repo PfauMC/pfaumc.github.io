@@ -17,6 +17,40 @@
       })(window.location)
     </script>
     <script>
+      // Данные страницы запрашиваем прямо отсюда, не дожидаясь загрузки и разбора JS:
+      // это почти полсекунды на каждом заходе. apiRequest (src/lib/forumApi.js) забирает
+      // ответ по точному URL, поэтому пути должны совпадать с тем, что просят страницы.
+      (function (l) {
+        var base = '%VITE_GAME_API_URL%'
+        if (base.charAt(0) === '%') base = 'https://auth.pfaumc.io'
+        var api = base.replace(/\/+$/, '') + '/api/v1'
+        var p = l.pathname
+        var q = new URLSearchParams(l.search)
+        var urls = []
+        var m
+        // Гостю /auth/me не шлют: без CSRF-cookie сессии нет (см. ForumAuthContext).
+        if (document.cookie.indexOf('pfau_csrf=') !== -1) urls.push(api + '/forum/auth/me')
+        if (p === '/forum') urls.push(api + '/forum/categories')
+        else if (p === '/cities') urls.push(api + '/cities')
+        else if ((m = p.match(/^\/forum\/c\/([^/]+)$/))) {
+          var slug = encodeURIComponent(decodeURIComponent(m[1]))
+          var sort = ['recent', 'new', 'replies', 'views'].indexOf(q.get('sort')) !== -1 ? q.get('sort') : 'recent'
+          urls.push(api + '/forum/categories/' + slug)
+          urls.push(api + '/forum/categories/' + slug + '/topics?page=' + (parseInt(q.get('page'), 10) || 1) + '&sort=' + sort)
+        } else if ((m = p.match(/^\/forum\/t\/([^/]+)$/))) {
+          urls.push(api + '/forum/topics/' + m[1])
+          if (!q.has('post')) urls.push(api + '/forum/topics/' + m[1] + '/posts?page=' + (parseInt(q.get('page'), 10) || 1))
+        } else if ((m = p.match(/^\/cities\/([^/]+)$/)) && m[1] !== 'applications') urls.push(api + '/cities/' + m[1])
+
+        var early = (window.__apiEarly = {})
+        urls.forEach(function (u) {
+          var res = fetch(u, { credentials: 'include' })
+          res.catch(function () {})
+          early[u] = { res: res, at: Date.now() }
+        })
+      })(window.location)
+    </script>
+    <script>
       // Маскот -- самая крупная картинка главной, а <img> появится только после загрузки JS.
       // srcset и sizes должны совпадать с Hero.jsx, иначе предзагрузка не пригодится.
       if (location.pathname === '/') {
@@ -54,6 +88,7 @@
     <link rel="preload" href="/src/assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preconnect" href="https://auth.pfaumc.io" />
     <link rel="preconnect" href="https://auth.pfaumc.io" crossorigin />
+    <link rel="preconnect" href="https://textures.minecraft.net" />
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",

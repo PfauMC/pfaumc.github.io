@@ -14,7 +14,8 @@ function buildSteps(onCopyIP) {
       <>
         <p>
           Для игры на PfauMC нужен Minecraft Java Edition.
-          Рекомендуем купить лицензию на официальном сайте:{' '}
+          Лицензия рекомендуется, но не обязательна — сервер допускает и пиратские аккаунты.
+          Купить лицензию можно на официальном сайте:{' '}
           <a
             href="https://www.minecraft.net/ru-ru/store/minecraft-java-bedrock-edition-pc"
             target="_blank"
@@ -23,6 +24,10 @@ function buildSteps(onCopyIP) {
           >
             minecraft.net
           </a>
+        </p>
+        <p className="text-text-light/70 text-xs">
+          TLauncher не рекомендуется из-за проблем с UUID и авторизацией. Неавторизованные аккаунты
+          используются на свой риск — администрация не рассматривает последствия их взлома.
         </p>
       </>
     ),
@@ -69,10 +74,10 @@ function buildSteps(onCopyIP) {
   },
   {
     n: '3',
-    title: 'Войдите в Microsoft-аккаунт',
+    title: 'Добавьте аккаунт',
     content: (
       <>
-        <p>После установки Prism Launcher:</p>
+        <p>Если у вас лицензия — войдите через Microsoft. После установки Prism Launcher:</p>
         <ol className="mt-2 space-y-1.5 list-none">
           {[
             'Откройте Prism Launcher',
@@ -178,7 +183,7 @@ export default function WikiGuide() {
           🚀 Как зайти на сервер
         </h1>
         <p className="text-text-light text-base leading-relaxed max-w-2xl">
-          Полный пошаговый гайд от покупки игры до первого входа на PfauMC.
+          Полный пошаговый гайд от установки игры до первого входа на PfauMC.
           Займёт около 10 минут.
         </p>
       </div>

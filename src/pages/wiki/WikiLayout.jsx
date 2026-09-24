@@ -2,6 +2,7 @@ import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useEffect, useRef, useState } from 'react'
 import { generalRules, modeRules, roleRules } from '../../data/rulesData'
 import { mechanicsSections } from './WikiMechanics'
+import { citiesSections } from './WikiCities'
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard'
 import CopyToast from '../../components/CopyToast'
 import { SERVER_VERSION } from '../../config'
@@ -11,6 +12,7 @@ const sections = [
     title: 'Начало работы',
     items: [
       { label: '🚀 Как зайти на сервер', to: '/wiki/guide' },
+      { label: '❓ Частые вопросы', to: '/wiki/faq' },
     ],
   },
 ]
@@ -23,6 +25,7 @@ const rulesNav = [
 
 const mechanicsNav = [
   { label: 'Механики сервера', icon: '🧭', to: '/wiki/mechanics', children: mechanicsSections },
+  { label: 'Города', icon: '🏙️', to: '/wiki/cities', children: citiesSections },
 ]
 
 const SERVER_IP = 'play.pfaumc.online'
@@ -166,7 +169,7 @@ export default function WikiLayout() {
       {/* Механики — nested TOC */}
       <div className="mb-5">
         <div className="text-text-light/40 text-xs font-mono uppercase tracking-widest px-3 mb-2">
-          Механики
+          Справка
         </div>
         <ul className="space-y-0.5">
           {mechanicsNav.map((section) => {

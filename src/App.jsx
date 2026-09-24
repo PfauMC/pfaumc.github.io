@@ -25,6 +25,8 @@ const WikiIndex = lazy(() => import('./pages/wiki/WikiIndex'))
 const WikiGuide = lazy(() => import('./pages/wiki/WikiGuide'))
 const WikiRules = lazy(() => import('./pages/wiki/WikiRules'))
 const WikiMechanics = lazy(() => import('./pages/wiki/WikiMechanics'))
+const WikiFaq = lazy(() => import('./pages/wiki/WikiFaq'))
+const WikiCities = lazy(() => import('./pages/wiki/WikiCities'))
 const ForumHome = lazy(() => import('./pages/forum/ForumHome'))
 const CategoryPage = lazy(() => import('./pages/forum/CategoryPage'))
 const TopicPage = lazy(() => import('./pages/forum/TopicPage'))
@@ -89,6 +91,8 @@ export default function App() {
                 <Route path="rules" element={<WikiRules />} />
                 <Route path="rules/:tab" element={<WikiRules />} />
                 <Route path="mechanics" element={<WikiMechanics />} />
+                <Route path="faq" element={<WikiFaq />} />
+                <Route path="cities" element={<WikiCities />} />
                 <Route path="*" element={<NotFoundPage />} />
               </Route>
               <Route path="/forum" element={<ForumHome />} />

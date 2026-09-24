@@ -123,6 +123,11 @@ function ApplicationStatusCard({ application, compact = false }) {
         <StatusBadge status={application.status} />
       </div>
       <p className="text-xs text-text-light/50">Подана {formatDateTime(application.createdAt)}</p>
+      {application.status === 'pending' && (
+        <p className="text-sm text-text-light mt-2">
+          Заявка отправлена и ждёт проверки хелпером. Статус можно смотреть здесь и в профиле, во вкладке «Мои заявки».
+        </p>
+      )}
       {application.status === 'rejected' && application.rejectReason && (
         <p className="text-sm text-red-400 mt-2">Причина отказа: {application.rejectReason}</p>
       )}

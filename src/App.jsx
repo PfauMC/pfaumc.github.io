@@ -43,6 +43,7 @@ const ArchivePage = named(() => import('./pages/forum/ModPages'), 'ArchivePage')
 const CitiesPage = lazy(() => import('./pages/cities/CitiesPage'))
 const CityPage = lazy(() => import('./pages/cities/CityPage'))
 const CityApplicationsPage = lazy(() => import('./pages/cities/CityApplicationsPage'))
+const GuidePage = lazy(() => import('./pages/GuidePage'))
 
 function HomePage() {
   useScrollToHash()
@@ -106,6 +107,7 @@ export default function App() {
               <Route path="/cities" element={<CitiesPage />} />
               <Route path="/cities/applications" element={<CityApplicationsPage />} />
               <Route path="/cities/:slug" element={<CityPage />} />
+              <Route path="/guide" element={<GuidePage />} />
               <Route path="/auth/game" element={<AuthGamePage />} />
               <Route path="/auth/failed" element={<AuthFailedPage />} />
               <Route path="/:modeId" element={<ModePage />} />

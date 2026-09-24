@@ -28,6 +28,8 @@ jobs:
       - run: npm ci
       - run: npm run selfcheck
       - run: npm run build
+        env:
+          VITE_SQUAREMAP_URL: ${{ vars.SQUAREMAP_URL }}
 
       - uses: actions/configure-pages@v4
 

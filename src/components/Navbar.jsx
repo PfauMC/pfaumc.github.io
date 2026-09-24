@@ -69,6 +69,7 @@ export default function Navbar() {
     { label: 'Вики', to: '/wiki' },
     { label: 'Форум', to: '/forum' },
     { label: 'Города', to: '/cities' },
+    { label: 'Путеводитель', to: '/guide' },
     { label: 'Игроки', to: '/players' },
     { label: 'Статистика', to: '/stats' },
     // Ссылка -- только удобство: реальная проверка прав живёт на бэкенде

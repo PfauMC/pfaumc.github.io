@@ -9,6 +9,11 @@ import MultiaccLink from '../components/MultiaccLink'
 import { useForumAuth } from '../context/ForumAuthContext'
 import { api } from '../lib/forumApi'
 import { Modal, Field, inputClass, FormError } from '../components/forum/ui'
+import { useApiData } from '../hooks/useApiData'
+import { citiesApi } from '../lib/citiesApi'
+import { guideApi } from '../lib/guideApi'
+import { formatDateTime } from '../lib/forumFormat'
+import { StatusBadge as ApplicationStatus } from './cities/CitiesPage'
 
 export default function PlayerProfilePage() {
   const { nickname } = useParams()
@@ -130,6 +135,8 @@ export default function PlayerProfilePage() {
 
         <ViolationHistory violations={profile.violations} />
 
+        {user?.uuid === profile.id && <MyApplications />}
+
         {profile.integrations && profile.integrations.length > 0 && (
           <div>
             <h2 className="font-mono font-bold text-heading text-sm mb-3 uppercase tracking-widest text-text-light/50">
@@ -144,6 +151,40 @@ export default function PlayerProfilePage() {
             </div>
           </div>
         )}
+      </div>
+    </div>
+  )
+}
+
+/** Свои заявки — на город и в путеводитель. Видны только владельцу профиля. */
+function MyApplications() {
+  const cities = useApiData('/applications/mine', { fetcher: citiesApi })
+  const guide = useApiData('/applications/mine', { fetcher: guideApi })
+  const items = [
+    ...(cities.data?.applications ?? []).map((a) => ({ ...a, kind: 'Город', link: '/cities' })),
+    ...(guide.data?.applications ?? []).map((a) => ({ ...a, kind: 'Путеводитель', link: '/guide' })),
+  ].sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+
+  if (!items.length) return null
+  return (
+    <div className="mb-6">
+      <h2 className="font-mono font-bold text-heading text-sm mb-3 uppercase tracking-widest text-text-light/50">
+        Мои заявки
+      </h2>
+      <div className="space-y-2">
+        {items.map((a) => (
+          <div key={a.id} className="card py-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[11px] text-text-light/50">{a.kind}</span>
+              <Link to={a.link} className="text-heading font-semibold hover:text-accent transition-colors">{a.name}</Link>
+              <ApplicationStatus status={a.status} />
+              <span className="text-xs text-text-light/40 ml-auto">{formatDateTime(a.createdAt)}</span>
+            </div>
+            {a.status === 'rejected' && a.rejectReason && (
+              <p className="text-sm text-red-400 mt-1.5">Причина отказа: {a.rejectReason}</p>
+            )}
+          </div>
+        ))}
       </div>
     </div>
   )

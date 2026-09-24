@@ -5,6 +5,8 @@ import { useApiData } from '../../hooks/useApiData'
 import { usePlayerSearch } from '../../hooks/usePlayerSearch'
 import { useForumAuth } from '../../context/ForumAuthContext'
 import { citiesApi } from '../../lib/citiesApi'
+import { imageUrl } from '../../lib/guideApi'
+import ImagePicker from '../../components/ImagePicker'
 import { formatDateTime } from '../../lib/forumFormat'
 import { Breadcrumbs, ListSkeleton, ErrorState, UserHead, FormError, ConfirmDialog } from '../../components/forum/ui'
 
@@ -63,7 +65,10 @@ export default function CityPage() {
       <div className="max-w-3xl mx-auto px-4 sm:px-6">
         <Breadcrumbs items={[{ label: 'Города', to: '/cities' }, { label: info.name }]} />
 
-        <div className="card mb-6">
+        <div className="card mb-6 overflow-hidden">
+          {info.coverImageId && (
+            <img src={imageUrl(info.coverImageId)} alt="" className="-mx-4 -mt-4 sm:-mx-6 sm:-mt-6 mb-5 w-[calc(100%+2rem)] sm:w-[calc(100%+3rem)] max-w-none h-56 object-cover" />
+          )}
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
               <h1 className="font-mono text-2xl sm:text-3xl font-bold text-heading mb-1">{info.name}</h1>
@@ -84,6 +89,7 @@ export default function CityPage() {
           </div>
 
           <FormError error={deleteError} />
+          {canDelete && <CoverControl city={info} onChanged={city.reload} />}
 
           {info.description && <p className="text-text-light mt-4 leading-relaxed">{info.description}</p>}
 
@@ -119,6 +125,38 @@ export default function CityPage() {
           onConfirm={deleteCity}
         />
       )}
+    </div>
+  )
+}
+
+/** Обложка города: одна картинка, меняет глава или стафф. Она же обложка города в путеводителе. */
+function CoverControl({ city, onChanged }) {
+  const [editing, setEditing] = useState(false)
+  const [error, setError] = useState(null)
+
+  const save = async ([id = null]) => {
+    setError(null)
+    try {
+      await citiesApi(`/${encodeURIComponent(city.slug)}`, { method: 'PATCH', body: { coverImageId: id } })
+      onChanged()
+    } catch (e) {
+      setError(e.message)
+    }
+  }
+
+  if (!editing) {
+    return (
+      <button onClick={() => setEditing(true)} className="text-xs text-accent mt-3">
+        {city.coverImageId ? 'Сменить обложку' : 'Добавить обложку'}
+      </button>
+    )
+  }
+  return (
+    <div className="mt-4 pt-4 border-t border-white/5">
+      <p className="text-sm text-text-light/70 mb-2">Обложка города — видна здесь, в списке городов и в путеводителе</p>
+      <ImagePicker ids={city.coverImageId ? [city.coverImageId] : []} onChange={save} max={1} label="Обложка" />
+      <FormError error={error} />
+      <button onClick={() => setEditing(false)} className="text-xs text-text-light/50 mt-2">Готово</button>
     </div>
   )
 }

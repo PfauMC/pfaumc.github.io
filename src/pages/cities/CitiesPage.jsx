@@ -4,6 +4,7 @@ import { useSEO } from '../../hooks/useSEO'
 import { useApiData } from '../../hooks/useApiData'
 import { useForumAuth } from '../../context/ForumAuthContext'
 import { citiesApi } from '../../lib/citiesApi'
+import { imageUrl } from '../../lib/guideApi'
 import { formatDateTime } from '../../lib/forumFormat'
 import {
   Breadcrumbs, ListSkeleton, ErrorState, EmptyState, Modal, Field, inputClass, FormError, LoginNotice,
@@ -84,8 +85,11 @@ export default function CitiesPage() {
               <Link
                 key={city.id}
                 to={`/cities/${city.slug}`}
-                className="card hover:border-accent/30 transition-colors block"
+                className="card hover:border-accent/30 transition-colors block overflow-hidden"
               >
+                {city.coverImageId && (
+                  <img src={imageUrl(city.coverImageId)} alt="" loading="lazy" className="-mx-4 -mt-4 sm:-mx-6 sm:-mt-6 mb-4 w-[calc(100%+2rem)] sm:w-[calc(100%+3rem)] max-w-none h-36 object-cover" />
+                )}
                 <h2 className="font-mono font-bold text-heading text-lg mb-1">{city.name}</h2>
                 {city.description && (
                   <p className="text-text-light/70 text-sm mb-3 line-clamp-2">{city.description}</p>

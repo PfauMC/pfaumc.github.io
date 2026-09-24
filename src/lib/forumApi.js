@@ -21,7 +21,7 @@ export class ApiError extends Error {
   }
 }
 
-function readCsrfCookie() {
+export function readCsrfCookie() {
   const match = document.cookie.match(/(?:^|;\s*)pfau_csrf=([^;]*)/)
   return match ? decodeURIComponent(match[1]) : ''
 }

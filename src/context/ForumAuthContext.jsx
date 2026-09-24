@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { api } from '../lib/forumApi'
 import { reportDevice } from '../lib/deviceFingerprint'
+import { clearApiDataCache } from '../hooks/useApiData'
 
 const ForumAuthContext = createContext(null)
 
@@ -85,6 +86,7 @@ export function ForumAuthProvider({ children }) {
   const switchAccount = useCallback(async (uuid) => {
     const data = await api('/auth/switch', { method: 'POST', body: { uuid } })
     epoch.current += 1
+    clearApiDataCache()
     if (!mounted.current) return data
     setUser(data.user)
     setAccounts((list) => list.map((a) => ({ ...a, isActive: a.uuid === uuid })))
@@ -109,6 +111,7 @@ export function ForumAuthProvider({ children }) {
   const logout = useCallback(async () => {
     await api('/auth/logout', { method: 'POST' })
     epoch.current += 1
+    clearApiDataCache()
     setUser(null)
     setAccounts([])
     setUnreadCount(0)
@@ -117,6 +120,7 @@ export function ForumAuthProvider({ children }) {
   const logoutEverywhere = useCallback(async () => {
     await api('/auth/logout-all', { method: 'POST' })
     epoch.current += 1
+    clearApiDataCache()
     setUser(null)
     setAccounts([])
     setUnreadCount(0)

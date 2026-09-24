@@ -16,6 +16,20 @@
         }
       })(window.location)
     </script>
+    <script>
+      // Маскот -- самая крупная картинка главной, а <img> появится только после загрузки JS.
+      // srcset и sizes должны совпадать с Hero.jsx, иначе предзагрузка не пригодится.
+      if (location.pathname === '/') {
+        var mascot = document.createElement('link')
+        mascot.rel = 'preload'
+        mascot.as = 'image'
+        mascot.type = 'image/avif'
+        mascot.fetchPriority = 'high'
+        mascot.imageSrcset = [384, 768, 1254].map(function (w) { return '/assets/mascot-v2-' + w + '.avif ' + w + 'w' }).join(', ')
+        mascot.imageSizes = '(min-width: 1024px) min(44rem, 50vw), (min-width: 768px) 20rem, (min-width: 640px) 16rem, 12rem'
+        document.head.appendChild(mascot)
+      }
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PfauMC — Minecraft сервер | play.pfaumc.online</title>
     <meta name="description" content="PfauMC — твой мир, твои правила. Minecraft сервер в режиме Ванила — честная игра и защита построек. IP: play.pfaumc.online" />
@@ -35,10 +49,11 @@
     <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="icon" type="image/png" href="/assets/favicon.png" />
     <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
-    <link rel="preload" href="/assets/fonts/Monocraft.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="preload" href="/src/assets/fonts/Monocraft.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/src/assets/fonts/inter-cyrillic.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/src/assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preconnect" href="https://auth.pfaumc.io" />
+    <link rel="preconnect" href="https://auth.pfaumc.io" crossorigin />
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",

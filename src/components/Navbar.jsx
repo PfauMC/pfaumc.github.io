@@ -65,13 +65,11 @@ export default function Navbar() {
 
   const navItems = [
     { label: 'Главная', action: () => handleSection('#hero') },
-    { label: 'Режимы', action: () => handleSection('#modes') },
     { label: 'Вики', to: '/wiki' },
     { label: 'Форум', to: '/forum' },
     { label: 'Города', to: '/cities' },
     { label: 'Путеводитель', to: '/guide' },
     { label: 'Игроки', to: '/players' },
-    { label: 'Статистика', to: '/stats' },
     // Ссылка -- только удобство: реальная проверка прав живёт на бэкенде
     // (Ctx::require_any_role у GET /api/v1/bans, точный набор role key
     // helper/helper+/admin — не порог can_moderate), не здесь.

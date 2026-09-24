@@ -1,5 +1,5 @@
 import { lazy, Suspense, useState, useEffect } from 'react'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import { ThemeProvider } from './context/ThemeContext'
 import { ForumAuthProvider } from './context/ForumAuthContext'
 import LoadingScreen from './components/LoadingScreen'
@@ -7,7 +7,7 @@ import Fireflies from './components/Fireflies'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import Features from './components/Features'
-import Modes from './components/Modes'
+import ServerStats from './components/ServerStats'
 import Footer from './components/Footer'
 import { useScrollToHash } from './hooks/useScrollToHash'
 
@@ -16,8 +16,6 @@ import { useScrollToHash } from './hooks/useScrollToHash'
 // десять минут -- то есть лишний вес оплачивается не однажды, а при каждом заходе.
 const named = (loader, key) => lazy(() => loader().then((m) => ({ default: m[key] })))
 
-const ModePage = lazy(() => import('./pages/ModePage'))
-const StatsPage = lazy(() => import('./pages/StatsPage'))
 const PlayersPage = lazy(() => import('./pages/PlayersPage'))
 const PlayerProfilePage = lazy(() => import('./pages/PlayerProfilePage'))
 const BanListPage = lazy(() => import('./pages/BanListPage'))
@@ -51,7 +49,7 @@ function HomePage() {
     <main>
       <Hero />
       <Features />
-      <Modes />
+      <ServerStats />
     </main>
   )
 }
@@ -81,7 +79,7 @@ export default function App() {
           <Suspense fallback={null}>
             <Routes>
               <Route path="/" element={<HomePage />} />
-              <Route path="/stats" element={<StatsPage />} />
+              <Route path="/stats" element={<Navigate to={{ pathname: '/', hash: '#stats' }} replace />} />
               <Route path="/players" element={<PlayersPage />} />
               <Route path="/u/:nickname" element={<PlayerProfilePage />} />
               <Route path="/bans" element={<BanListPage />} />
@@ -110,7 +108,8 @@ export default function App() {
               <Route path="/guide" element={<GuidePage />} />
               <Route path="/auth/game" element={<AuthGamePage />} />
               <Route path="/auth/failed" element={<AuthFailedPage />} />
-              <Route path="/:modeId" element={<ModePage />} />
+              {/* Страницы режима больше нет -- старая ссылка ведёт на главную. */}
+              <Route path="/vanilla" element={<Navigate to="/" replace />} />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </Suspense>

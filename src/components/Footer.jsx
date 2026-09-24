@@ -61,7 +61,7 @@ export default function Footer() {
             <ul className="space-y-2.5">
               {[
                 { label: 'Главная', action: () => handleSection('#hero') },
-                { label: 'Режимы', action: () => handleSection('#modes') },
+                { label: 'Статистика', action: () => handleSection('#stats') },
               ].map((item) => (
                 <li key={item.label}>
                   <button

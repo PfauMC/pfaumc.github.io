@@ -75,11 +75,11 @@ export default function Hero() {
               <button
                 onClick={(e) => {
                   e.preventDefault()
-                  document.querySelector('#modes')?.scrollIntoView({ behavior: 'smooth' })
+                  document.querySelector('#stats')?.scrollIntoView({ behavior: 'smooth' })
                 }}
                 className="btn-ghost"
               >
-                Режимы сервера
+                Статистика сервера
                 <ChevronDown className="w-4 h-4" />
               </button>
             </div>
@@ -87,7 +87,6 @@ export default function Hero() {
             {/* Stats row */}
             <div className="flex flex-wrap gap-x-8 gap-y-3 mt-10 pt-8 border-t border-white/5 justify-center lg:justify-start">
               {[
-                { value: '2', label: 'Режима' },
                 { value: '24/7', label: 'Онлайн' },
                 { value: SERVER_VERSION, label: 'Версия' },
               ].map((stat) => (

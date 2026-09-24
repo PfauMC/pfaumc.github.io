@@ -1,19 +1,14 @@
 import { useEffect } from 'react'
-import { useSEO } from '../hooks/useSEO'
 import { useApiData } from '../hooks/useApiData'
 import { usePlayersOnline } from '../hooks/usePlayersOnline'
 import { gameApi } from '../lib/gameApi'
-import OnlineChart from '../components/OnlineChart'
+import OnlineChart from './OnlineChart'
 import { SERVER_VERSION } from '../config'
 
 const REFRESH_MS = 120_000
 
-export default function StatsPage() {
-  useSEO(
-    'Онлайн сервера — PfauMC',
-    'Статистика Minecraft сервера PfauMC: онлайн сейчас, график за эту и прошлую неделю, аптайм и средние показатели.'
-  )
-
+/** Статистика сервера — секция главной (бывшая страница /stats, теперь она редиректит сюда). */
+export default function ServerStats() {
   // Кто именно в сети — из игрового бэкенда: это наши сессии, точные до игрока.
   // График, аптайм, слоты и версия — оттуда же, но это сквозной прокси mcwatch:
   // свою историю онлайна бэкенд не собирает, а сам mcwatch не отдаёт CORS.
@@ -42,11 +37,13 @@ export default function StatsPage() {
   const isUp = monitor ? monitor.is_up : onlineCount > 0 ? true : null
 
   return (
-    <div className="min-h-screen pt-24 pb-16">
+    <section id="stats" className="py-20 sm:py-28 bg-bg-section relative scroll-mt-20">
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
       <div className="max-w-5xl mx-auto px-4 sm:px-6">
-        <header className="mb-8">
-          <h1 className="font-mono text-3xl sm:text-4xl font-bold text-heading mb-2">Статистика сервера</h1>
-          <p className="text-text-light text-base">
+        <header className="text-center mb-12">
+          <p className="text-accent font-mono text-sm font-semibold tracking-widest uppercase mb-3">Статистика</p>
+          <h2 className="section-title">Сервер прямо сейчас</h2>
+          <p className="section-subtitle max-w-xl mx-auto">
             Кто в сети — по нашим игровым сессиям. График, аптайм и слоты — по данным мониторинга mcwatch.
           </p>
         </header>
@@ -218,7 +215,8 @@ export default function StatsPage() {
           </>
         )}
       </div>
-    </div>
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/20 to-transparent" />
+    </section>
   )
 }
 

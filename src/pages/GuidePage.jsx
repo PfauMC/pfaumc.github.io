@@ -96,7 +96,7 @@ export default function GuidePage() {
       </section>
 
       <section className="guide-map" aria-label="Карта мира PfauMC">
-        <SquaremapGuideMap places={places} selected={selected} onSelect={choose} />
+        <SquaremapGuideMap places={places} selected={selected} onSelect={choose} showRegions={['admin', 'owner'].includes(user?.role?.key)} />
         <div className="guide-map-shade" />
         <div className="guide-map-brand"><i /> PFAUMC · МИР</div>
         <button className="guide-list-toggle" onClick={() => setListOpen((open) => !open)}>{listOpen ? 'Скрыть список' : 'Показать места'}</button>

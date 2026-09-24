@@ -8,12 +8,13 @@ const ICONS = {
   city: '⚓', shop: '💎', landmark: '✦', build: '🏛', base: '⌂', other: '●',
 }
 
-export default function SquaremapGuideMap({ places, selected, onSelect }) {
+export default function SquaremapGuideMap({ places, selected, onSelect, showRegions = false }) {
   const element = useRef(null)
   const map = useRef(null)
   const markers = useRef(null)
   const projection = useRef(null)
   const fitted = useRef(false)
+  const worldRef = useRef(null)
   const [offline, setOffline] = useState(false)
   const [ready, setReady] = useState(false)
 
@@ -61,6 +62,7 @@ export default function SquaremapGuideMap({ places, selected, onSelect }) {
       instance.setView(projection.current(spawn.x, spawn.z), zoom.def)
       markers.current = L.layerGroup().addTo(instance)
       map.current = instance
+      worldRef.current = worldSettings ? world : null
       setOffline(!worldSettings)
       setReady(true)
     }
@@ -93,6 +95,39 @@ export default function SquaremapGuideMap({ places, selected, onSelect }) {
       map.current.fitBounds(L.latLngBounds(places.map((p) => projection.current(p.x, p.z))), { padding: [80, 80], maxZoom: 0 })
     }
   }, [places, selected?.id, onSelect, ready, offline])
+
+  // Слои регионов из squaremap (pfaumc_region*) -- только для админов. Сами данные
+  // squaremap всё равно публичны, это скрытие с нашего сайта, а не защита.
+  useEffect(() => {
+    if (!showRegions || !ready || !worldRef.current) return
+    let cancelled = false
+    let control = null
+    const layers = []
+    fetch(`${MAP_URL}/tiles/${worldRef.current.name}/markers.json`)
+      .then((res) => (res.ok ? res.json() : []))
+      .then((groups) => {
+        if (cancelled || !map.current) return
+        const overlays = {}
+        groups.filter((g) => g.id.startsWith('pfaumc_region')).forEach((g) => {
+          const layer = L.layerGroup(g.markers.filter((m) => m.type === 'polygon').map((m) => {
+            const { type, points, popup, tooltip, ...style } = m
+            const polygon = L.polygon(points.map((poly) => poly.map((ring) => ring.map((p) => projection.current(p.x, p.z)))), style)
+            if (popup) polygon.bindPopup(popup)
+            return polygon
+          }))
+          if (!g.hide) layer.addTo(map.current)
+          overlays[g.name] = layer
+          layers.push(layer)
+        })
+        if (layers.length) control = L.control.layers(null, overlays, { collapsed: true }).addTo(map.current)
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+      layers.forEach((layer) => layer.remove())
+      control?.remove()
+    }
+  }, [showRegions, ready])
 
   useEffect(() => {
     if (selected && map.current && projection.current) {

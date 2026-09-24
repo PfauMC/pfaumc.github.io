@@ -103,7 +103,7 @@ export default function CityPage() {
             {info.mayor && (
               <div className="flex items-center gap-2">
                 <span className="text-text-light/50">Глава:</span>
-                <UserHead user={{ name: info.mayor.name, uuid: info.mayor.id }} size={24} />
+                <UserHead user={{ name: info.mayor.name, uuid: info.mayor.id, skin: info.mayor.skin }} size={24} />
                 <Link to={`/u/${encodeURIComponent(info.mayor.name)}`} className="text-heading hover:text-accent transition-colors">
                   {info.mayor.name}
                 </Link>
@@ -197,7 +197,7 @@ function ResidentsSection({ city, isMayor, onChanged }) {
       <div className="space-y-2 mb-4">
         {city.residents.map((resident) => (
           <div key={resident.id} className="flex items-center gap-3 py-1.5">
-            <UserHead user={{ name: resident.name, uuid: resident.id }} size={32} />
+            <UserHead user={{ name: resident.name, uuid: resident.id, skin: resident.skin }} size={32} />
             <Link to={`/u/${encodeURIComponent(resident.name)}`} className="text-sm text-heading hover:text-accent transition-colors flex-1 min-w-0 truncate">
               {resident.name}
             </Link>

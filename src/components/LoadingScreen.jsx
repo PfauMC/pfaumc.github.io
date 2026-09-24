@@ -48,7 +48,7 @@ export default function LoadingScreen({ fadeOut }) {
 export function PfauIcon({ className = '' }) {
   return (
     <img
-      src="/assets/logo.png"
+      src="/assets/logo-96.png"
       alt="PfauMC logo"
       className={className}
       style={{ objectFit: 'contain' }}

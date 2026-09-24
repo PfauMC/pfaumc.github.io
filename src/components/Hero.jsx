@@ -5,6 +5,10 @@ import { SERVER_VERSION } from '../config'
 
 const SERVER_IP = 'play.pfaumc.online'
 
+// Ширины и sizes повторены в предзагрузке в index.html: разойдутся -- браузер скачает картинку дважды.
+const mascotSrcSet = (ext) => [384, 768, 1254].map((w) => `/assets/mascot-v2-${w}.${ext} ${w}w`).join(', ')
+const MASCOT_SIZES = '(min-width: 1024px) min(44rem, 50vw), (min-width: 768px) 20rem, (min-width: 640px) 16rem, 12rem'
+
 export default function Hero() {
   const [visible, setVisible] = useState(false)
   const ref = useRef(null)
@@ -111,13 +115,20 @@ export default function Hero() {
 
             <div className="relative animate-float">
               <div className="hidden lg:block absolute inset-0 bg-accent/10 blur-2xl rounded-full scale-75 translate-y-8" />
-              <img
-                src="/assets/mascot-v2.png"
-                alt="PfauMC Mascot"
-                className="relative w-48 sm:w-64 md:w-80 lg:w-[44rem] max-w-full object-contain drop-shadow-2xl"
-                loading="eager"
-                decoding="async"
-              />
+              <picture>
+                <source type="image/avif" srcSet={mascotSrcSet('avif')} sizes={MASCOT_SIZES} />
+                <source type="image/webp" srcSet={mascotSrcSet('webp')} sizes={MASCOT_SIZES} />
+                <img
+                  src="/assets/mascot-v2.png"
+                  alt="PfauMC Mascot"
+                  width={1254}
+                  height={1254}
+                  className="relative w-48 sm:w-64 md:w-80 lg:w-[44rem] max-w-full h-auto object-contain drop-shadow-2xl"
+                  loading="eager"
+                  fetchpriority="high"
+                  decoding="async"
+                />
+              </picture>
             </div>
           </div>
         </div>

@@ -15,12 +15,13 @@ import { defaultSkinUrl } from '../utils/playerFormat'
  * нас и рисуется тем же кодом, что настоящий скин, поэтому чужие сервисы для голов
  * нам не нужны и UUID игроков наружу не уходят.
  *
- * Если скин не передали, но известен игрок — добираем его профилем: в списках
- * игроков скина уже нет. `hydrate={false}` отключает добор там, где профиль уже
- * прочитан целиком: пустой скин там означает «скина нет», а не «мы его не спросили».
+ * Если поля скина нет вовсе, но известен игрок — добираем его профилем. `null` же
+ * означает «спросили, скина нет»: API отдаёт его уже сверенным с тем же хранилищем,
+ * что и профиль, так что запрос за каждым таким игроком ничего бы не добавил.
+ * `hydrate={false}` отключает добор там, где профиль уже прочитан целиком.
  */
 export default function PlayerHead({ skin, uuid, name, size = 40, hydrate = true, className = '' }) {
-  const hydrated = usePlayerMeta(hydrate && !skin ? uuid : null)
+  const hydrated = usePlayerMeta(hydrate && skin === undefined ? uuid : null)
   const url = skin?.url ?? hydrated?.skin?.url ?? defaultSkinUrl(uuid)
   const hat = useHatLayer(url)
   const box = { width: size, height: size, imageRendering: 'pixelated' }

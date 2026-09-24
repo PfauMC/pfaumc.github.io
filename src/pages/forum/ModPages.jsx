@@ -4,10 +4,11 @@ import { useSEO } from '../../hooks/useSEO'
 import { useApiData } from '../../hooks/useApiData'
 import { useForumAuth } from '../../context/ForumAuthContext'
 import { api } from '../../lib/forumApi'
-import { formatSmartTime, REPORT_REASON_LABELS, MOD_ACTION_LABELS } from '../../lib/forumFormat'
+import { formatSmartTime, formatDateTime, REPORT_REASON_LABELS, MOD_ACTION_LABELS, MOD_ACTION_GROUPS, PUNISH_KIND_LABELS } from '../../lib/forumFormat'
 import {
   Breadcrumbs, ListSkeleton, ErrorState, EmptyState, Pagination, UserHead, RoleBadge, FormError, inputClass,
 } from '../../components/forum/ui'
+import ModerationShell from '../moderation/ModerationShell'
 
 function ModShell({ title, crumb, children }) {
   const { user, loading, isModerator } = useForumAuth()
@@ -31,12 +32,12 @@ function ModShell({ title, crumb, children }) {
 
 /* ===== Жалобы ===== */
 export function ReportsPage() {
-  useSEO('Жалобы — Форум PfauMC')
+  useSEO('Жалобы — Модерация PfauMC')
   const [status, setStatus] = useState('open')
   const [page, setPage] = useState(1)
-  const { isModerator } = useForumAuth()
+  const { isStaff } = useForumAuth()
   const { data, loading, error, reload } = useApiData(
-    isModerator ? `/forum/reports?status=${status}&page=${page}` : null
+    isStaff ? `/forum/reports?status=${status}&page=${page}` : null
   )
   const [busyId, setBusyId] = useState(null)
   const [actionError, setActionError] = useState(null)
@@ -61,7 +62,7 @@ export function ReportsPage() {
   ]
 
   return (
-    <ModShell title="Жалобы" crumb="Жалобы">
+    <ModerationShell>
       <div className="flex flex-wrap gap-2 mb-5">
         {tabs.map((tab) => (
           <button
@@ -153,11 +154,32 @@ export function ReportsPage() {
           <Pagination page={data.page} total={data.counts?.[status] ?? 0} pageSize={data.pageSize} onChange={setPage} />
         </>
       )}
-    </ModShell>
+    </ModerationShell>
   )
 }
 
-/* ===== Журнал модерации ===== */
+/* ===== Журнал аудита ===== */
+
+/** Наказание из `punish.audit_log`. Кто выдал -- скрыт (moderator = null) для тех, кто ниже helper+. */
+function PunishEntryText({ entry }) {
+  const d = entry.details ?? {}
+  const kind = PUNISH_KIND_LABELS[d.kind] ?? 'наказание'
+  const target = d.authorName ?? d.targetUuid
+  return (
+    <p className="text-sm text-text-light">
+      <span className="font-mono text-heading">{entry.moderator?.name ?? 'Персонал'}</span>{' '}
+      {entry.action === 'punish.lift' ? 'снял' : 'выдал'} {kind}
+      {target && (
+        <> игроку <Link to={`/u/${encodeURIComponent(target)}`} className="font-mono text-heading hover:text-accent">{target}</Link></>
+      )}
+      {entry.action === 'punish.issue' && (
+        <span className="text-text-light/60"> {d.expiresAt ? `до ${formatDateTime(d.expiresAt)}` : 'навсегда'}</span>
+      )}
+      {d.reason && <span className="text-heading"> «{d.reason}»</span>}
+      {d.liftReason && <span className="text-heading"> «{d.liftReason}»</span>}
+    </p>
+  )
+}
 
 // Что можно восстановить прямо из журнала: по паре (action, targetType) — эндпоинт
 // и человекочитаемое имя того, что вернётся.
@@ -167,8 +189,8 @@ const RESTORE_FROM_LOG = {
 }
 
 export function ModLogPage() {
-  useSEO('Журнал модерации — Форум PfauMC')
-  const { isModerator } = useForumAuth()
+  useSEO('Журнал аудита — Модерация PfauMC')
+  const { isStaff } = useForumAuth()
   const [params, setParams] = useSearchParams()
   const page = Number.parseInt(params.get('page') ?? '1', 10) || 1
   const [filtersOpen, setFiltersOpen] = useState(
@@ -179,7 +201,7 @@ export function ModLogPage() {
 
   const query = new URLSearchParams(params)
   query.set('page', String(page))
-  const { data, loading, error, reload } = useApiData(isModerator ? `/forum/moderation-log?${query.toString()}` : null)
+  const { data, loading, error, reload } = useApiData(isStaff ? `/forum/moderation-log?${query.toString()}` : null)
 
   const setParam = (key, value) => {
     const next = new URLSearchParams(params)
@@ -205,7 +227,7 @@ export function ModLogPage() {
   }
 
   return (
-    <ModShell title="Журнал модерации" crumb="Журнал">
+    <ModerationShell>
       <input
         value={params.get('q') ?? ''}
         onChange={(e) => setParam('q', e.target.value.slice(0, 100))}
@@ -227,8 +249,10 @@ export function ModLogPage() {
             <span className="block text-xs text-text-light/60 mb-1.5">Действие</span>
             <select value={params.get('action') ?? ''} onChange={(e) => setParam('action', e.target.value)} className={inputClass}>
               <option value="">Любое</option>
-              {Object.entries(MOD_ACTION_LABELS).map(([key, label]) => (
-                <option key={key} value={key}>{label}</option>
+              {MOD_ACTION_GROUPS.map(([group, keys]) => (
+                <optgroup key={group} label={group}>
+                  {keys.map((key) => <option key={key} value={key}>{MOD_ACTION_LABELS[key]}</option>)}
+                </optgroup>
               ))}
             </select>
           </label>
@@ -262,7 +286,7 @@ export function ModLogPage() {
       ) : error ? (
         <ErrorState onRetry={reload} />
       ) : !data?.entries.length ? (
-        <EmptyState icon="📋" title="Записей нет" text="Действия модераторов будут появляться здесь." />
+        <EmptyState icon="📋" title="Записей нет" text="Действия персонала будут появляться здесь." />
       ) : (
         <>
           <div className="space-y-2">
@@ -271,10 +295,15 @@ export function ModLogPage() {
               return (
                 <div key={entry.id} className="card py-3">
                   <div className="flex flex-wrap items-start gap-x-3 gap-y-1">
-                    <UserHead user={entry.moderator} size={32} link={false} />
+                    {entry.moderator
+                      ? <UserHead user={entry.moderator} size={32} link={false} />
+                      : <span className="w-8 h-8 rounded-lg bg-white/5 flex-shrink-0" aria-hidden="true" />}
                     <div className="min-w-0 flex-1">
+                      {entry.action.startsWith('punish.') ? (
+                        <PunishEntryText entry={entry} />
+                      ) : (
                       <p className="text-sm text-text-light">
-                        <span className="font-mono text-heading">{entry.moderator?.name}</span>{' '}
+                        <span className="font-mono text-heading">{entry.moderator?.name ?? 'Персонал'}</span>{' '}
                         {MOD_ACTION_LABELS[entry.action] ?? entry.action}
                         {entry.details?.authorName && (
                           <> у <span className="font-mono text-heading">{entry.details.authorName}</span></>
@@ -285,6 +314,7 @@ export function ModLogPage() {
                         )}
                         {entry.details?.reason && <span className="text-heading"> «{entry.details.reason}»</span>}
                       </p>
+                      )}
                       <p className="text-xs text-text-light/40 mt-0.5">{formatSmartTime(entry.createdAt)}</p>
                     </div>
                     {entry.targetType === 'topic' && entry.targetId && (
@@ -324,7 +354,7 @@ export function ModLogPage() {
           />
         </>
       )}
-    </ModShell>
+    </ModerationShell>
   )
 }
 

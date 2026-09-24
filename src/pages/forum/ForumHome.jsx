@@ -103,11 +103,8 @@ export default function ForumHome() {
             </button>
             <button onClick={() => setEditingGroup({})} className="btn-ghost text-sm py-2 px-4">+ Раздел</button>
             <button onClick={() => setEditingCategory({})} className="btn-ghost text-sm py-2 px-4">+ Категория</button>
-            <Link to="/forum/reports" className="btn-ghost text-sm py-2 px-4">Жалобы</Link>
-            <Link to="/cities/applications" className="btn-ghost text-sm py-2 px-4">Заявки на города</Link>
             <Link to="/forum/trash" className="btn-ghost text-sm py-2 px-4">Корзина</Link>
             <Link to="/forum/archive" className="btn-ghost text-sm py-2 px-4">Архив</Link>
-            <Link to="/forum/log" className="btn-ghost text-sm py-2 px-4">Журнал</Link>
           </div>
         )}
 

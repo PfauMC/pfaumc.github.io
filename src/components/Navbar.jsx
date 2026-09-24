@@ -71,9 +71,9 @@ export default function Navbar() {
     { label: 'Путеводитель', to: '/guide' },
     { label: 'Игроки', to: '/players' },
     // Ссылка -- только удобство: реальная проверка прав живёт на бэкенде
-    // (Ctx::require_any_role у GET /api/v1/bans, точный набор role key
-    // helper/helper+/admin — не порог can_moderate), не здесь.
-    ...(canViewBanlist ? [{ label: 'Бан-лист', to: '/bans' }] : []),
+    // (Ctx::require_staff, точный набор role key helper/helper+/admin — не
+    // порог can_moderate), не здесь.
+    ...(canViewBanlist ? [{ label: 'Модерация', to: '/moderation' }] : []),
   ]
 
   // backdrop-filter на шапке делает её containing block для fixed-потомков,

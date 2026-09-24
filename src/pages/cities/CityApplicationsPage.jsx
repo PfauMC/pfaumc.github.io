@@ -8,10 +8,11 @@ import {
   Breadcrumbs, ListSkeleton, ErrorState, EmptyState, Pagination, Modal, FormError,
 } from '../../components/forum/ui'
 import { StatusBadge } from './CitiesPage'
+import ModerationShell from '../moderation/ModerationShell'
 
 export default function CityApplicationsPage() {
-  useSEO('Заявки на города — Форум PfauMC')
-  const { user, loading: authLoading, isModerator } = useForumAuth()
+  useSEO('Заявки на города — Модерация PfauMC')
+  const { isStaff } = useForumAuth()
   const [status, setStatus] = useState('pending')
   const [page, setPage] = useState(1)
   const [rejecting, setRejecting] = useState(null)
@@ -19,7 +20,7 @@ export default function CityApplicationsPage() {
   const [actionError, setActionError] = useState(null)
 
   const { data, loading, error, reload } = useApiData(
-    isModerator ? `/applications?status=${status}&page=${page}` : null,
+    isStaff ? `/applications?status=${status}&page=${page}` : null,
     { fetcher: citiesApi }
   )
 
@@ -60,16 +61,7 @@ export default function CityApplicationsPage() {
   ]
 
   return (
-    <div className="min-h-screen pt-24 pb-16">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6">
-        <Breadcrumbs items={[{ label: 'Города', to: '/cities' }, { label: 'Заявки' }]} />
-        <h1 className="font-mono text-2xl sm:text-3xl font-bold text-heading mb-6">Заявки на города</h1>
-
-        {authLoading ? (
-          <ListSkeleton rows={3} />
-        ) : !user || !isModerator ? (
-          <EmptyState icon="🚫" title="Доступ только для хелперов и выше" text="Этот раздел скрыт от обычных игроков." />
-        ) : (
+    <ModerationShell>
           <>
             <div className="flex flex-wrap gap-2 mb-5">
               {tabs.map((tab) => (
@@ -111,8 +103,6 @@ export default function CityApplicationsPage() {
               </>
             )}
           </>
-        )}
-      </div>
 
       {rejecting && (
         <RejectDialog
@@ -122,7 +112,7 @@ export default function CityApplicationsPage() {
           onConfirm={(reason) => reject(rejecting, reason)}
         />
       )}
-    </div>
+    </ModerationShell>
   )
 }
 

@@ -134,6 +134,9 @@ export function ForumAuthProvider({ children }) {
       setUnreadCount,
       canViewMultiacc,
       canViewBanlist,
+      // Раздел «Модерация» (бан-лист, заявки, жалобы, журнал) -- с роли helper; бэкенд
+      // считает этот флаг по тому же набору ролей, что и бан-лист.
+      isStaff: canViewBanlist,
       setUser,
       refresh,
       logout,

@@ -43,6 +43,7 @@ const ArchivePage = named(() => import('./pages/forum/ModPages'), 'ArchivePage')
 const CitiesPage = lazy(() => import('./pages/cities/CitiesPage'))
 const CityPage = lazy(() => import('./pages/cities/CityPage'))
 const CityApplicationsPage = lazy(() => import('./pages/cities/CityApplicationsPage'))
+const GuideApplicationsPage = lazy(() => import('./pages/moderation/GuideApplicationsPage'))
 const GuidePage = lazy(() => import('./pages/GuidePage'))
 
 function HomePage() {
@@ -86,7 +87,17 @@ export default function App() {
               <Route path="/stats" element={<Navigate to={{ pathname: '/', hash: '#stats' }} replace />} />
               <Route path="/players" element={<PlayersPage />} />
               <Route path="/u/:nickname" element={<PlayerProfilePage />} />
-              <Route path="/bans" element={<BanListPage />} />
+              <Route path="/moderation" element={<Navigate to="/moderation/bans" replace />} />
+              <Route path="/moderation/bans" element={<BanListPage />} />
+              <Route path="/moderation/reports" element={<ReportsPage />} />
+              <Route path="/moderation/cities" element={<CityApplicationsPage />} />
+              <Route path="/moderation/guide" element={<GuideApplicationsPage />} />
+              <Route path="/moderation/log" element={<ModLogPage />} />
+              {/* Старые адреса -- в «Модерацию» */}
+              <Route path="/bans" element={<Navigate to="/moderation/bans" replace />} />
+              <Route path="/forum/reports" element={<Navigate to="/moderation/reports" replace />} />
+              <Route path="/forum/log" element={<Navigate to="/moderation/log" replace />} />
+              <Route path="/cities/applications" element={<Navigate to="/moderation/cities" replace />} />
               <Route path="/wiki" element={<WikiLayout />}>
                 <Route index element={<WikiIndex />} />
                 <Route path="guide" element={<WikiGuide />} />
@@ -104,12 +115,9 @@ export default function App() {
               <Route path="/forum/my-posts" element={<MyPostsPage />} />
               <Route path="/forum/subscriptions" element={<SubscriptionsPage />} />
               <Route path="/forum/settings" element={<ForumSettingsPage />} />
-              <Route path="/forum/reports" element={<ReportsPage />} />
               <Route path="/forum/trash" element={<TrashPage />} />
               <Route path="/forum/archive" element={<ArchivePage />} />
-              <Route path="/forum/log" element={<ModLogPage />} />
               <Route path="/cities" element={<CitiesPage />} />
-              <Route path="/cities/applications" element={<CityApplicationsPage />} />
               <Route path="/cities/:slug" element={<CityPage />} />
               <Route path="/guide" element={<GuidePage />} />
               <Route path="/auth/game" element={<AuthGamePage />} />

@@ -6,16 +6,8 @@ import { Modal, Field, FormError, LoginNotice, inputClass } from '../components/
 import { useForumAuth } from '../context/ForumAuthContext'
 import { useApiData } from '../hooks/useApiData'
 import { useSEO } from '../hooks/useSEO'
-import { guideApi, imageUrl } from '../lib/guideApi'
+import { guideApi, imageUrl, CATEGORIES } from '../lib/guideApi'
 
-const CATEGORIES = {
-  city: ['Города', '⚓', '#2f6f8f'],
-  shop: ['Магазины', '💎', '#2f7f6b'],
-  landmark: ['Достопримечательности', '✦', '#8a6a2c'],
-  build: ['Постройки', '🏛', '#6b4f8f'],
-  base: ['Базы', '⌂', '#7a4a3a'],
-  other: ['Другое', '●', '#4a5563'],
-}
 
 // Города на карту попадают сами — предложить можно всё, кроме них.
 const PROPOSABLE = Object.entries(CATEGORIES).filter(([key]) => key !== 'city')
@@ -37,7 +29,6 @@ export default function GuidePage() {
   // На телефоне список -- шторка поверх карты, открытым он закрыл бы её целиком.
   const [listOpen, setListOpen] = useState(() => window.innerWidth >= 760)
   const [applying, setApplying] = useState(false)
-  const [moderating, setModerating] = useState(false)
   const [notice, setNotice] = useState(null)
 
   const allPlaces = placesRequest.data?.places ?? []
@@ -92,7 +83,6 @@ export default function GuidePage() {
 
         {notice && <button className="guide-notice" onClick={() => setNotice(null)}>{notice}</button>}
         <div className="guide-panel-actions">
-          {isModerator && <button onClick={() => setModerating(true)}>Заявки</button>}
           <button className="guide-add" onClick={() => setApplying(true)}>＋ Предложить место</button>
         </div>
       </section>
@@ -119,7 +109,6 @@ export default function GuidePage() {
         ? <ApplicationForm onClose={() => setApplying(false)} onSubmitted={() => { setApplying(false); setNotice('Заявка отправлена — место появится на карте после проверки стаффом.') }} />
         : <Modal title="Предложить место" onClose={() => setApplying(false)}><LoginNotice text="Чтобы предложить место, нужно войти." /></Modal>
       )}
-      {moderating && <ModerationModal onClose={() => setModerating(false)} onUpdated={placesRequest.reload} />}
     </main>
   )
 }
@@ -267,41 +256,6 @@ function ApplicationForm({ onClose, onSubmitted }) {
         <Field label="Скриншоты"><ImagePicker ids={form.imageIds} onChange={(imageIds) => set({ imageIds })} max={3} label="Скриншот" /></Field>
         <FormError error={error} />
       </div>
-    </Modal>
-  )
-}
-
-function ModerationModal({ onClose, onUpdated }) {
-  const applications = useApiData('/applications?status=pending', { fetcher: guideApi })
-  const [error, setError] = useState(null)
-  const decide = async (id, status) => {
-    const reason = status === 'rejected' ? window.prompt('Причина отклонения') : null
-    if (status === 'rejected' && !reason) return
-    try {
-      await guideApi(`/applications/${id}`, { method: 'PATCH', body: { status, reason } })
-      applications.reload(); onUpdated()
-    } catch (e) { setError(e.message) }
-  }
-  return (
-    <Modal title="Заявки в путеводитель" onClose={onClose} wide>
-      <FormError error={error ?? applications.error?.message} />
-      {!applications.loading && !applications.data?.applications.length && <p className="text-text-light text-sm">Новых заявок нет.</p>}
-      <div className="space-y-3">{applications.data?.applications.map((item) => (
-        <div key={item.id} className="card p-4">
-          <div className="flex justify-between gap-3"><div><b className="text-heading">{item.name}</b><p className="text-xs text-text-light/50">{item.applicantName} · {CATEGORIES[item.category]?.[0]} · X {item.x}, Z {item.z}{item.ownerName && ` · владелец: ${item.ownerName}`}</p></div><span>{CATEGORIES[item.category]?.[1]}</span></div>
-          <p className="text-sm text-text-light mt-2">{item.description}</p>
-          {!!item.imageIds.length && (
-            <div className="flex gap-2 mt-3">
-              {item.imageIds.map((id) => (
-                <a key={id} href={imageUrl(id)} target="_blank" rel="noreferrer" className="block w-32 h-20 rounded-lg overflow-hidden border border-white/10 hover:border-accent/50">
-                  <img src={imageUrl(id)} alt="" className="w-full h-full object-cover" />
-                </a>
-              ))}
-            </div>
-          )}
-          <div className="flex gap-2 mt-3"><button className="btn-primary text-xs py-1.5 px-3" onClick={() => decide(item.id, 'approved')}>Одобрить</button><button className="btn-ghost text-xs py-1.5 px-3" onClick={() => decide(item.id, 'rejected')}>Отклонить</button></div>
-        </div>
-      ))}</div>
     </Modal>
   )
 }

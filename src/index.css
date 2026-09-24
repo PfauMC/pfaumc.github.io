@@ -43,6 +43,8 @@
   position: relative;
   display: grid;
   grid-template-columns: var(--guide-panel) 1fr;
+  /* Без явной строки сетка растягивается под весь список, и крутится страница, а не список. */
+  grid-template-rows: minmax(0, 1fr);
   height: 100vh;
   min-height: 640px;
   padding-top: 74px;
@@ -54,6 +56,7 @@
   position: relative;
   z-index: 12;
   min-width: 0;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   background: rgb(var(--c-bg-main) / .97);
@@ -86,7 +89,7 @@
 .guide-filters button { flex: 0 0 auto; padding: 7px 10px; border: 1px solid rgb(255 255 255 / .09); border-radius: 7px; color: rgb(var(--c-text-light) / .7); font-size: 11px; transition: .2s; }
 .guide-filters button:hover, .guide-filters button.active { border-color: rgb(var(--c-accent) / .5); background: rgb(var(--c-accent) / .12); color: rgb(var(--c-text-base)); }
 
-.guide-list { min-height: 0; flex: 1; overflow-y: auto; }
+.guide-list { min-height: 0; flex: 1; overflow-y: auto; overscroll-behavior: contain; }
 .guide-list-title { display: flex; justify-content: space-between; padding: 15px 24px 9px; color: rgb(var(--c-text-base)); font-size: 12px; font-weight: 700; }
 .guide-list-title small { color: rgb(var(--c-text-light) / .4); font-weight: 400; }
 .place-row { width: 100%; display: grid; grid-template-columns: 76px minmax(0, 1fr) 12px; gap: 12px; padding: 11px 20px 11px 24px; text-align: left; border-left: 3px solid transparent; transition: .18s; }
@@ -160,13 +163,13 @@
 @media (max-width: 759px) {
   .guide-shell { display: block; height: 100dvh; min-height: 480px; padding-top: 64px; }
   /* Шторка снизу: верх карты остаётся виден, закрыть -- тапом по ручке или кнопкой на карте. */
-  .guide-panel { position: absolute; inset: auto 0 0 0; z-index: 15; height: 62%; border-right: 0; border-top: 1px solid rgb(255 255 255 / .1); border-radius: 18px 18px 0 0; background: rgb(var(--c-bg-main)); box-shadow: 0 -12px 40px rgb(0 0 0 / .4); transform: translateY(102%); transition: transform .28s ease; }
+  .guide-panel { position: absolute; inset: auto 0 0 0; z-index: 15; height: 72%; border-right: 0; border-top: 1px solid rgb(255 255 255 / .1); border-radius: 18px 18px 0 0; background: rgb(var(--c-bg-main)); box-shadow: 0 -12px 40px rgb(0 0 0 / .4); transform: translateY(102%); transition: transform .28s ease; }
   .guide-panel.is-open { transform: translateY(0); }
   .guide-sheet-handle { display: block; flex: 0 0 auto; width: 100%; padding: 10px 0 2px; }
   .guide-sheet-handle::before { content: ''; display: block; width: 40px; height: 4px; margin: 0 auto; border-radius: 2px; background: rgb(255 255 255 / .25); }
   .guide-heading { padding: 6px 16px 10px; }
   .guide-heading h1 { font-size: 20px; }
-  .guide-heading > p:last-child { display: none; }
+  .guide-heading > p:last-child, .guide-kicker { display: none; }
   .guide-search { margin-left: 16px; margin-right: 16px; }
   .guide-filters { padding: 0 16px 12px; }
   .guide-list-title, .guide-inline-state { padding-left: 16px; padding-right: 16px; }

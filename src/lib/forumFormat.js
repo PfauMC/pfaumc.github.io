@@ -69,4 +69,26 @@ export const MOD_ACTION_LABELS = {
   'category.unarchive': 'вернул категорию из архива',
   'topic.archive': 'перенёс тему в архив',
   'topic.unarchive': 'вернул тему из архива',
+  'topic.pin': 'закрепил тему',
+  'topic.unpin': 'открепил тему',
+  'city_application.approve': 'одобрил заявку на город',
+  'city_application.reject': 'отклонил заявку на город',
+  'city.delete': 'удалил город',
+  'guide_application.approve': 'одобрил заявку в путеводитель',
+  'guide_application.reject': 'отклонил заявку в путеводитель',
+  'guide_place.delete': 'удалил место из путеводителя',
+  'guide_review.delete': 'удалил отзыв в путеводителе',
+  'punish.issue': 'выдал наказание',
+  'punish.lift': 'снял наказание',
 }
+
+/** Группы для фильтра журнала аудита -- по префиксу действия. */
+export const MOD_ACTION_GROUPS = [
+  ['Наказания', ['punish.']],
+  ['Жалобы', ['report.']],
+  ['Города', ['city.', 'city_application.']],
+  ['Путеводитель', ['guide_']],
+  ['Форум', ['group.', 'category.', 'topic.', 'post.', 'player.']],
+].map(([label, prefixes]) => [label, Object.keys(MOD_ACTION_LABELS).filter((key) => prefixes.some((pr) => key.startsWith(pr)))])
+
+export const PUNISH_KIND_LABELS = { ban: 'бан', mute: 'мут', shadowmute: 'теневой мут' }

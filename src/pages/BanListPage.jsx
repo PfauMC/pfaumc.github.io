@@ -6,6 +6,7 @@ import { useForumAuth } from '../context/ForumAuthContext'
 import { gameApi } from '../lib/gameApi'
 import { formatExactDateTime } from '../utils/playerFormat'
 import { Breadcrumbs, ListSkeleton, ErrorState, EmptyState, Pagination, UserHead, inputClass } from '../components/forum/ui'
+import ModerationShell from './moderation/ModerationShell'
 
 const STATUS_LABELS = { active: 'Активен', expired: 'Истёк', lifted: 'Снят' }
 const STATUS_STYLE = {
@@ -44,7 +45,7 @@ const fetchWithSession = (path, opts) => gameApi(path, { ...opts, withSession: t
  */
 export default function BanListPage() {
   useSEO('Бан-лист — PfauMC')
-  const { user, loading: authLoading, canViewBanlist } = useForumAuth()
+  const { isStaff } = useForumAuth()
 
   const [query, setQuery] = useState('')
   const [activeOnly, setActiveOnly] = useState(true)
@@ -58,21 +59,12 @@ export default function BanListPage() {
   params.set('active', String(activeOnly))
   params.set('page', String(page))
 
-  const { data, loading, error, reload } = useApiData(canViewBanlist ? `/bans?${params.toString()}` : null, {
+  const { data, loading, error, reload } = useApiData(isStaff ? `/bans?${params.toString()}` : null, {
     fetcher: fetchWithSession,
   })
 
   return (
-    <div className="min-h-screen pt-24 pb-16">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6">
-        <Breadcrumbs items={[{ label: 'Бан-лист' }]} />
-        <h1 className="font-mono text-2xl sm:text-3xl font-bold text-heading mb-6">Бан-лист</h1>
-
-        {authLoading ? (
-          <ListSkeleton rows={3} />
-        ) : !user || !canViewBanlist ? (
-          <EmptyState icon="🚫" title="Доступ только для персонала" text="Этот раздел скрыт от обычных игроков." />
-        ) : (
+    <ModerationShell>
           <>
             <div className="flex flex-col sm:flex-row gap-3 mb-5">
               <input
@@ -137,8 +129,6 @@ export default function BanListPage() {
               </>
             )}
           </>
-        )}
-      </div>
-    </div>
+    </ModerationShell>
   )
 }

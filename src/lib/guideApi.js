@@ -5,6 +5,16 @@ export function guideApi(path, opts) {
   return apiRequest(`${GAME_API_BASE}/api/v1/guide${path}`, opts)
 }
 
+// [подпись, иконка, цвет] -- общие для путеводителя и вкладки заявок в «Модерации».
+export const CATEGORIES = {
+  city: ['Города', '⚓', '#2f6f8f'],
+  shop: ['Магазины', '💎', '#2f7f6b'],
+  landmark: ['Достопримечательности', '✦', '#8a6a2c'],
+  build: ['Постройки', '🏛', '#6b4f8f'],
+  base: ['Базы', '⌂', '#7a4a3a'],
+  other: ['Другое', '●', '#4a5563'],
+}
+
 export const MAX_IMAGE_BYTES = 2 * 1024 * 1024
 
 export const imageUrl = (id) => `${GAME_API_BASE}/api/v1/uploads/${id}`

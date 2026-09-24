@@ -40,6 +40,18 @@ const toSnake = (k) => k.replace(/[A-Z]/g, (c) => `_${c.toLowerCase()}`)
  * Общее ядро для любого JSON-эндпоинта бэкенда за сессионной курой (форум, города):
  * та же CSRF-схема, тот же snake_case на границе, тот же формат ошибки.
  */
+/** Невостребованный вовремя ранний ответ не отдаём: к этому моменту он уже устарел. */
+const EARLY_TTL_MS = 10_000
+
+/** Запрос, начатый ещё из index.html. Тело ответа читается один раз, поэтому забираем. */
+function takeEarly(url) {
+  const early = window.__apiEarly
+  const entry = early?.[url]
+  if (!entry) return undefined
+  delete early[url]
+  return Date.now() - entry.at < EARLY_TTL_MS ? entry.res : undefined
+}
+
 export async function apiRequest(url, { method = 'GET', body, signal } = {}) {
   const headers = {}
   if (body !== undefined) headers['Content-Type'] = 'application/json'
@@ -47,14 +59,14 @@ export async function apiRequest(url, { method = 'GET', body, signal } = {}) {
 
   let res
   try {
-    res = await fetch(url, {
+    res = await ((method === 'GET' && takeEarly(url)) || fetch(url, {
       method,
       headers,
       // Кука сессии живёт на .pfaumc.io, а запрос уходит на поддомен — без include не поедет.
       credentials: 'include',
       body: body === undefined ? undefined : JSON.stringify(convertKeys(body, toSnake)),
       signal,
-    })
+    }))
   } catch (e) {
     if (e.name === 'AbortError') throw e
     throw new ApiError('Нет соединения с сервером', 0, 'network')

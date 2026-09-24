@@ -78,6 +78,8 @@ export default function App() {
         <Fireflies count={22} />
         <Navbar />
         <div>
+          {/* Пока грузится чанк страницы, футер иначе стоит на первом экране и потом уезжает вниз. */}
+          <div className="min-h-screen">
           <Suspense fallback={null}>
             <Routes>
               <Route path="/" element={<HomePage />} />
@@ -117,6 +119,7 @@ export default function App() {
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </Suspense>
+          </div>
           <Footer />
         </div>
       </div>

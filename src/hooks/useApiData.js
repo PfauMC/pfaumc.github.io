@@ -6,7 +6,6 @@ import { api } from '../lib/forumApi'
  * форума и у городов -- разные эндпоинты. Живёт только в памяти вкладки.
  */
 let responses = new WeakMap()
-let prefetched = new WeakMap()
 
 function mapOf(store, fetcher) {
   let map = store.get(fetcher)
@@ -22,29 +21,6 @@ const cacheOf = (fetcher) => mapOf(responses, fetcher)
 /** Ответы зависят от того, кто смотрит, поэтому при смене аккаунта чужое не показываем. */
 export function clearApiDataCache() {
   responses = new WeakMap()
-  prefetched = new WeakMap()
-}
-
-/**
- * Запускает запрос до того, как страница смонтируется: её чанк ещё качается, а данные
- * уже в пути. Первый useApiData с тем же путём подхватит этот запрос вместо своего.
- */
-export function prefetchApiData(path, fetcher = api) {
-  const pending = mapOf(prefetched, fetcher)
-  if (pending.has(path)) return
-  const request = fetcher(path)
-  request.catch(() => {})
-  pending.set(path, { request, at: Date.now() })
-}
-
-/** Невостребованный вовремя запрос не отдаём: позже его ответ -- уже устаревшие данные. */
-const PREFETCH_TTL_MS = 10_000
-
-function takePrefetched(fetcher, path) {
-  const pending = mapOf(prefetched, fetcher)
-  const entry = pending.get(path)
-  pending.delete(path)
-  return entry && Date.now() - entry.at < PREFETCH_TTL_MS ? entry.request : undefined
 }
 
 /**
@@ -81,8 +57,7 @@ export function useApiData(path, { skip = false, fetcher = api } = {}) {
     }
     setError(null)
 
-    const request = takePrefetched(fetcher, path) ?? fetcher(path, { signal: controller.signal })
-    request
+    fetcher(path, { signal: controller.signal })
       .then((result) => {
         cache.set(path, result)
         if (!controller.signal.aborted) setData(result)

@@ -49,7 +49,9 @@
   min-height: 640px;
   padding-top: 74px;
   overflow: hidden;
-  background: #101820;
+  /* Цвет темы, а не фиксированный тёмный: под прозрачной шапкой в светлой теме
+     тёмный фон делал тёмный текст меню нечитаемым. */
+  background: rgb(var(--c-bg-main));
 }
 
 .guide-panel {

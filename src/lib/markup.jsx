@@ -134,7 +134,9 @@ function parseTags(text, allowedTags = ALLOWED_TAGS) {
   return root.children
 }
 
-const LEAF_INLINE = /(\[[^\]\n]+\]\(https?:\/\/[^\s)]+\)|https?:\/\/[^\s<>"]+|@[A-Za-z0-9_]{1,16})/g
+// Ссылка -- внешняя (http/https) или внутренняя по сайту: «/путь», но не «//хост»
+// (протокол-относительный адрес увёл бы на чужой сайт).
+const LEAF_INLINE = /(\[[^\]\n]+\]\((?:https?:\/\/[^\s)]+|\/(?!\/)[^\s)]*)\)|https?:\/\/[^\s<>"]+|@[A-Za-z0-9_]{1,16})/g
 
 /** Ссылки, голые URL и @упоминания — не теги MiniMessage, разбираются отдельно на листьях дерева. */
 function renderLeaf(text, keyPrefix) {
@@ -153,9 +155,16 @@ function renderLeaf(text, keyPrefix) {
       )
     }
 
-    const named = part.match(/^\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)$/)
+    const named = part.match(/^\[([^\]]+)\]\((https?:\/\/[^\s)]+|\/(?!\/)[^\s)]*)\)$/)
     const label = named ? named[1] : part
     const href = named ? named[2] : part
+    if (href.startsWith('/')) {
+      return (
+        <Link key={key} to={href} className="text-accent hover:underline break-words">
+          {label}
+        </Link>
+      )
+    }
     return (
       <a
         key={key}
@@ -302,7 +311,16 @@ const headingClass = {
   4: 'font-mono text-base sm:text-lg font-bold text-heading mt-2.5 mb-1.5 first:mt-0',
 }
 
-function blocks(text, keyPrefix) {
+/** Якорь заголовка для оглавления вики: текст без тегов, пробелы -> дефис. */
+export function headingSlug(text) {
+  return String(text)
+    .replace(/<[^>]*>/g, '')
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, '-')
+    .replace(/^-+|-+$/g, '')
+}
+
+function blocks(text, keyPrefix, headingIds = false) {
   const lines = text.split('\n')
   const out = []
   let buffer = []
@@ -363,7 +381,7 @@ function blocks(text, keyPrefix) {
       const level = heading[1].length
       const Tag = `h${level}`
       out.push(
-        <Tag key={`${keyPrefix}-b${out.length}`} className={headingClass[level]}>
+        <Tag key={`${keyPrefix}-b${out.length}`} id={headingIds ? headingSlug(heading[2]) : undefined} className={`${headingClass[level]}${headingIds ? ' scroll-mt-24' : ''}`}>
           {inline(heading[2], `${keyPrefix}-b${out.length}`)}
         </Tag>
       )
@@ -393,17 +411,34 @@ function blocks(text, keyPrefix) {
   return out
 }
 
+// Вики (опция `wiki`): ещё блок-предупреждение и якоря у заголовков для оглавления.
+const QUOTE_OR_WARNING_BLOCK = /\[(quote|warning)(?:=([^\]\n]{1,32}))?\]([\s\S]*?)\[\/\1\]/gi
+
 /** Рендерит текст сообщения в безопасные React-элементы. */
-export function renderMarkup(text, keyPrefix = 'm') {
+export function renderMarkup(text, keyPrefix = 'm', { wiki = false } = {}) {
   if (!text) return null
 
   const nodes = []
   let cursor = 0
   let index = 0
 
-  for (const match of String(text).matchAll(QUOTE_BLOCK)) {
+  for (const raw of String(text).matchAll(wiki ? QUOTE_OR_WARNING_BLOCK : QUOTE_BLOCK)) {
+    // Без вики регулярка -- прежняя QUOTE_BLOCK: [всё, автор, тело]; с вики -- [всё, тег, автор, тело].
+    const match = wiki ? [raw[0], raw[2], raw[3]] : raw
+    match.index = raw.index
     if (match.index > cursor) {
-      nodes.push(...blocks(text.slice(cursor, match.index), `${keyPrefix}-t${index}`))
+      nodes.push(...blocks(text.slice(cursor, match.index), `${keyPrefix}-t${index}`, wiki))
+    }
+    if (wiki && raw[1].toLowerCase() === 'warning') {
+      nodes.push(
+        <div key={`${keyPrefix}-w${index}`} className="my-3 flex items-start gap-2.5 rounded-xl border border-orange-500/20 bg-orange-500/8 p-3">
+          <span className="text-orange-400 flex-shrink-0" aria-hidden="true">⚠️</span>
+          <div className="text-sm text-text-light leading-relaxed min-w-0">{blocks(match[2].trim(), `${keyPrefix}-w${index}i`)}</div>
+        </div>
+      )
+      cursor = match.index + match[0].length
+      index++
+      continue
     }
     const author = match[1]
     nodes.push(
@@ -421,7 +456,7 @@ export function renderMarkup(text, keyPrefix = 'm') {
     index++
   }
 
-  if (cursor < text.length) nodes.push(...blocks(text.slice(cursor), `${keyPrefix}-t${index}`))
+  if (cursor < text.length) nodes.push(...blocks(text.slice(cursor), `${keyPrefix}-t${index}`, wiki))
   return nodes
 }
 

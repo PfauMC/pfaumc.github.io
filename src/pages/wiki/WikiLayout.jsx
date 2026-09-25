@@ -1,32 +1,12 @@
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useEffect, useRef, useState } from 'react'
-import { generalRules, modeRules, roleRules } from '../../data/rulesData'
-import { mechanicsSections } from './WikiMechanics'
-import { citiesSections } from './WikiCities'
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard'
+import { useApiData } from '../../hooks/useApiData'
+import { useForumAuth } from '../../context/ForumAuthContext'
+import { headingSlug } from '../../lib/markup'
+import { wikiFetcher, groupBySection, outline } from '../../lib/wikiApi'
 import CopyToast from '../../components/CopyToast'
 import { SERVER_VERSION } from '../../config'
-
-const sections = [
-  {
-    title: 'Начало работы',
-    items: [
-      { label: '🚀 Как зайти на сервер', to: '/wiki/guide' },
-      { label: '❓ Частые вопросы', to: '/wiki/faq' },
-    ],
-  },
-]
-
-const rulesNav = [
-  { label: 'Общие правила', icon: '⚖️', to: '/wiki/rules', children: generalRules },
-  { label: 'Ванила', icon: '🌿', to: '/wiki/rules/vanilla', children: modeRules.vanilla },
-  { label: 'Роли', icon: '👑', to: '/wiki/rules/roles', children: roleRules },
-]
-
-const mechanicsNav = [
-  { label: 'Механики сервера', icon: '🧭', to: '/wiki/mechanics', children: mechanicsSections },
-  { label: 'Города', icon: '🏙️', to: '/wiki/cities', children: citiesSections },
-]
 
 const SERVER_IP = 'play.pfaumc.online'
 const DRAWER_ID = 'wiki-nav-drawer'
@@ -36,8 +16,19 @@ export default function WikiLayout() {
   const location = useLocation()
   const { copied, error, copy } = useCopyToClipboard()
   const menuButtonRef = useRef(null)
+  const { isModerator } = useForumAuth()
+
+  // Статьи -- из API (или встроенной копии, пока бэкенд вики не выкачен).
+  const pagesRequest = useApiData('/pages', { fetcher: wikiFetcher })
+  const groups = groupBySection(pagesRequest.data?.pages ?? [])
+  const currentSlug = location.pathname.match(/^\/wiki\/([a-z0-9-]+)$/)?.[1] ?? null
+  const currentRequest = useApiData(currentSlug ? `/pages/${currentSlug}` : null, { fetcher: wikiFetcher })
+  const currentOutline = outline(currentRequest.data?.page?.body)
 
   useEffect(() => { setSidebarOpen(false) }, [location.pathname, location.hash])
+  // После создания, правки или удаления статьи меню должно обновиться.
+  const reloadPages = pagesRequest.reload
+  useEffect(() => { reloadPages() }, [location.pathname, reloadPages])
 
   useEffect(() => {
     if (!sidebarOpen) return
@@ -68,153 +59,66 @@ export default function WikiLayout() {
     menuButtonRef.current?.focus()
   }
 
-  const currentPage = [...sections.flatMap(s => s.items), ...rulesNav, ...mechanicsNav].find(i => i.to === location.pathname)
-    ?? (location.pathname.startsWith('/wiki/rules') ? { label: '📜 Правила сервера' } : undefined)
+  const currentPage = (pagesRequest.data?.pages ?? []).find((p) => p.slug === currentSlug)
+
+  const linkClass = ({ isActive }) =>
+    `flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+      isActive
+        ? 'bg-accent/15 text-accent border border-accent/25 font-medium'
+        : 'text-text-light hover:text-heading hover:bg-white/5'
+    }`
 
   const navContent = (onNavigate) => (
     <>
-      <NavLink
-        to="/wiki"
-        end
-        className={({ isActive }) =>
-          `flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium mb-4 transition-colors ${
-            isActive
-              ? 'bg-accent/15 text-accent border border-accent/25'
-              : 'text-text-light hover:text-heading hover:bg-white/5'
-          }`
-        }
-        onClick={onNavigate}
-      >
+      <NavLink to="/wiki" end className={linkClass} onClick={onNavigate}>
         <span className="text-base">📖</span>
         <span>Главная вики</span>
       </NavLink>
+      <div className="mb-4" />
 
-      {sections.map((section) => (
-        <div key={section.title} className="mb-5">
+      {groups.map((group) => (
+        <div key={group.section} className="mb-5">
           <div className="text-text-light/40 text-xs font-mono uppercase tracking-widest px-3 mb-2">
-            {section.title}
+            {group.section}
           </div>
           <ul className="space-y-0.5">
-            {section.items.map((item) => (
-              <li key={item.to}>
-                <NavLink
-                  to={item.to}
-                  className={({ isActive }) =>
-                    `flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
-                      isActive
-                        ? 'bg-accent/15 text-accent border border-accent/25 font-medium'
-                        : 'text-text-light hover:text-heading hover:bg-white/5'
-                    }`
-                  }
-                  onClick={onNavigate}
-                >
-                  {item.label}
+            {group.pages.map((page) => (
+              <li key={page.slug}>
+                <NavLink to={`/wiki/${page.slug}`} className={linkClass} onClick={onNavigate}>
+                  <span>{page.icon}</span>
+                  <span>{page.title}</span>
                 </NavLink>
+                {page.slug === currentSlug && currentOutline.length > 1 && (
+                  <ul className="mt-0.5 mb-1 ml-4 pl-3 border-l border-white/10 space-y-0.5">
+                    {currentOutline.map((heading) => {
+                      const anchor = headingSlug(heading)
+                      return (
+                        <li key={anchor}>
+                          <Link
+                            to={`/wiki/${page.slug}#${anchor}`}
+                            className={`block px-3 py-1.5 rounded-lg text-xs transition-colors ${
+                              location.hash === `#${anchor}` ? 'text-accent font-medium' : 'text-text-light/70 hover:text-heading hover:bg-white/5'
+                            }`}
+                            onClick={onNavigate}
+                          >
+                            {heading.replace(/<[^>]*>/g, '')}
+                          </Link>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                )}
               </li>
             ))}
           </ul>
         </div>
       ))}
 
-      {/* Правила — nested TOC */}
-      <div className="mb-5">
-        <div className="text-text-light/40 text-xs font-mono uppercase tracking-widest px-3 mb-2">
-          Правила
-        </div>
-        <ul className="space-y-0.5">
-          {rulesNav.map((section) => {
-            const isActiveSection = location.pathname === section.to
-            return (
-              <li key={section.to}>
-                <NavLink
-                  to={section.to}
-                  className={({ isActive }) =>
-                    `flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
-                      isActive
-                        ? 'bg-accent/15 text-accent border border-accent/25 font-medium'
-                        : 'text-text-light hover:text-heading hover:bg-white/5'
-                    }`
-                  }
-                  onClick={onNavigate}
-                >
-                  <span>{section.icon}</span>
-                  <span>{section.label}</span>
-                </NavLink>
-                {isActiveSection && (
-                  <ul className="mt-0.5 mb-1 ml-4 pl-3 border-l border-white/10 space-y-0.5">
-                    {section.children.map((cat) => (
-                      <li key={cat.id}>
-                        <Link
-                          to={`${section.to}#${cat.id}`}
-                          className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-colors ${
-                            location.hash === `#${cat.id}`
-                              ? 'text-accent font-medium'
-                              : 'text-text-light/70 hover:text-heading hover:bg-white/5'
-                          }`}
-                          onClick={onNavigate}
-                        >
-                          <span>{cat.icon}</span>
-                          <span>{cat.category}</span>
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </li>
-            )
-          })}
-        </ul>
-      </div>
-
-      {/* Механики — nested TOC */}
-      <div className="mb-5">
-        <div className="text-text-light/40 text-xs font-mono uppercase tracking-widest px-3 mb-2">
-          Справка
-        </div>
-        <ul className="space-y-0.5">
-          {mechanicsNav.map((section) => {
-            const isActiveSection = location.pathname === section.to
-            return (
-              <li key={section.to}>
-                <NavLink
-                  to={section.to}
-                  className={({ isActive }) =>
-                    `flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
-                      isActive
-                        ? 'bg-accent/15 text-accent border border-accent/25 font-medium'
-                        : 'text-text-light hover:text-heading hover:bg-white/5'
-                    }`
-                  }
-                  onClick={onNavigate}
-                >
-                  <span>{section.icon}</span>
-                  <span>{section.label}</span>
-                </NavLink>
-                {isActiveSection && (
-                  <ul className="mt-0.5 mb-1 ml-4 pl-3 border-l border-white/10 space-y-0.5">
-                    {section.children.map((cat) => (
-                      <li key={cat.id}>
-                        <Link
-                          to={`${section.to}#${cat.id}`}
-                          className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-colors ${
-                            location.hash === `#${cat.id}`
-                              ? 'text-accent font-medium'
-                              : 'text-text-light/70 hover:text-heading hover:bg-white/5'
-                          }`}
-                          onClick={onNavigate}
-                        >
-                          <span>{cat.icon}</span>
-                          <span>{cat.category}</span>
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </li>
-            )
-          })}
-        </ul>
-      </div>
+      {isModerator && !pagesRequest.data?.fallback && (
+        <Link to="/wiki/new" onClick={onNavigate} className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm border border-dashed border-accent/40 text-accent hover:bg-accent/10 transition-colors">
+          ＋ Новая статья
+        </Link>
+      )}
 
       {/* Join card */}
       <div className="mt-6 p-4 bg-accent/10 border border-accent/20 rounded-xl">
@@ -246,7 +150,7 @@ export default function WikiLayout() {
             className="flex items-center gap-2 text-text-light hover:text-heading transition-colors text-sm font-medium border border-white/10 rounded-lg px-4 py-2.5 bg-bg-card w-full"
           >
             <MenuIcon className="w-4 h-4 text-accent" />
-            <span>{currentPage?.label ?? 'Вики'}</span>
+            <span>{currentPage ? `${currentPage.icon} ${currentPage.title}` : 'Вики'}</span>
             <span className="ml-auto text-text-light/40 text-xs">Меню</span>
           </button>
         </div>

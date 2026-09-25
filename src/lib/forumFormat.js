@@ -78,6 +78,9 @@ export const MOD_ACTION_LABELS = {
   'guide_application.reject': 'отклонил заявку в путеводитель',
   'guide_place.delete': 'удалил место из путеводителя',
   'guide_review.delete': 'удалил отзыв в путеводителе',
+  'wiki.create': 'создал статью вики',
+  'wiki.update': 'отредактировал статью вики',
+  'wiki.delete': 'удалил статью вики',
   'punish.issue': 'выдал наказание',
   'punish.lift': 'снял наказание',
 }
@@ -88,6 +91,7 @@ export const MOD_ACTION_GROUPS = [
   ['Жалобы', ['report.']],
   ['Города', ['city.', 'city_application.']],
   ['Путеводитель', ['guide_']],
+  ['Вики', ['wiki.']],
   ['Форум', ['group.', 'category.', 'topic.', 'post.', 'player.']],
 ].map(([label, prefixes]) => [label, Object.keys(MOD_ACTION_LABELS).filter((key) => prefixes.some((pr) => key.startsWith(pr)))])
 

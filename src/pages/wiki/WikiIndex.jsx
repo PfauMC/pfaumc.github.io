@@ -3,7 +3,11 @@ import { useSEO } from '../../hooks/useSEO'
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard'
 import CopyToast from '../../components/CopyToast'
 import { SERVER_VERSION } from '../../config'
-import { faqItems, FAQ_HIGHLIGHTS } from './WikiFaq'
+import { useApiData } from '../../hooks/useApiData'
+import { renderMarkup } from '../../lib/markup'
+import { wikiFetcher, groupBySection, faqItems } from '../../lib/wikiApi'
+
+const FAQ_HIGHLIGHTS = 6
 
 const SERVER_IP = 'play.pfaumc.online'
 
@@ -15,34 +19,12 @@ const facts = [
   { icon: '📨', title: 'Репорты', text: <>Репорты и апелляции подаются через <Link to="/forum" className="text-accent hover:underline">форум</Link>.</> },
 ]
 
-const groups = [
-  {
-    title: 'Начало работы',
-    cards: [
-      { to: '/wiki/guide', icon: '🚀', title: 'Как зайти на сервер', desc: 'Лаунчер, аккаунт и подключение — пошагово.' },
-      { to: '/wiki/faq', icon: '❓', title: 'Частые вопросы', desc: 'Пиратка, приваты, фермы, магазины, гриф.' },
-    ],
-  },
-  {
-    title: 'Правила',
-    cards: [
-      { to: '/wiki/rules', icon: '⚖️', title: 'Общие правила', desc: 'Общение, читы, аккаунты, репорты.' },
-      { to: '/wiki/rules/vanilla', icon: '🌿', title: 'Ванила', desc: 'Собственность, территории, спавн, бизнес.' },
-      { to: '/wiki/rules/roles', icon: '👑', title: 'Роли', desc: 'Персонал и государственные должности.' },
-    ],
-  },
-  {
-    title: 'Справка',
-    cards: [
-      { to: '/wiki/mechanics', icon: '🧭', title: 'Механики сервера', desc: 'Команды, моды, голосовой чат, ограничения новичков.' },
-      { to: '/wiki/cities', icon: '🏙️', title: 'Города', desc: 'Регистрация города, глава, жители и форум.' },
-    ],
-  },
-]
-
 export default function WikiIndex() {
   useSEO('База знаний — PfauMC Wiki', 'Гайды, FAQ и правила Minecraft сервера PfauMC.')
   const { copied, error, copy } = useCopyToClipboard()
+  const pages = useApiData('/pages', { fetcher: wikiFetcher }).data?.pages ?? []
+  const groups = groupBySection(pages)
+  const faq = faqItems(useApiData('/pages/faq', { fetcher: wikiFetcher }).data?.page?.body).slice(0, FAQ_HIGHLIGHTS)
 
   return (
     <div className="space-y-10">
@@ -100,19 +82,19 @@ export default function WikiIndex() {
         <h2 id="wiki-sections" className="font-mono font-bold text-heading text-lg mb-4">Разделы</h2>
         <div className="space-y-6">
           {groups.map((group) => (
-            <div key={group.title}>
-              <div className="text-text-light/40 text-xs font-mono uppercase tracking-widest mb-2">{group.title}</div>
+            <div key={group.section}>
+              <div className="text-text-light/40 text-xs font-mono uppercase tracking-widest mb-2">{group.section}</div>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {group.cards.map((c) => (
+                {group.pages.map((c) => (
                   <Link
-                    key={c.to}
-                    to={c.to}
+                    key={c.slug}
+                    to={`/wiki/${c.slug}`}
                     className="card group flex items-start gap-3 hover:border-accent/30 hover:bg-accent/5 transition-all duration-200"
                   >
                     <span className="text-2xl flex-shrink-0" aria-hidden="true">{c.icon}</span>
                     <span className="min-w-0">
                       <span className="block font-mono font-bold text-heading group-hover:text-accent transition-colors mb-1">{c.title}</span>
-                      <span className="block text-text-light/70 text-sm leading-relaxed">{c.desc}</span>
+                      {c.summary && <span className="block text-text-light/70 text-sm leading-relaxed">{c.summary}</span>}
                     </span>
                   </Link>
                 ))}
@@ -129,7 +111,7 @@ export default function WikiIndex() {
           <Link to="/wiki/faq" className="text-accent text-sm hover:underline flex-shrink-0">Все вопросы →</Link>
         </div>
         <div className="card p-0 sm:p-0 divide-y divide-white/5 overflow-hidden">
-          {faqItems.slice(0, FAQ_HIGHLIGHTS).map((item) => (
+          {faq.map((item) => (
             <details key={item.q} className="group">
               <summary className="flex items-center gap-3 px-4 sm:px-6 py-4 cursor-pointer list-none [&::-webkit-details-marker]:hidden hover:bg-white/[0.03] transition-colors">
                 <span className="font-mono font-bold text-heading text-sm flex-1">{item.q}</span>
@@ -137,7 +119,7 @@ export default function WikiIndex() {
                   <polyline points="6,9 12,15 18,9" />
                 </svg>
               </summary>
-              <p className="px-4 sm:px-6 pb-4 -mt-1 text-text-light text-sm leading-relaxed">{item.a}</p>
+              <div className="px-4 sm:px-6 pb-4 -mt-1 text-text-light text-sm leading-relaxed">{renderMarkup(item.a, `faq-${item.q}`, { wiki: true })}</div>
             </details>
           ))}
         </div>

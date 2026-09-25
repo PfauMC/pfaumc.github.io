@@ -45,6 +45,9 @@ export default function Editor({
   // опубликованного сообщения в PostCard) — статус и кнопка не рендерятся.
   draftStatus = null,
   onSaveDraft = null,
+  // Вики: длинные статьи, блок [warning] в панели и высокое поле.
+  maxLength = MAX_LENGTH,
+  wiki = false,
 }) {
   const { canViewHidden } = useForumAuth()
   const [preview, setPreview] = useState(false)
@@ -55,7 +58,7 @@ export default function Editor({
   const closePopup = () => setOpenPopup(null)
   const togglePopup = (name) => setOpenPopup((p) => (p === name ? null : name))
 
-  const setValueClamped = (next) => onChange(next.slice(0, MAX_LENGTH))
+  const setValueClamped = (next) => onChange(next.slice(0, maxLength))
 
   /** Оборачивает выделение (или плейсхолдер, если ничего не выделено) в open/close. */
   const applyWrap = (open, close, placeholder = 'текст') => {
@@ -208,7 +211,7 @@ export default function Editor({
     })
   }
 
-  const tooLong = value.length > MAX_LENGTH
+  const tooLong = value.length > maxLength
   const canSubmit = value.trim().length >= 2 && !tooLong && !busy && !disabled
   const toolsDisabled = preview || busy
 
@@ -219,7 +222,7 @@ export default function Editor({
     // сам bg-black/5 в подвале — единственный кусок, у которого свой фон.
     <div className="relative rounded-2xl border border-white/10 bg-bg-card focus-within:border-accent/40 transition-colors">
       {/* Панель инструментов */}
-      <div className="flex items-center gap-0.5 px-2 py-1.5 border-b border-white/5 overflow-x-auto scrollbar-none">
+      <div className={`flex items-center gap-0.5 px-2 py-1.5 border-b border-white/5 overflow-x-auto scrollbar-none ${wiki ? 'sticky top-[68px] z-20 bg-bg-card rounded-t-2xl' : ''}`}>
         <ToolbarMenu
           label="H"
           title="Заголовок"
@@ -327,6 +330,11 @@ export default function Editor({
         <ToolButton title="Цитата" disabled={toolsDisabled} onClick={() => applyPrefix('> ')}>
           ❝
         </ToolButton>
+        {wiki && (
+          <ToolButton title="Предупреждение (оранжевая плашка)" disabled={toolsDisabled} onClick={() => applyWrap('[warning]', '[/warning]')}>
+            ⚠️
+          </ToolButton>
+        )}
 
         <div className="ml-auto flex-shrink-0 pl-2">
           <button
@@ -348,18 +356,18 @@ export default function Editor({
       {/* Поле / предпросмотр */}
       {preview ? (
         <div className="px-4 py-3 min-h-[7rem] text-text-light text-sm leading-relaxed">
-          {value.trim() ? renderMarkup(value, id) : <span className="text-text-light/40">Пока пусто</span>}
+          {value.trim() ? renderMarkup(value, id, { wiki }) : <span className="text-text-light/40">Пока пусто</span>}
         </div>
       ) : (
         <textarea
           ref={textareaRef}
           id={id}
           value={value}
-          onChange={(e) => setValueClamped(e.target.value.slice(0, MAX_LENGTH + 1))}
+          onChange={(e) => setValueClamped(e.target.value.slice(0, maxLength + 1))}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           autoFocus={autoFocus}
-          rows={compact ? 4 : 7}
+          rows={wiki ? 24 : compact ? 4 : 7}
           aria-label="Текст сообщения"
           className="w-full bg-transparent px-4 py-3 text-heading placeholder-text-light/30 text-sm leading-relaxed resize-y focus:outline-none"
         />
@@ -381,7 +389,7 @@ export default function Editor({
           </button>
         )}
         <span className={`text-[11px] tabular-nums ${tooLong ? 'text-red-400' : 'text-text-light/40'}`}>
-          {value.length}/{MAX_LENGTH}
+          {value.length}/{maxLength}
         </span>
         {onCancel && (
           <button type="button" onClick={onCancel} disabled={busy} className="btn-ghost text-xs py-1.5 px-3">

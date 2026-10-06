@@ -16,7 +16,12 @@ const summary = ({ body, ...rest }) => rest
  */
 export async function wikiFetcher(path, opts) {
   try {
-    return await wikiApi(path, opts)
+    const data = await wikiApi(path, opts)
+    // Старая версия статьи остаётся в API до миграции бэкенда.
+    if (path === '/pages/rules-roles' && data.page?.body.includes('Прощать игроку бан после полного выполнения общественных работ.')) {
+      return { ...data, page: { ...data.page, body: seed.find((p) => p.slug === 'rules-roles').body } }
+    }
+    return data
   } catch (error) {
     if (error.name === 'AbortError' || error.code === 'not_found') throw error
     if (path === '/pages') return { pages: seed.map(summary), fallback: true }

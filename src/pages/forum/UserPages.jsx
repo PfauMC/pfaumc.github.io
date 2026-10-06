@@ -494,7 +494,7 @@ function SubscriptionSettings() {
         </div>}
         <div className="border-t border-white/10 pt-4">
           <h3 className="font-semibold text-heading text-sm mb-3">История платежей</h3>
-          {data.payments.length ? <div className="space-y-2">{data.payments.map((payment) => <div key={payment.id} className="text-xs text-text-light flex flex-wrap gap-x-3 gap-y-1"><span>{new Date(payment.createdAt).toLocaleDateString('ru-RU')}</span><span>{planName(payment.plan)}</span><span>{payment.amountKopecks / 100} ₽</span><span>{payment.status === 'confirmed' ? 'Оплачен' : payment.status === 'payment_failed' ? 'Ошибка' : 'Ожидает оплаты'}</span><span className="font-mono break-all">{payment.externalPaymentId ?? payment.id}</span></div>)}</div> : <p className="text-xs text-text-light/60">Платежей пока нет.</p>}
+          {data.payments.length ? <div className="space-y-2">{data.payments.map((payment) => <div key={payment.id} className="text-xs text-text-light flex flex-wrap gap-x-3 gap-y-1"><span>{new Date(payment.createdAt).toLocaleDateString('ru-RU')}</span><span>{planName(payment.plan)} · {payment.months ?? 1} мес.</span><span>{(payment.amountKopecks / 100).toLocaleString('ru-RU', { minimumFractionDigits: payment.amountKopecks % 100 ? 2 : 0 })} ₽</span><span>{payment.status === 'confirmed' ? 'Оплачен' : payment.status === 'payment_failed' ? 'Ошибка' : 'Ожидает оплаты'}</span><span className="font-mono break-all">{payment.externalPaymentId ?? payment.id}</span></div>)}</div> : <p className="text-xs text-text-light/60">Платежей пока нет.</p>}
         </div>
       </>
     )}

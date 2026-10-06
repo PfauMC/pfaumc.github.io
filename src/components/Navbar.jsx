@@ -69,7 +69,6 @@ export default function Navbar() {
     { label: 'Форум', to: '/forum' },
     { label: 'Города', to: '/cities' },
     { label: 'Путеводитель', to: '/guide' },
-    { label: 'Подписки', to: '/donate' },
     { label: 'Игроки', to: '/players' },
     // Ссылка -- только удобство: реальная проверка прав живёт на бэкенде
     // (Ctx::require_staff, точный набор role key helper/helper+/admin — не
@@ -145,11 +144,13 @@ export default function Navbar() {
           <div className="ml-1 pl-2 border-l border-white/10">
             <UserArea />
           </div>
+          <Link to="/donate" className="ml-1 px-3 h-9 inline-flex items-center rounded-lg border border-accent/30 text-accent hover:bg-accent/10 text-sm font-semibold transition-colors">Подписки</Link>
         </div>
 
         {/* Mobile: форум-аккаунт + theme toggle + hamburger */}
         <div className="nav:hidden flex items-center gap-1">
           <UserArea compact />
+          <Link to="/donate" aria-label="Подписки" title="Подписки" className="w-9 h-9 flex items-center justify-center rounded-lg border border-accent/30 text-accent hover:bg-accent/10 font-semibold">★</Link>
           <button
             onClick={toggle}
             title={theme === 'dark' ? 'Светлая тема' : 'Тёмная тема'}

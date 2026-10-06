@@ -9,4 +9,5 @@ export const PLANS = [
 
 export const planRank = (plan) => ({ fun: 1, maecenas: 2, sponsor: 3 })[plan] ?? 0
 export const planName = (plan) => PLANS.find((p) => p.key === plan)?.name ?? plan
+export const periodPrice = (plan, months) => plan.price * months * ({ 1: 100, 3: 90, 12: 70 }[months])
 export const subscriptionApi = (path, opts) => apiRequest(`${GAME_API_BASE}/api/v1/subscriptions${path}`, opts)

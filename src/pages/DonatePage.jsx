@@ -55,7 +55,12 @@ export default function DonatePage() {
   const buy = async (plan) => {
     setBusy(plan); setMessage(null)
     try {
-      const { url } = await subscriptionApi('/checkout', { method: 'POST', body: { plan, months } })
+      const checkout = await subscriptionApi('/checkout', { method: 'POST', body: { plan, months } })
+      if (months > 1 && (checkout.months !== months || checkout.amountKopecks !== periodPrice(PLANS.find((item) => item.key === plan), months))) {
+        setMessage('Оплата на выбранный срок пока недоступна. Попробуйте позже.')
+        return
+      }
+      const { url } = checkout
       window.location.assign(url)
     } catch { setMessage('Не удалось начать оплату. Попробуйте позже.') }
     finally { setBusy(null) }

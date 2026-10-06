@@ -46,7 +46,7 @@ export default function SubscriptionAdminPage() {
           </div>
           <FormError error={error} />
           <h3 className="text-sm font-semibold text-heading">История платежей</h3>
-          {details.data.payments.map((payment) => <p key={payment.id} className="text-xs text-text-light break-all">{new Date(payment.createdAt).toLocaleDateString('ru-RU')} · {planName(payment.plan)} · {payment.amountKopecks / 100} ₽ · {payment.status} · {payment.externalPaymentId ?? payment.id}</p>)}
+          {details.data.payments.map((payment) => <p key={payment.id} className="text-xs text-text-light break-all">{new Date(payment.createdAt).toLocaleDateString('ru-RU')} · {planName(payment.plan)} · {payment.months ?? 1} мес. · {payment.amountKopecks / 100} ₽ · {payment.refundedAt ? 'Возвращён' : payment.refundRequiredAt ? 'Требует возврата' : payment.status} · {payment.externalPaymentId ?? payment.id}</p>)}
         </>}
       </div>}
     </div>}

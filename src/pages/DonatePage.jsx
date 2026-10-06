@@ -35,7 +35,10 @@ export default function DonatePage() {
     const check = async () => {
       try {
         const data = await subscriptionApi(`/payments/${encodeURIComponent(payment)}`)
-        if (data.payment.status === 'confirmed') {
+        if (data.payment.refundRequiredAt) {
+          setMessage(data.payment.refundedAt ? 'Платёж возвращён: тариф не мог быть понижен во время действия текущей подписки.' : 'Платёж прошёл, но тариф нельзя понизить сейчас. Возврат средств требует обработки администрацией.')
+          setParams({}, { replace: true })
+        } else if (data.payment.status === 'confirmed') {
           setMessage('Оплата подтверждена. Подписка активна!')
           setState(await subscriptionApi('/me'))
           setParams({}, { replace: true })

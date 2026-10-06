@@ -6,6 +6,7 @@ import { apiRequest } from '../lib/forumApi'
 import { defaultSkinUrl } from '../utils/playerFormat'
 
 const MAP_URL = (import.meta.env.VITE_SQUAREMAP_URL || '').replace(/\/+$/, '')
+const LIVE_INTERVAL_MS = 2000
 
 const ICONS = {
   city: '⚓', shop: '💎', landmark: '✦', build: '🏛', base: '⌂', other: '●',
@@ -18,6 +19,8 @@ export default function SquaremapGuideMap({ places, selected, onSelect, showRegi
   const projection = useRef(null)
   const fitted = useRef(false)
   const worldRef = useRef(null)
+  const liveLayer = useRef(null)
+  const liveMarkers = useRef(new Map())
   const [offline, setOffline] = useState(false)
   const [ready, setReady] = useState(false)
 
@@ -74,6 +77,8 @@ export default function SquaremapGuideMap({ places, selected, onSelect, showRegi
       cancelled = true
       map.current?.remove()
       map.current = null
+      liveLayer.current = null
+      liveMarkers.current.clear()
     }
   }, [])
 
@@ -136,7 +141,6 @@ export default function SquaremapGuideMap({ places, selected, onSelect, showRegi
   const [tracking, setTracking] = useState(false)
   const [following, setFollowing] = useState(false)
   const live = useLiveNearby(tracking)
-  const liveLayer = useRef(null)
 
   useEffect(() => {
     if (!ready || !map.current) return
@@ -148,21 +152,48 @@ export default function SquaremapGuideMap({ places, selected, onSelect, showRegi
   useEffect(() => {
     if (!ready || !map.current) return
     liveLayer.current ??= L.layerGroup().addTo(map.current)
-    liveLayer.current.clearLayers()
     const data = live.data
-    if (!tracking || !data?.online || data.world !== worldRef.current?.name) return
-    data.nearby.forEach((p) => {
-      L.marker(projection.current(p.x, p.z), { icon: headIcon(p), zIndexOffset: 500, keyboard: false }).addTo(liveLayer.current)
-    })
-    L.marker(projection.current(data.me.x, data.me.z), { icon: meIcon(data.me.yaw), zIndexOffset: 1000, keyboard: false }).addTo(liveLayer.current)
-    if (following) map.current.panTo(projection.current(data.me.x, data.me.z), { animate: true, duration: 0.8 })
+    if (!tracking || !data?.online || data.world !== worldRef.current?.name) {
+      liveLayer.current.clearLayers()
+      liveMarkers.current.clear()
+      return
+    }
+
+    const hadMe = liveMarkers.current.has('me')
+    const visible = new Set()
+    const updateMarker = (key, player, icon, zIndexOffset) => {
+      visible.add(key)
+      const point = projection.current(player.x, player.z)
+      let marker = liveMarkers.current.get(key)
+      if (marker) {
+        marker.setLatLng(point)
+      } else {
+        marker = L.marker(point, { icon, zIndexOffset, keyboard: false }).addTo(liveLayer.current)
+        marker.getElement().style.transition = `transform ${LIVE_INTERVAL_MS}ms linear`
+        liveMarkers.current.set(key, marker)
+      }
+      return marker
+    }
+    data.nearby.forEach((p) => updateMarker(`player:${p.uuid ?? p.name}`, p, headIcon(p), 500))
+    const me = updateMarker('me', data.me, meIcon(data.me.yaw), 1000)
+    me.getElement().querySelector('.guide-me').style.transform = `rotate(${(data.me.yaw ?? 0) + 180}deg)`
+    for (const [key, marker] of liveMarkers.current) {
+      if (!visible.has(key)) {
+        liveLayer.current.removeLayer(marker)
+        liveMarkers.current.delete(key)
+      }
+    }
+    if (following) {
+      const point = projection.current(data.me.x, data.me.z)
+      if (hadMe) map.current.panTo(point, { animate: true, duration: LIVE_INTERVAL_MS / 1000, easeLinearity: 1 })
+      else map.current.flyTo(point, Math.max(map.current.getZoom(), 3), { duration: LIVE_INTERVAL_MS / 1000 })
+    }
   }, [live.data, tracking, following, ready])
 
   const toggleTracking = () => {
     if (tracking && following) { setTracking(false); setFollowing(false); return }
     setTracking(true)
     setFollowing(true)
-    if (live.data?.online) map.current?.setView(projection.current(live.data.me.x, live.data.me.z), Math.max(map.current.getZoom(), 3))
   }
 
   useEffect(() => {
@@ -229,7 +260,7 @@ function useLiveNearby(enabled) {
           if (!stopped) setState((prev) => ({ data: prev.data, error }))
         }
       }
-      if (!stopped) timer = setTimeout(tick, 2000)
+      if (!stopped) timer = setTimeout(tick, LIVE_INTERVAL_MS)
     }
     tick()
     return () => { stopped = true; clearTimeout(timer) }

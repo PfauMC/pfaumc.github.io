@@ -7,10 +7,12 @@ import { useForumAuth } from '../context/ForumAuthContext'
 import { useApiData } from '../hooks/useApiData'
 import { useSEO } from '../hooks/useSEO'
 import { guideApi, imageUrl, CATEGORIES } from '../lib/guideApi'
+import { subscriptionApi, planRank } from '../lib/subscriptionApi'
 
 
 // Города на карту попадают сами — предложить можно всё, кроме них.
 const PROPOSABLE = Object.entries(CATEGORIES).filter(([key]) => key !== 'city')
+const STYLE_THEMES = [['copper', 'Медь'], ['forest', 'Лес'], ['royal', 'Королевский']]
 
 const firstImage = (place) => place.imageIds?.[0] && imageUrl(place.imageIds[0])
 
@@ -117,7 +119,7 @@ function PlaceRow({ place, active, onClick }) {
   const [label, icon] = CATEGORIES[place.category] ?? CATEGORIES.other
   const image = firstImage(place)
   return (
-    <button className={`place-row ${active ? 'active' : ''}`} onClick={onClick}>
+    <button className={`place-row ${active ? 'active' : ''} ${place.styleTheme ? `place-theme-${place.styleTheme}` : ''}`} onClick={onClick}>
       <span className="place-thumb" style={cover(place.category, image)} aria-hidden="true">{!image && icon}</span>
       <span className="place-copy">
         {place.featured && <small className="place-sponsored">РЕКОМЕНДУЕМ</small>}
@@ -132,6 +134,7 @@ function PlaceRow({ place, active, onClick }) {
 function PlaceDetail({ place, user, isModerator, onClose, onUpdated, onDeleted }) {
   const path = `/places/${encodeURIComponent(place.slug)}`
   const details = useApiData(path, { fetcher: guideApi })
+  const subscription = useApiData(user ? '/me' : null, { fetcher: subscriptionApi })
   const [rating, setRating] = useState('5')
   const [body, setBody] = useState('')
   const [anonymous, setAnonymous] = useState(false)
@@ -139,6 +142,7 @@ function PlaceDetail({ place, user, isModerator, onClose, onUpdated, onDeleted }
   const [shown, setShown] = useState(0)
   const [error, setError] = useState(null)
   const [busy, setBusy] = useState(false)
+  const [theme, setTheme] = useState('copper')
   const mine = details.data?.myReview
   if (mine && !prefilled) {
     setPrefilled(true)
@@ -147,6 +151,7 @@ function PlaceDetail({ place, user, isModerator, onClose, onUpdated, onDeleted }
     setAnonymous(mine.anonymous)
   }
   const full = details.data?.place ?? place
+  const canStyle = user?.uuid === full.ownerGamerId && subscription.data?.subscription?.status === 'active' && planRank(subscription.data.subscription.plan) >= 2
   const images = full.imageIds ?? []
   const image = images[shown] ? imageUrl(images[shown]) : null
   const [, icon] = CATEGORIES[full.category] ?? CATEGORIES.other
@@ -167,9 +172,10 @@ function PlaceDetail({ place, user, isModerator, onClose, onUpdated, onDeleted }
     })
   const toggleFeatured = () => run(() => guideApi(path, { method: 'PATCH', body: { featured: !full.featured } }), refresh)
   const remove = () => window.confirm(`Удалить «${full.name}» из путеводителя?`) && run(() => guideApi(path, { method: 'DELETE' }), onDeleted)
+  const saveStyle = (enabled) => run(() => guideApi(`${path}/style`, { method: 'PATCH', body: { theme, enabled } }), refresh)
 
   return (
-    <article className="place-detail">
+    <article className={`place-detail ${full.styleTheme ? `place-theme-${full.styleTheme}` : ''}`}>
       <button className="place-detail-close" onClick={onClose} aria-label="Закрыть карточку">×</button>
       <a className="place-detail-cover" style={cover(full.category, image)} href={image ?? undefined} target="_blank" rel="noreferrer">
         {!image && <span>{icon}</span>}<small>{CATEGORIES[full.category]?.[0]}</small>
@@ -190,6 +196,12 @@ function PlaceDetail({ place, user, isModerator, onClose, onUpdated, onDeleted }
           <strong>★ {full.rating ? full.rating.toFixed(1) : '—'}</strong>
         </div>
         <p className="place-description">{full.description}</p>
+        {canStyle && <div className="guide-review-form">
+          <label htmlFor="place-theme">Оформление своего места</label>
+          <select id="place-theme" value={theme} onChange={(event) => setTheme(event.target.value)}>{STYLE_THEMES.map(([key, name]) => <option key={key} value={key}>{name}</option>)}</select>
+          <button onClick={() => saveStyle(true)} disabled={busy}>Применить</button>
+          {full.styleTheme && <button onClick={() => saveStyle(false)} disabled={busy}>Убрать</button>}
+        </div>}
         {full.citySlug && <Link className="place-city-link" to={`/cities/${full.citySlug}`}>Страница города →</Link>}
         <div className="place-coords">
           <span>Координаты</span>

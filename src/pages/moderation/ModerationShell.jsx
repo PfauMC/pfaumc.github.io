@@ -38,7 +38,7 @@ export default function ModerationShell({ children }) {
         ) : (
           <>
             <nav ref={nav} aria-label="Разделы модерации" className="flex gap-1 overflow-x-auto scrollbar-none border-b border-white/10 mb-6 -mx-4 px-4 sm:mx-0 sm:px-0">
-              {MODERATION_TABS.map((tab) => (
+              {[...MODERATION_TABS, ...(['admin', 'owner'].includes(user.role?.key) ? [{ to: '/moderation/subscriptions', label: 'Подписки' }] : [])].map((tab) => (
                 <NavLink
                   key={tab.to}
                   to={tab.to}

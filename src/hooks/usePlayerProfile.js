@@ -103,6 +103,7 @@ export function usePlayerProfile(nickname) {
       id: player.id,
       name: player.name ?? nickname,
       roles: shapeRoles(player.pfaumc?.roles),
+      subscription: player.pfaumc?.subscription ?? null,
       skin: player.pfaumc?.skin ?? null,
       online: stats.online,
       lastSeen: stats.last_seen_at,

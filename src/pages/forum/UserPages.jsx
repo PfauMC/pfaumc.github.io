@@ -11,6 +11,8 @@ import {
 import { PROVIDERS, ProviderIcon } from '../../components/forum/providers'
 import SignatureEditor from '../../components/forum/SignatureEditor'
 import SignatureBlock from '../../components/forum/SignatureBlock'
+import { PLANS, planName, subscriptionApi } from '../../lib/subscriptionApi'
+import { imageUrl, uploadImage } from '../../lib/guideApi'
 
 function Shell({ title, children, crumb }) {
   return (
@@ -381,6 +383,8 @@ export function ForumSettingsPage() {
 
             <SignatureSection user={user} setUser={setUser} />
 
+            <SubscriptionSettings />
+
             <section className="card space-y-3">
               <h2 className="font-mono font-semibold text-heading">Подписки</h2>
               <p className="text-sm text-text-light/70">Список тем, на которые вы подписаны, — на отдельной странице.</p>
@@ -420,4 +424,79 @@ export function ForumSettingsPage() {
       </RequireAuth>
     </Shell>
   )
+}
+
+function SubscriptionSettings() {
+  const { data, loading, error, reload } = useApiData('/me', { fetcher: subscriptionApi })
+  const [bannerBusy, setBannerBusy] = useState(false)
+  const [bannerError, setBannerError] = useState(null)
+  const [bannerFile, setBannerFile] = useState(null)
+  const [preview, setPreview] = useState(null)
+  useEffect(() => () => { if (preview) URL.revokeObjectURL(preview) }, [preview])
+  const subscription = data?.subscription
+  const plan = PLANS.find((item) => item.key === subscription?.plan)
+  const active = subscription?.status === 'active'
+  const sponsor = active && subscription.plan === 'sponsor'
+  const chooseBanner = async (file) => {
+    setBannerError(null)
+    try {
+      if (file.type !== 'image/png' || file.size > 2 * 1024 * 1024) throw new Error('Нужен PNG до 2 МБ')
+      const url = URL.createObjectURL(file)
+      try {
+        const image = new Image()
+        image.src = url
+        await image.decode()
+        if (image.width < 800 || image.width > 3000 || image.height < 180 || image.height > 1000 || image.width < image.height * 2) throw new Error('Баннер должен быть широким: 800–3000 × 180–1000 px')
+        setBannerFile(file); setPreview(url)
+      } catch (e) { URL.revokeObjectURL(url); throw e }
+    } catch (e) { setBannerError(e.message) }
+  }
+  const setBanner = async (file) => {
+    setBannerBusy(true); setBannerError(null)
+    try {
+      const id = file ? await uploadImage(file) : null
+      await subscriptionApi('/banner', { method: 'PATCH', body: { imageId: id } })
+      setBannerFile(null); setPreview(null)
+      reload()
+    } catch (e) { setBannerError(e.message) }
+    finally { setBannerBusy(false) }
+  }
+  const renew = async () => {
+    setBannerError(null)
+    try {
+      const { url } = await subscriptionApi('/checkout', { method: 'POST', body: { plan: subscription.plan } })
+      window.location.assign(url)
+    } catch { setBannerError('Не удалось начать оплату. Попробуйте позже.') }
+  }
+  return <section className="card space-y-4">
+    <h2 className="font-mono font-semibold text-heading">Подписка</h2>
+    {loading && !data ? <p className="text-sm text-text-light">Загружаем…</p> : error ? <p className="text-sm text-red-400">Не удалось загрузить подписку. <button onClick={reload} className="underline">Повторить</button></p> : (
+      <>
+        <p className="text-sm text-heading">{plan ? <><strong>{plan.name}</strong> · {plan.price} ₽ / месяц</> : 'Подписки пока нет'}</p>
+        {subscription && <p className="text-sm text-text-light">Статус: {active ? 'активна' : 'истекла'} · с {new Date(subscription.startedAt).toLocaleDateString('ru-RU')} до {new Date(subscription.expiresAt).toLocaleDateString('ru-RU')}</p>}
+        <p className="text-xs text-text-light/60">Автопродление отключено. Следующего списания нет.</p>
+        {active && <ul className="grid sm:grid-cols-2 gap-1 text-xs text-text-light">{plan.benefits.map((benefit) => <li key={benefit}>✓ {benefit}</li>)}</ul>}
+        <div className="flex flex-wrap gap-2">
+          {active && <button onClick={renew} className="btn-primary inline-flex text-sm py-2 px-4">Продлить на месяц</button>}
+          <Link to="/donate" className="btn-ghost inline-flex text-sm py-2 px-4">{active ? 'Изменить тариф' : 'Выбрать тариф'}</Link>
+        </div>
+        {!sponsor && <FormError error={bannerError} />}
+        {sponsor && <div className="border-t border-white/10 pt-4 space-y-3">
+          <h3 className="font-semibold text-heading text-sm">Баннер профиля</h3>
+          {(preview || subscription.bannerImageId) && <img src={preview || imageUrl(subscription.bannerImageId)} alt={preview ? 'Предпросмотр баннера' : 'Текущий баннер профиля'} className="w-full h-32 object-cover rounded-lg" />}
+          <div className="flex flex-wrap gap-3 items-center">
+            <label className="btn-ghost inline-flex text-sm py-2 px-3 cursor-pointer">{subscription.bannerImageId ? 'Заменить' : 'Выбрать PNG'}<input type="file" accept="image/png" className="sr-only" disabled={bannerBusy} onChange={(e) => { if (e.target.files?.[0]) chooseBanner(e.target.files[0]); e.target.value = '' }} /></label>
+            {bannerFile && <button className="btn-primary text-sm py-2 px-3" disabled={bannerBusy} onClick={() => setBanner(bannerFile)}>Сохранить баннер</button>}
+            {subscription.bannerImageId && <button className="btn-ghost text-sm py-2 px-3" disabled={bannerBusy} onClick={() => setBanner(null)}>Убрать</button>}
+          </div>
+          {bannerBusy && <p className="text-xs text-text-light">Сохраняем баннер…</p>}
+          <FormError error={bannerError} />
+        </div>}
+        <div className="border-t border-white/10 pt-4">
+          <h3 className="font-semibold text-heading text-sm mb-3">История платежей</h3>
+          {data.payments.length ? <div className="space-y-2">{data.payments.map((payment) => <div key={payment.id} className="text-xs text-text-light flex flex-wrap gap-x-3 gap-y-1"><span>{new Date(payment.createdAt).toLocaleDateString('ru-RU')}</span><span>{planName(payment.plan)}</span><span>{payment.amountKopecks / 100} ₽</span><span>{payment.status === 'confirmed' ? 'Оплачен' : payment.status === 'payment_failed' ? 'Ошибка' : 'Ожидает оплаты'}</span><span className="font-mono break-all">{payment.externalPaymentId ?? payment.id}</span></div>)}</div> : <p className="text-xs text-text-light/60">Платежей пока нет.</p>}
+        </div>
+      </>
+    )}
+  </section>
 }

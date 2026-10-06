@@ -8,6 +8,7 @@ import PlayerHead from '../PlayerHead'
 import Editor from './Editor'
 import SignatureBlock from './SignatureBlock'
 import { UserHead, RoleBadge, Modal, ConfirmDialog, FormError } from './ui'
+import { planName } from '../../lib/subscriptionApi'
 
 export default function PostCard({ post, topic, onQuote, onReply, onChanged, highlighted }) {
   const { user, isModerator } = useForumAuth()
@@ -265,7 +266,7 @@ function AuthorPane({ author }) {
   }
 
   return (
-    <div className="sm:w-44 flex-shrink-0 sm:border-r border-b sm:border-b-0 border-white/5 bg-black/10">
+    <div className={`sm:w-44 flex-shrink-0 sm:border-r border-b sm:border-b-0 bg-black/10 ${author.subscriptionPlan === 'sponsor' ? 'border-amber-400/40 bg-amber-400/5' : author.subscriptionPlan === 'maecenas' ? 'border-violet-400/35 bg-violet-400/5' : 'border-white/5'}`}>
       {/* Мобильная строка */}
       <div className="flex sm:hidden items-center gap-2.5 px-4 py-3">
         <UserHead user={author} size={32} />
@@ -278,6 +279,7 @@ function AuthorPane({ author }) {
             {author.name}
           </Link>
           <div className="mt-0.5"><RoleBadge role={author.role} /></div>
+          {author.subscriptionPlan && <span className="text-[11px] text-accent">{planName(author.subscriptionPlan)}</span>}
         </div>
       </div>
 
@@ -309,6 +311,7 @@ function AuthorPane({ author }) {
             {author.role.title}
           </span>
         )}
+        {author.subscriptionPlan && <span className="text-[11px] text-accent">{planName(author.subscriptionPlan)}</span>}
 
         <dl className="w-full mt-1 space-y-0.5 text-[11px] text-text-light/40">
           {author.postCount != null && (

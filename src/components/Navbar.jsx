@@ -69,6 +69,7 @@ export default function Navbar() {
     { label: 'Форум', to: '/forum' },
     { label: 'Города', to: '/cities' },
     { label: 'Путеводитель', to: '/guide' },
+    { label: 'Подписки', to: '/donate' },
     { label: 'Игроки', to: '/players' },
     // Ссылка -- только удобство: реальная проверка прав живёт на бэкенде
     // (Ctx::require_staff, точный набор role key helper/helper+/admin — не
@@ -127,9 +128,6 @@ export default function Navbar() {
             {theme === 'dark' ? <SunIcon className="w-5 h-5" /> : <MoonIcon className="w-5 h-5" />}
           </button>
 
-          {/* <Link to="/donate" className="btn-ghost text-sm py-2 px-4">
-            💎 Донат
-          </Link> */}
           <a href="https://t.me/pfaumc" target="_blank" rel="noopener noreferrer" aria-label="Telegram"
             className="w-9 h-9 flex items-center justify-center rounded-lg text-text-light/60 hover:text-[#29B6F6] hover:bg-white/5 transition-colors">
             <TelegramIcon className="w-5 h-5" />

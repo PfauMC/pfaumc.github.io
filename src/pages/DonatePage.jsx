@@ -1,132 +1,97 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import PaymentModal from '../components/PaymentModal'
+import { useForumAuth } from '../context/ForumAuthContext'
 import { useSEO } from '../hooks/useSEO'
-
-const fluxPackages = [
-  { amount: 100,   price: 100   },
-  { amount: 250,   price: 250   },
-  { amount: 500,   price: 500   },
-  { amount: 1000,  price: 1000  },
-  { amount: 2000,  price: 2000  },
-  { amount: 3000,  price: 3000  },
-  { amount: 5000,  price: 5000  },
-  { amount: 10000, price: 10000 },
-]
+import { PLANS, planName, planRank, subscriptionApi } from '../lib/subscriptionApi'
 
 export default function DonatePage() {
-  useSEO('Донат — PfauMC | Поддержать сервер', 'Поддержи PfauMC и получи Флюкс — донат-валюту сервера для доступа к привилегиям.')
-
-  const [visible, setVisible] = useState(false)
-  const [selectedItem, setSelectedItem] = useState(null)
-  const [paidStatus, setPaidStatus] = useState(null)
-  const [searchParams, setSearchParams] = useSearchParams()
+  useSEO('Подписки — PfauMC', 'Поддержите сервер PfauMC и выберите подписку: Фанат, Меценат или Спонсор.')
+  const { user, loading: authLoading } = useForumAuth()
+  const [params, setParams] = useSearchParams()
+  const [state, setState] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [busy, setBusy] = useState(null)
+  const [message, setMessage] = useState(null)
+  const payment = params.get('payment')
 
   useEffect(() => {
-    window.scrollTo(0, 0)
-    setTimeout(() => setVisible(true), 80)
+    if (!user) { setState(null); return }
+    let live = true
+    setLoading(true)
+    subscriptionApi('/me').then((data) => { if (live) setState(data) })
+      .catch(() => { if (live) setMessage('Не удалось получить данные подписки. Попробуйте обновить страницу.') })
+      .finally(() => { if (live) setLoading(false) })
+    return () => { live = false }
+  }, [user?.uuid])
 
-    const paid = searchParams.get('paid')
-    if (paid === 'ok') {
-      setPaidStatus('success')
-      setSearchParams({}, { replace: true })
-    } else if (paid === 'fail') {
-      setPaidStatus('fail')
-      setSearchParams({}, { replace: true })
+  useEffect(() => {
+    if (!user || !payment) return undefined
+    let attempts = 0
+    let timer
+    const check = async () => {
+      try {
+        const data = await subscriptionApi(`/payments/${encodeURIComponent(payment)}`)
+        if (data.payment.status === 'confirmed') {
+          setMessage('Оплата подтверждена. Подписка активна!')
+          setState(await subscriptionApi('/me'))
+          setParams({}, { replace: true })
+        } else if (data.payment.status === 'payment_failed') {
+          setMessage('Платёж не прошёл. Попробуйте ещё раз.')
+          setParams({}, { replace: true })
+        } else if (++attempts < 15) {
+          timer = setTimeout(check, 3000)
+        } else setMessage('Платёж обрабатывается. Проверьте статус позже в настройках.')
+      } catch { setMessage('Не удалось проверить платёж. Проверьте историю в настройках.') }
     }
-  }, [])
+    check()
+    return () => clearTimeout(timer)
+  }, [user?.uuid, payment])
+
+  const current = state?.subscription?.status === 'active' ? state.subscription.plan : null
+  const buy = async (plan) => {
+    setBusy(plan); setMessage(null)
+    try {
+      const { url } = await subscriptionApi('/checkout', { method: 'POST', body: { plan } })
+      window.location.assign(url)
+    } catch { setMessage('Не удалось начать оплату. Попробуйте позже.') }
+    finally { setBusy(null) }
+  }
+  const login = () => { sessionStorage.setItem('pfau_login_return', '/donate') }
 
   return (
-    <div className="min-h-screen">
-
-      {/* Paid status banners */}
-      {paidStatus === 'success' && (
-        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3 bg-emerald-900/90 border border-emerald-500/40 text-emerald-300 text-sm font-semibold px-5 py-3 rounded-xl shadow-lg backdrop-blur">
-          <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
-            <circle cx="12" cy="12" r="10"/><path d="M8 12l3 3 5-5" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          Оплата прошла успешно! Гхыбки будут начислены в течение нескольких минут.
-          <button onClick={() => setPaidStatus(null)} className="ml-2 opacity-60 hover:opacity-100">
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M18 6L6 18M6 6l12 12"/></svg>
-          </button>
+    <main className="min-h-screen pt-28 pb-16">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        <Link to="/" className="text-sm text-text-light hover:text-accent">← На главную</Link>
+        <header className="mt-9 mb-10 max-w-2xl">
+          <p className="text-accent font-mono text-xs font-semibold tracking-widest uppercase mb-3">Поддержать PfauMC</p>
+          <h1 className="font-mono text-3xl sm:text-5xl font-bold text-heading mb-4">Подписки</h1>
+          <p className="text-text-light">Выберите удобный способ поддержать сервер. Каждый следующий тариф включает возможности предыдущего.</p>
+        </header>
+        {message && <div role="status" className="card mb-6 text-sm text-heading">{message}</div>}
+        {payment && !message && <div role="status" className="card mb-6 text-sm text-heading">Проверяем подтверждение платежа…</div>}
+        {current && <div className="card mb-6 border-accent/30 text-sm text-heading">Текущая подписка: <strong>{planName(current)}</strong> · до {new Date(state.subscription.expiresAt).toLocaleDateString('ru-RU')}</div>}
+        <div className="grid gap-5 md:grid-cols-3">
+          {PLANS.map((plan) => {
+            const lower = current && planRank(plan.key) < planRank(current)
+            const same = current === plan.key
+            const label = !user ? 'Войти и оформить' : same ? 'Текущая подписка' : lower ? 'После окончания текущего периода' : current ? `Перейти на ${plan.key === 'maecenas' ? 'Мецената' : 'Спонсора'}` : 'Оформить подписку'
+            return (
+              <article key={plan.key} className={`card flex flex-col ${plan.key === 'sponsor' ? 'border-amber-400/30' : plan.key === 'maecenas' ? 'border-violet-400/25' : ''}`}>
+                <p className="font-mono text-xs uppercase tracking-widest text-accent mb-3">{plan.key}</p>
+                <h2 className="font-mono text-2xl font-bold text-heading">{plan.name}</h2>
+                <p className="mt-3 mb-6"><strong className="font-mono text-3xl text-heading">{plan.price} ₽</strong><span className="text-text-light"> / месяц</span></p>
+                <ul className="space-y-3 text-sm text-text-light flex-1 mb-8">
+                  {plan.benefits.map((benefit) => <li key={benefit} className="flex gap-2"><span className="text-accent" aria-hidden="true">✓</span>{benefit}</li>)}
+                </ul>
+                {!authLoading && !user ? <Link to="/auth/game" onClick={login} className="btn-primary justify-center text-center">{label}</Link>
+                  : <button className="btn-primary justify-center" disabled={authLoading || loading || busy || same || lower || !state && !!user} onClick={() => buy(plan.key)}>{busy === plan.key ? 'Переходим к оплате…' : authLoading || loading ? 'Загружаем…' : label}</button>}
+                {lower && <p className="text-xs text-text-light/60 mt-2">Новый тариф можно оформить после окончания текущего.</p>}
+              </article>
+            )
+          })}
         </div>
-      )}
-      {paidStatus === 'fail' && (
-        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3 bg-red-900/90 border border-red-500/40 text-red-300 text-sm font-semibold px-5 py-3 rounded-xl shadow-lg backdrop-blur">
-          <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
-            <circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6" strokeLinecap="round"/>
-          </svg>
-          Платёж отменён или отклонён. Попробуйте ещё раз.
-          <button onClick={() => setPaidStatus(null)} className="ml-2 opacity-60 hover:opacity-100">
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M18 6L6 18M6 6l12 12"/></svg>
-          </button>
-        </div>
-      )}
-
-      {/* Hero */}
-      <section className="relative pt-28 pb-14 overflow-hidden">
-        <div className="absolute inset-0 grid-bg opacity-40" />
-        <div className="absolute inset-0 bg-hero-glow pointer-events-none" />
-        <div className="relative max-w-6xl mx-auto px-4 sm:px-6">
-          <Link to="/" className="inline-flex items-center gap-2 text-text-light/60 hover:text-heading text-sm font-medium mb-10 transition-colors">
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-            На главную
-          </Link>
-          <div className={`transition-all duration-700 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
-            <p className="text-accent font-mono text-sm font-semibold tracking-widest uppercase mb-3">Поддержать сервер</p>
-            <h1 className="font-mono text-3xl sm:text-5xl lg:text-6xl font-bold text-heading mb-4">Донат</h1>
-            <p className="text-text-light text-lg max-w-xl">
-              Поддержи сервер и получи внутриигровую валюту — гхыбки.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Currency packages */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
-        <div className="mb-8">
-          <h2 className="font-mono text-2xl font-bold text-heading mb-2">Гхыбки — игровая валюта</h2>
-          <p className="text-text-light">Внутриигровая валюта сервера. Используй для торговли, покупок и обменов.</p>
-        </div>
-
-        <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
-          {fluxPackages.map((pkg) => (
-            <div
-              key={pkg.amount}
-              className="card hover:border-accent/20 flex flex-col gap-4 transition-all duration-300 hover:scale-[1.02]"
-            >
-              <div className="text-center">
-                <div className="text-4xl mb-2">💎</div>
-                <div className="font-mono text-2xl font-bold text-gradient">{pkg.amount.toLocaleString('ru-RU')}</div>
-                <div className="text-text-light/50 text-sm">гхыбок</div>
-              </div>
-              <div className="text-center text-lg font-bold text-heading">{pkg.price.toLocaleString('ru-RU')} ₽</div>
-              <button
-                onClick={() => setSelectedItem({ name: `${pkg.amount.toLocaleString('ru-RU')} гхыбок`, price: pkg.price })}
-                className="btn-primary text-sm justify-center"
-              >
-                Купить
-              </button>
-            </div>
-          ))}
-        </div>
+        <p className="text-xs text-text-light/60 mt-8">Подписка действует месяц после подтверждения платежа. Автоматического списания нет. Продлить срок можно вручную в настройках.</p>
       </div>
-
-      {/* Notice */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-16">
-        <div className="border border-white/5 rounded-xl p-5 bg-bg-section text-text-light/50 text-sm text-center">
-          Все покупки предоставляются навсегда и не привязаны к сезонам. Возврат средств осуществляется в соответствии с пользовательским соглашением. По вопросам обращайтесь в{' '}
-          <a href="https://discord.gg/BPmxWwdChY" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">Discord</a>.
-        </div>
-      </div>
-
-      {/* Payment modal */}
-      {selectedItem && (
-        <PaymentModal
-          item={selectedItem}
-          onClose={() => setSelectedItem(null)}
-        />
-      )}
-    </div>
+    </main>
   )
 }

@@ -6,6 +6,7 @@ import { usePlayerSearch } from '../../hooks/usePlayerSearch'
 import { useForumAuth } from '../../context/ForumAuthContext'
 import { citiesApi } from '../../lib/citiesApi'
 import { imageUrl } from '../../lib/guideApi'
+import { subscriptionApi } from '../../lib/subscriptionApi'
 import ImagePicker from '../../components/ImagePicker'
 import { formatDateTime } from '../../lib/forumFormat'
 import { Breadcrumbs, ListSkeleton, ErrorState, UserHead, FormError, ConfirmDialog } from '../../components/forum/ui'
@@ -15,6 +16,7 @@ export default function CityPage() {
   const navigate = useNavigate()
   const { user, isModerator } = useForumAuth()
   const city = useApiData(`/${encodeURIComponent(slug)}`, { fetcher: citiesApi })
+  const subscription = useApiData(user ? '/me' : null, { fetcher: subscriptionApi })
   const info = city.data?.city
 
   useSEO(info ? `${info.name} — города PfauMC` : 'Город — PfauMC', info?.description || undefined)
@@ -24,6 +26,15 @@ export default function CityPage() {
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState(null)
+  const [highlightError, setHighlightError] = useState(null)
+  const sponsorMayor = isMayor && subscription.data?.subscription?.status === 'active' && subscription.data.subscription.plan === 'sponsor'
+  const toggleHighlight = async () => {
+    setHighlightError(null)
+    try {
+      await citiesApi(`/${encodeURIComponent(slug)}/highlight`, { method: 'PATCH', body: { enabled: !info.sponsorHighlight } })
+      city.reload()
+    } catch (e) { setHighlightError(e.message) }
+  }
 
   const deleteCity = async () => {
     setDeleting(true)
@@ -65,13 +76,14 @@ export default function CityPage() {
       <div className="max-w-3xl mx-auto px-4 sm:px-6">
         <Breadcrumbs items={[{ label: 'Города', to: '/cities' }, { label: info.name }]} />
 
-        <div className="card mb-6 overflow-hidden">
+        <div className={`card mb-6 overflow-hidden ${info.sponsorHighlight ? 'border-amber-400/40 bg-amber-400/5' : ''}`}>
           {info.coverImageId && (
             <img src={imageUrl(info.coverImageId)} alt="" className="-mx-4 -mt-4 sm:-mx-6 sm:-mt-6 mb-5 w-[calc(100%+2rem)] sm:w-[calc(100%+3rem)] max-w-none h-56 object-cover" />
           )}
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
               <h1 className="font-mono text-2xl sm:text-3xl font-bold text-heading mb-1">{info.name}</h1>
+              {info.sponsorHighlight && <span className="text-xs text-amber-300">★ Город спонсора</span>}
               <p className="text-xs text-text-light/50">Основан {formatDateTime(info.createdAt)}</p>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
@@ -89,6 +101,8 @@ export default function CityPage() {
           </div>
 
           <FormError error={deleteError} />
+          {sponsorMayor && <button onClick={toggleHighlight} className="btn-ghost text-sm py-2 px-4 mt-3">{info.sponsorHighlight ? 'Убрать выделение города' : 'Выделить город'}</button>}
+          <FormError error={highlightError} />
           {canDelete && <CoverControl city={info} onChanged={city.reload} />}
 
           {info.description && <p className="text-text-light mt-4 leading-relaxed">{info.description}</p>}

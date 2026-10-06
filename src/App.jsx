@@ -1,7 +1,7 @@
 import { lazy, Suspense, useState, useEffect } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 import { ThemeProvider } from './context/ThemeContext'
-import { ForumAuthProvider } from './context/ForumAuthContext'
+import { ForumAuthProvider, useForumAuth } from './context/ForumAuthContext'
 import LoadingScreen from './components/LoadingScreen'
 import Fireflies from './components/Fireflies'
 import Navbar from './components/Navbar'
@@ -42,6 +42,8 @@ const CityPage = lazy(() => import('./pages/cities/CityPage'))
 const CityApplicationsPage = lazy(() => import('./pages/cities/CityApplicationsPage'))
 const GuideApplicationsPage = lazy(() => import('./pages/moderation/GuideApplicationsPage'))
 const GuidePage = lazy(() => import('./pages/GuidePage'))
+const DonatePage = lazy(() => import('./pages/DonatePage'))
+const SubscriptionAdminPage = lazy(() => import('./pages/moderation/SubscriptionAdminPage'))
 
 function HomePage() {
   useScrollToHash()
@@ -52,6 +54,20 @@ function HomePage() {
       <ServerStats />
     </main>
   )
+}
+
+function LoginReturn() {
+  const { user } = useForumAuth()
+  const navigate = useNavigate()
+  useEffect(() => {
+    if (!user) return
+    const target = sessionStorage.getItem('pfau_login_return')
+    if (target?.startsWith('/') && !target.startsWith('//')) {
+      sessionStorage.removeItem('pfau_login_return')
+      navigate(target, { replace: true })
+    }
+  }, [user, navigate])
+  return null
 }
 
 export default function App() {
@@ -71,6 +87,7 @@ export default function App() {
   return (
     <ThemeProvider>
       <ForumAuthProvider>
+      <LoginReturn />
       {loading && <LoadingScreen fadeOut={fadeOut} />}
       <div className={fadeOut || !loading ? 'visible' : 'invisible'}>
         <Fireflies count={22} />
@@ -90,6 +107,7 @@ export default function App() {
               <Route path="/moderation/cities" element={<CityApplicationsPage />} />
               <Route path="/moderation/guide" element={<GuideApplicationsPage />} />
               <Route path="/moderation/log" element={<ModLogPage />} />
+              <Route path="/moderation/subscriptions" element={<SubscriptionAdminPage />} />
               {/* Старые адреса -- в «Модерацию» */}
               <Route path="/bans" element={<Navigate to="/moderation/bans" replace />} />
               <Route path="/forum/reports" element={<Navigate to="/moderation/reports" replace />} />
@@ -117,6 +135,7 @@ export default function App() {
               <Route path="/cities" element={<CitiesPage />} />
               <Route path="/cities/:slug" element={<CityPage />} />
               <Route path="/guide" element={<GuidePage />} />
+              <Route path="/donate" element={<DonatePage />} />
               <Route path="/auth/game" element={<AuthGamePage />} />
               <Route path="/auth/failed" element={<AuthFailedPage />} />
               {/* Страницы режима больше нет -- старая ссылка ведёт на главную. */}

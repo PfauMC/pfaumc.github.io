@@ -14,6 +14,8 @@ import { citiesApi } from '../lib/citiesApi'
 import { guideApi } from '../lib/guideApi'
 import { formatDateTime } from '../lib/forumFormat'
 import { StatusBadge as ApplicationStatus } from './cities/CitiesPage'
+import { imageUrl } from '../lib/guideApi'
+import { planName } from '../lib/subscriptionApi'
 
 export default function PlayerProfilePage() {
   const { nickname } = useParams()
@@ -62,7 +64,9 @@ export default function PlayerProfilePage() {
         <BanBanner ban={profile.ban} />
 
         {/* Header card */}
-        <div className="card flex flex-col sm:flex-row items-center sm:items-start gap-5 mb-6">
+        <div className={`card overflow-hidden mb-6 ${profile.subscription?.plan === 'sponsor' ? 'border-amber-400/40 bg-amber-400/5' : profile.subscription?.plan === 'maecenas' ? 'border-violet-400/35 bg-violet-400/5' : ''}`}>
+          {profile.subscription?.banner_image_id && <img src={imageUrl(profile.subscription.banner_image_id)} alt="Баннер профиля" className="w-full h-36 sm:h-44 object-cover rounded-xl mb-5" />}
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
           <PlayerHead
             skin={profile.skin}
             uuid={profile.id}
@@ -91,6 +95,7 @@ export default function PlayerProfilePage() {
                   {role.title}
                 </span>
               ))}
+              {profile.subscription && !profile.roles.some((role) => role.key === profile.subscription.plan) && <span className="text-xs font-mono px-2.5 py-1 rounded-full border border-amber-400/30 text-amber-300">{planName(profile.subscription.plan)}</span>}
               <StatusBadge online={profile.online} lastSeen={profile.lastSeen} />
             </div>
 
@@ -105,6 +110,7 @@ export default function PlayerProfilePage() {
 
             <MultiaccLink nick={profile.name} />
             {isModerator && user?.uuid !== profile.id && <MuteControl uuid={profile.id} name={profile.name} />}
+          </div>
           </div>
         </div>
 

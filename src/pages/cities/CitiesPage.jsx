@@ -88,9 +88,12 @@ export default function CitiesPage() {
                 to={`/cities/${city.slug}`}
                 className={`card hover:border-accent/30 transition-colors block overflow-hidden ${city.sponsorHighlight ? 'border-amber-400/40 bg-amber-400/5' : ''}`}
               >
-                {city.coverImageId && (
-                  <img src={imageUrl(city.coverImageId)} alt="" loading="lazy" className="-mx-4 -mt-4 sm:-mx-6 sm:-mt-6 mb-4 w-[calc(100%+2rem)] sm:w-[calc(100%+3rem)] max-w-none h-36 object-cover" />
-                )}
+                <img
+                  src={city.coverImageId ? imageUrl(city.coverImageId) : '/assets/city-placeholder.png'}
+                  alt=""
+                  loading="lazy"
+                  className={`-mx-4 -mt-4 sm:-mx-6 sm:-mt-6 mb-4 w-[calc(100%+2rem)] sm:w-[calc(100%+3rem)] max-w-none h-36 object-cover ${city.coverImageId ? '' : 'grayscale opacity-50'}`}
+                />
                 <h2 className="font-mono font-bold text-heading text-lg mb-1">{city.name}</h2>
                 {city.sponsorHighlight && <span className="text-xs text-amber-300">★ Город спонсора</span>}
                 {city.description && (

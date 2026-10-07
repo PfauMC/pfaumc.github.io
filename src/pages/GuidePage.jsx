@@ -7,6 +7,7 @@ import { useForumAuth } from '../context/ForumAuthContext'
 import { useApiData } from '../hooks/useApiData'
 import { useSEO } from '../hooks/useSEO'
 import { guideApi, imageUrl, CATEGORIES } from '../lib/guideApi'
+import { sortPlaces } from '../lib/catalogSort'
 import { subscriptionApi, planRank } from '../lib/subscriptionApi'
 
 
@@ -27,6 +28,7 @@ export default function GuidePage() {
   const placesRequest = useApiData('/places', { fetcher: guideApi })
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState('all')
+  const [sortOrder, setSortOrder] = useState('rating')
   const [selected, setSelected] = useState(null)
   // На телефоне список -- шторка поверх карты, открытым он закрыл бы её целиком.
   const [listOpen, setListOpen] = useState(() => window.innerWidth >= 760)
@@ -36,11 +38,11 @@ export default function GuidePage() {
   const allPlaces = placesRequest.data?.places ?? []
   const places = useMemo(() => {
     const needle = query.trim().toLocaleLowerCase('ru')
-    return allPlaces.filter((place) =>
+    return sortPlaces(allPlaces.filter((place) =>
       (category === 'all' || place.category === category)
       && (!needle || `${place.name} ${place.description} ${CATEGORIES[place.category]?.[0] ?? ''}`.toLocaleLowerCase('ru').includes(needle))
-    )
-  }, [allPlaces, category, query])
+    ), sortOrder)
+  }, [allPlaces, category, query, sortOrder])
 
   const choose = useCallback((place) => {
     setSelected(place)
@@ -70,9 +72,18 @@ export default function GuidePage() {
           ))}
         </div>
 
+        <div className="flex items-center gap-3 px-6 pt-3 text-xs text-text-light/70">
+          <label htmlFor="guide-sort">Сортировка</label>
+          <select id="guide-sort" value={sortOrder} onChange={(event) => setSortOrder(event.target.value)} className="min-w-0 flex-1 rounded-md border border-white/10 bg-bg-card px-2 py-1.5 text-heading focus:border-accent focus:outline-none">
+            <option value="rating">По рейтингу</option>
+            <option value="newest">Сначала новые</option>
+            <option value="reviews">По отзывам</option>
+          </select>
+        </div>
+
         <div className="guide-list scrollbar-none">
           <div className="guide-list-title">
-            <span>{placesRequest.loading ? 'Загружаем…' : places.length ? 'Рекомендуем' : 'Мест пока нет'}</span>
+            <span>{placesRequest.loading ? 'Загружаем…' : places.length ? 'Места' : 'Мест пока нет'}</span>
             <small>{places.length}</small>
           </div>
           {placesRequest.error && (

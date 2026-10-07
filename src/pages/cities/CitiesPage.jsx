@@ -4,6 +4,7 @@ import { useSEO } from '../../hooks/useSEO'
 import { useApiData } from '../../hooks/useApiData'
 import { useForumAuth } from '../../context/ForumAuthContext'
 import { citiesApi } from '../../lib/citiesApi'
+import { sortCities } from '../../lib/catalogSort'
 import { imageUrl } from '../../lib/guideApi'
 import { formatDateTime } from '../../lib/forumFormat'
 import {
@@ -81,7 +82,7 @@ export default function CitiesPage() {
           <EmptyState icon="🏙️" title="Городов пока нет" text="Станьте первым, кто зарегистрирует свой город." />
         ) : (
           <div className="grid sm:grid-cols-2 gap-4">
-            {cities.data.cities.map((city) => (
+            {sortCities(cities.data.cities).map((city) => (
               <Link
                 key={city.id}
                 to={`/cities/${city.slug}`}
